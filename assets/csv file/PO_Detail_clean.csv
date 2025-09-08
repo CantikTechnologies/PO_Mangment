@@ -1,0 +1,31 @@
+project_name,cost_center,customer_po_no,customer_po_value,billed_till_date,remaining_balance_po,vendor_name,vendor_po_no,vendor_po_value,vendor_invoicing_till_date,remaining_vendor_balance,sale_margin_till_date,target_gm,variance_in_gm
+"Raptakos Resource Deployment - Anuj Kushwaha","Raptakos PT",4500095281,175500,171725,3775,"VRATA TECH SOLUTIONS PRIVATE LIMITED",0,,,,100.00,5.00,95.00
+"Raptakos Resource Deployment - Anuj Kushwaha","Raptakos PT",4500098831,136500,136500,,0,0,,,,100,,-95
+"Panasonic Resource Deploment - Shankar Bhuyan",GGN-NTT-PANASONIC-PT-01,4500095649,1999992,1328308,671684,0,0,,,,100,,-90
+"HMSI Resource Deployment- Dotnet - Alok Kumar",GGN-NTT-HMSI-DOTNET-PT-01,4500098672,1043120,306800,736320,0,0,,,,100,,-95
+"Quess Corp Resource Deployment - Yallappa Satyappa Halagodi",NTT-Quesscorp-PT-01,4500097314,625000,574984,50016,0,0,,,,100,,-95
+"Sun Phrma - Website AMC","Sun Phrama PT",4500095362,1068054,827938,240116,0,0,,,,100.00,,-95
+"HCIL - MDM - Soti","HCIL PT",4500092529,390141,390141,,0,0,,,,100,,-100
+"HCIL - MDM - Soti","HCIL PT",4500097684,578813,578813,,0,0,,,,0,,0
+"HCIL - MDM - Soti","HCIL PT",4500097799,257800,257800,,0,0,,,,100,,-100
+"HCIL - ITSM & NMS","HCIL PT",4500092808,552500,552500,,0,0,,,,100,,-100
+"HCIL - ITSM & NMS","HCIL PT",4500097527,1231905,1231905,,0,0,,,,100,,-100
+"HCIL - ITSM & NMS","HCIL PT",4500092930,13500,13500,,0,0,,,,100,,-100
+"Pay to Vendor - Finder Fee","NTT -PT -Finder Fees",4500091403,229075,229075,,0,0,,,,100,,-100
+"Pay to Vendor - Finder Fee","NTT -PT -Finder Fees",4500091408,649740,649740,,0,0,,,,100,,-100
+,"GGN-NTT-BMW-RPA- PT 01",4500087051,525000,525000,,0,0,,,,100,,-95
+,GGN-NTT-HMSI-RPA-PT-01,,,,,,,,,,,,
+,"NTT-BMW- BMW-penetration Testing - PT-0",,,,,,,,,,,,
+BMW,"NTT -PT -Finder Fees",4500092198,168000,168000,,0,0,,,,100,,-95
+"Quess Corp Resource Deployment - Panchalal Yadav",QuessCorp,4500099372,1364955,767787,597168,0,0,,,,100,,-95
+"ADP Resource Deployment-Nagothi Sumitranjali","Finder Fees – PT",4500100033,90000,90000,,0,0,,,,100,,-95
+"ADP Resource Deployment-Mounika Nandam","Finder Fees – PT",4500100034,108000,108000,,0,0,,,,100,,-95
+"HCIL - MDM - Soti","HCIL PT",4500100035,52500,50000,2500,0,0,,,,100,,-95
+"Alkem Laboratories Resource Deployment - Krunal Khode","Alkem Laboratories - PT",4500100039,1164167,650833,513334,0,0,,,,100.00,,-90.00
+"Raptakos Resource Deployment - Mayur Ghule","Raptakos PT",4500100053,1059300,94682,964618,0,0,,,,100,,-95
+"ADP Resource Deployment-Ankush Dilip Sangamwar","Finder Fees – PT",4500100130,85000,85000,,0,0,,,,100,,-95
+"Sun Phrma - Website AMS- Ramu Verma","Sun Phrama PT",4500100177,1945125,648375,1296750,0,0,,,,100,,-95
+,"GGN-NTT-BMW-OA - PT-01",4500083044,1812600,345986,1466614,0,0,,,,100,,-95
+,"GGN-NTT-BMW-OA - PT-01",4500094598,673920,673920,,0,0,,,,100,,-95
+"Saurabh Jamburgekar Sreedhar Katakam",GGN-NTT-KTFL-PT-01,4500100823,941250,,941250,0,0,,,,,,
+"HMSI Resource Deployment- Shubham Mishra","HMSI Bot Support-RPA",4500094574,1452000,919800,532200,0,0,,,,100,,-95
