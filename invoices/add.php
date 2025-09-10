@@ -6,6 +6,9 @@ if (!isset($_SESSION['username'])) {
 }
 include '../db.php';
 
+$success = '';
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $po_number = $_POST['po_number'];
 
@@ -28,12 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_advise_no = $_POST['payment_advise_no'];
     $vendor_name = $_POST['vendor_name'];
 
-    $stmt = $conn->prepare("INSERT INTO invoices (po_id, cantik_invoice_no, cantik_invoice_date, taxable_value, vendor_invoice_no, payment_receipt_date, payment_advise_no, vendor_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("issdssss", $po_id, $inv_no, $inv_date, $taxable, $vendor_inv, $payment_receipt_date, $payment_advise_no, $vendor_name);
-
+    $stmt = $conn->prepare("INSERT INTO invoices (po_id, cantik_invoice_no, cantik_invoice_date, taxable_value, vendor_invoice_no, payment_receipt_date, payment_advise_no, vendor_name, receivable, project_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT project_description FROM purchase_orders WHERE po_id = ?))");
+    $stmt->bind_param("isssssssis", $po_id, $inv_no, $inv_date, $taxable, $vendor_inv, $payment_receipt_date, $payment_advise_no, $vendor_name, $taxable, $po_id);
+    
     if ($stmt->execute()) {
-      header('Location: list.php');
-      exit;
+      $success = "Invoice created successfully!";
+      $_POST = array(); // Clear form
     } else {
       $error = "Error: " . $stmt->error;
     }
@@ -46,77 +49,158 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Add Invoice</title>
-  <link rel="stylesheet" href="../assets/style.css?v=<?php echo time(); ?>">
+  <title>Add Invoice - Cantik Homemade</title>
+  <meta name="description" content="Create a new invoice">
 </head>
 <body>
-  <div class="container form-page">
+  <div class="container">
     <?php include '../shared/nav.php'; ?>
+    
     <main>
+      <!-- Page Header -->
       <div class="page-header">
-        <h1>Add New Invoice</h1>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <a href="list.php" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Invoice List
+          </a>
+          <div>
+            <h1>Add New Invoice</h1>
+            <p>Create a new invoice</p>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <?php if (isset($error)): ?>
-          <div class="alert danger"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-        <form method="post">
-          <div class="form-group">
-            <label>Select PO Number
-              <select name="po_number" id="po_select" required onchange="fetchPODetails()">
-                <option value="">-- Select PO Number --</option>
-                <?php
-                $pos = $conn->query("SELECT po_id, po_number, project_description, vendor_name, cost_center FROM purchase_orders ORDER BY po_number");
-                if ($pos && $pos->num_rows > 0) {
-                  while ($po = $pos->fetch_assoc()) {
-                    echo '<option value="' . htmlspecialchars($po['po_number']) . '" data-po-id="' . $po['po_id'] . '" data-project="' . htmlspecialchars($po['project_description']) . '" data-vendor="' . htmlspecialchars($po['vendor_name']) . '" data-cost-center="' . htmlspecialchars($po['cost_center']) . '">' . htmlspecialchars($po['po_number']) . ' - ' . htmlspecialchars($po['project_description']) . '</option>';
-                  }
-                }
-                ?>
-              </select>
-            </label>
-            <label>Cantik Invoice No<input name="cantik_invoice_no" required></label>
-            <label>Cantik Invoice Date<input type="date" name="cantik_invoice_date"></label>
-          </div>
-          <div class="form-group">
-            <label>Taxable Value<input type="number" step="0.01" name="taxable_value" required></label>
-            <label>Vendor Invoice No<input name="vendor_invoice_no"></label>
-          </div>
-          <hr>
-          <div class="form-group">
-            <label>Payment Receipt Date<input type="date" name="payment_receipt_date"></label>
-            <label>Payment Advise No<input name="payment_advise_no"></label>
-            <label>Vendor Name<input name="vendor_name" id="vendor_name" readonly></label>
-          </div>
-          <div class="form-group">
-            <label>Project Description<input name="project_description" id="project_description" readonly></label>
-            <label>Cost Center<input name="cost_center" id="cost_center" readonly></label>
-          </div>
 
-          <div class="actions">
-            <button type="submit">Save Invoice</button>
-            <a href="list.php" class="btn muted">Cancel</a>
+      <!-- Form -->
+      <form method="post">
+        <!-- Invoice Information -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Invoice Information</h2>
+            <p class="card-description">Basic invoice details and PO reference</p>
           </div>
-        </form>
-      </div>
+          <div class="card-content">
+            <?php if ($success): ?>
+              <div class="alert success">
+                <i class="fas fa-check-circle"></i>
+                <?= htmlspecialchars($success) ?>
+              </div>
+            <?php endif; ?>
+            
+            <?php if ($error): ?>
+              <div class="alert danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <?= htmlspecialchars($error) ?>
+              </div>
+            <?php endif; ?>
+
+            <div class="form-group">
+              <div class="form-field">
+                <label for="po_number">PO Number *</label>
+                <input type="text" name="po_number" id="po_number" 
+                       value="<?= htmlspecialchars($_POST['po_number'] ?? '') ?>" 
+                       placeholder="Enter PO number" required>
+              </div>
+              <div class="form-field">
+                <label for="cantik_invoice_no">Cantik Invoice No *</label>
+                <input type="text" name="cantik_invoice_no" id="cantik_invoice_no" 
+                       value="<?= htmlspecialchars($_POST['cantik_invoice_no'] ?? '') ?>" 
+                       placeholder="Enter Cantik invoice number" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <div class="form-field">
+                <label for="cantik_invoice_date">Invoice Date</label>
+                <input type="date" name="cantik_invoice_date" id="cantik_invoice_date" 
+                       value="<?= htmlspecialchars($_POST['cantik_invoice_date'] ?? '') ?>">
+              </div>
+              <div class="form-field">
+                <label for="taxable_value">Taxable Value (₹) *</label>
+                <input type="number" step="0.01" name="taxable_value" id="taxable_value" 
+                       value="<?= htmlspecialchars($_POST['taxable_value'] ?? '') ?>" 
+                       placeholder="Enter taxable value" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-field">
+                <label for="vendor_invoice_no">Vendor Invoice No</label>
+                <input type="text" name="vendor_invoice_no" id="vendor_invoice_no" 
+                       value="<?= htmlspecialchars($_POST['vendor_invoice_no'] ?? '') ?>" 
+                       placeholder="Enter vendor invoice number">
+              </div>
+              <div class="form-field">
+                <label for="vendor_name">Vendor Name</label>
+                <input type="text" name="vendor_name" id="vendor_name" 
+                       value="<?= htmlspecialchars($_POST['vendor_name'] ?? '') ?>" 
+                       placeholder="Enter vendor name">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-field">
+                <label for="payment_receipt_date">Payment Receipt Date</label>
+                <input type="date" name="payment_receipt_date" id="payment_receipt_date" 
+                       value="<?= htmlspecialchars($_POST['payment_receipt_date'] ?? '') ?>">
+              </div>
+              <div class="form-field">
+                <label for="payment_advise_no">Payment Advise No</label>
+                <input type="text" name="payment_advise_no" id="payment_advise_no" 
+                       value="<?= htmlspecialchars($_POST['payment_advise_no'] ?? '') ?>" 
+                       placeholder="Enter payment advise number">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="card">
+          <div class="card-content">
+            <div class="actions">
+              <a href="list.php" class="btn btn-outline">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                Create Invoice
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
     </main>
   </div>
-  <script src="../assets/script.js"></script>
+
   <script>
-    function fetchPODetails() {
-      const select = document.getElementById('po_select');
-      const selectedOption = select.options[select.selectedIndex];
-      
-      if (selectedOption.value) {
-        document.getElementById('vendor_name').value = selectedOption.dataset.vendor || '';
-        document.getElementById('project_description').value = selectedOption.dataset.project || '';
-        document.getElementById('cost_center').value = selectedOption.dataset.costCenter || '';
-      } else {
-        document.getElementById('vendor_name').value = '';
-        document.getElementById('project_description').value = '';
-        document.getElementById('cost_center').value = '';
+    // Auto-clear success message after 3 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+      const successAlert = document.querySelector('.alert.success');
+      if (successAlert) {
+        setTimeout(() => {
+          successAlert.style.opacity = '0';
+          setTimeout(() => successAlert.remove(), 300);
+        }, 3000);
       }
-    }
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const requiredFields = this.querySelectorAll('input[required]');
+      let isValid = true;
+      
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          field.style.borderColor = 'var(--destructive)';
+          isValid = false;
+        } else {
+          field.style.borderColor = 'var(--border)';
+        }
+      });
+      
+      if (!isValid) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+      }
+    });
   </script>
 </body>
 </html>

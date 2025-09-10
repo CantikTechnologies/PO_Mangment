@@ -69,10 +69,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
       <button class="btn-submit" type="submit" name="login">Login</button>
     </form>
 
-    <p class="bottom-link">
-      Don't have an account? 
-      <a href="signup.php">Sign up here</a>
-    </p>
   </div>
 
   <script src="login.js"></script>

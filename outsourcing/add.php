@@ -6,51 +6,27 @@ if (!isset($_SESSION['username'])) {
 }
 include '../db.php';
 
+$success = '';
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $po_number = $_POST['customer_po_number'];
+  $project = $conn->real_escape_string($_POST['project_description']);
+  $vendor = $conn->real_escape_string($_POST['vendor_name']);
+  $work_desc = $conn->real_escape_string($_POST['work_description']);
+  $start_date = $_POST['start_date'] ?: null;
+  $end_date = $_POST['end_date'] ?: null;
+  $total_amount = $_POST['total_amount'] ?: 0;
+  $pending_payment = $_POST['pending_payment'] ?: 0;
 
-  $stmt = $conn->prepare("SELECT po_id FROM purchase_orders WHERE po_number = ? LIMIT 1");
-  $stmt->bind_param("s", $po_number);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $po = $result->fetch_assoc();
-  $stmt->close();
+  $sql = "INSERT INTO outsourcing_details (project_description, vendor_name, work_description, start_date, end_date, total_amount, pending_payment) VALUES ('{$project}', '{$vendor}', '{$work_desc}', " . 
+          ($start_date ? "'{$start_date}'" : "NULL") . ", " . 
+          ($end_date ? "'{$end_date}'" : "NULL") . ", {$total_amount}, {$pending_payment})";
 
-  if (!$po) {
-    $error = "PO Number not found.";
+  if ($conn->query($sql)) {
+    $success = "Outsourcing record created successfully!";
+    $_POST = array();
   } else {
-    $po_id = $po['po_id'];
-    $cantik_po_no = $_POST['cantik_po_no'];
-    $cantik_po_date = $_POST['cantik_po_date'] ?: null;
-    $cantik_po_value = $_POST['cantik_po_value'] ?: 0;
-    $vendor_invoice_no = $_POST['vendor_invoice_no'];
-    $vendor_invoice_date = $_POST['vendor_invoice_date'] ?: null;
-    $vendor_invoice_value = $_POST['vendor_invoice_value'] ?: 0;
-    $payment_date = $_POST['payment_date'] ?: null;
-    $remarks = $_POST['remarks'];
-    // Check if column payment_status_from_ntt exists
-    $colExists = false;
-    if ($resCol = $conn->query("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'outsourcing_details' AND COLUMN_NAME = 'payment_status_from_ntt'")) {
-      $colExists = $resCol->num_rows > 0;
-      $resCol->free();
-    }
-
-    if ($colExists) {
-      $payment_status_from_ntt = $_POST['payment_status_from_ntt'] ?? '';
-      $stmt = $conn->prepare("INSERT INTO outsourcing_details (po_id, cantik_po_no, cantik_po_date, cantik_po_value, vendor_invoice_no, vendor_invoice_date, vendor_invoice_value, payment_status_from_ntt, payment_date, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-      $stmt->bind_param("issdsdssss", $po_id, $cantik_po_no, $cantik_po_date, $cantik_po_value, $vendor_invoice_no, $vendor_invoice_date, $vendor_invoice_value, $payment_status_from_ntt, $payment_date, $remarks);
-    } else {
-      $stmt = $conn->prepare("INSERT INTO outsourcing_details (po_id, cantik_po_no, cantik_po_date, cantik_po_value, vendor_invoice_no, vendor_invoice_date, vendor_invoice_value, payment_date, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-      $stmt->bind_param("issdsdsss", $po_id, $cantik_po_no, $cantik_po_date, $cantik_po_value, $vendor_invoice_no, $vendor_invoice_date, $vendor_invoice_value, $payment_date, $remarks);
-    }
-
-    if ($stmt->execute()) {
-      header('Location: list.php');
-      exit;
-    } else {
-      $error = "Error: " . $stmt->error;
-    }
-    $stmt->close();
+    $error = "Error: " . $conn->error;
   }
 }
 ?>
@@ -59,96 +35,158 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Add Outsourcing</title>
-  <link rel="stylesheet" href="../assets/style.css?v=<?php echo time(); ?>">
+  <title>Add Outsourcing Record - Cantik Homemade</title>
+  <meta name="description" content="Create a new outsourcing record">
 </head>
 <body>
-  <div class="container form-page">
+  <div class="container">
     <?php include '../shared/nav.php'; ?>
+    
     <main>
+      <!-- Page Header -->
       <div class="page-header">
-        <h1>Add New Outsourcing Record</h1>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <a href="list.php" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Outsourcing List
+          </a>
+          <div>
+            <h1>Add New Outsourcing Record</h1>
+            <p>Create a new outsourcing record</p>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <?php if (isset($error)): ?>
-          <div class="alert danger"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-        <form method="post">
-          <div class="form-group">
-            <label>Select PO Number
-              <select name="customer_po_number" id="po_select" required onchange="fetchPODetails()">
-                <option value="">-- Select PO Number --</option>
-                <?php
-                $pos = $conn->query("SELECT po_id, po_number, project_description, vendor_name, cost_center, po_value, po_date FROM purchase_orders ORDER BY po_number");
-                if ($pos && $pos->num_rows > 0) {
-                  while ($po = $pos->fetch_assoc()) {
-                    echo '<option value="' . htmlspecialchars($po['po_number']) . '" data-po-id="' . $po['po_id'] . '" data-project="' . htmlspecialchars($po['project_description']) . '" data-vendor="' . htmlspecialchars($po['vendor_name']) . '" data-cost-center="' . htmlspecialchars($po['cost_center']) . '" data-po-value="' . $po['po_value'] . '" data-po-date="' . $po['po_date'] . '">' . htmlspecialchars($po['po_number']) . ' - ' . htmlspecialchars($po['project_description']) . '</option>';
-                  }
-                }
-                ?>
-              </select>
-            </label>
+
+      <!-- Form -->
+      <form method="post">
+        <!-- Project Information -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Project Information</h2>
+            <p class="card-description">Basic project and vendor details</p>
           </div>
-          <div class="form-group">
-            <label>Project Description<input name="project_description" id="project_description" readonly></label>
-            <label>Vendor Name<input name="vendor_name" id="vendor_name" readonly></label>
-            <label>Cost Center<input name="cost_center" id="cost_center" readonly></label>
+          <div class="card-content">
+            <?php if ($success): ?>
+              <div class="alert success">
+                <i class="fas fa-check-circle"></i>
+                <?= htmlspecialchars($success) ?>
+              </div>
+            <?php endif; ?>
+            
+            <?php if ($error): ?>
+              <div class="alert danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <?= htmlspecialchars($error) ?>
+              </div>
+            <?php endif; ?>
+
+            <div class="form-group">
+              <div class="form-field">
+                <label for="project_description">Project Description *</label>
+                <input type="text" name="project_description" id="project_description" 
+                       value="<?= htmlspecialchars($_POST['project_description'] ?? '') ?>" 
+                       placeholder="Enter project description" required>
+              </div>
+              <div class="form-field">
+                <label for="vendor_name">Vendor Name *</label>
+                <input type="text" name="vendor_name" id="vendor_name" 
+                       value="<?= htmlspecialchars($_POST['vendor_name'] ?? '') ?>" 
+                       placeholder="Enter vendor name" required>
+              </div>
+            </div>
+            
+            <div class="form-field">
+              <label for="work_description">Work Description *</label>
+              <textarea name="work_description" id="work_description" rows="3" 
+                        placeholder="Enter work description" required><?= htmlspecialchars($_POST['work_description'] ?? '') ?></textarea>
+            </div>
+
+            <div class="form-group">
+              <div class="form-field">
+                <label for="start_date">Start Date</label>
+                <input type="date" name="start_date" id="start_date" 
+                       value="<?= htmlspecialchars($_POST['start_date'] ?? '') ?>">
+              </div>
+              <div class="form-field">
+                <label for="end_date">End Date</label>
+                <input type="date" name="end_date" id="end_date" 
+                       value="<?= htmlspecialchars($_POST['end_date'] ?? '') ?>">
+              </div>
+            </div>
           </div>
-          <hr>
-          <h4>Cantik PO Details</h4>
-          <div class="form-group">
-            <label>Cantik PO No<input name="cantik_po_no" required></label>
-            <label>Cantik PO Date<input type="date" name="cantik_po_date"></label>
-            <label>Cantik PO Value<input type="number" step="0.01" name="cantik_po_value" required></label>
+        </div>
+
+        <!-- Financial Details -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Financial Details</h2>
+            <p class="card-description">Amount and payment information</p>
           </div>
-          <hr>
-          <h4>Vendor Invoice Details</h4>
-          <div class="form-group">
-            <label>Vendor Invoice No<input name="vendor_invoice_no" required></label>
-            <label>Vendor Invoice Date<input type="date" name="vendor_invoice_date"></label>
-            <label>Vendor Invoice Value<input type="number" step="0.01" name="vendor_invoice_value" required></label>
+          <div class="card-content">
+            <div class="form-group">
+              <div class="form-field">
+                <label for="total_amount">Total Amount (₹)</label>
+                <input type="number" step="0.01" name="total_amount" id="total_amount" 
+                       value="<?= htmlspecialchars($_POST['total_amount'] ?? '') ?>" 
+                       placeholder="Enter total amount">
+              </div>
+              <div class="form-field">
+                <label for="pending_payment">Pending Payment (₹)</label>
+                <input type="number" step="0.01" name="pending_payment" id="pending_payment" 
+                       value="<?= htmlspecialchars($_POST['pending_payment'] ?? '') ?>" 
+                       placeholder="Enter pending payment amount">
+              </div>
+            </div>
           </div>
-          <hr>
-          <h4>Payment Details</h4>
-          <div class="form-group">
-            <label>Payment Status from NTT
-              <select name="payment_status_from_ntt">
-                <option value="">-- Select Status --</option>
-                <option value="Paid">Paid</option>
-                <option value="Pending">Pending</option>
-                <option value="Overdue">Overdue</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </label>
-            <label>Payment Date<input type="date" name="payment_date"></label>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="card">
+          <div class="card-content">
+            <div class="actions">
+              <a href="list.php" class="btn btn-outline">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                Create Record
+              </button>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Remarks<textarea name="remarks"></textarea></label>
-          </div>
-          <div class="actions">
-            <button type="submit">Save Record</button>
-            <a href="list.php" class="btn muted">Cancel</a>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </main>
   </div>
-  <script src="../assets/script.js"></script>
+
   <script>
-    function fetchPODetails() {
-      const select = document.getElementById('po_select');
-      const selectedOption = select.options[select.selectedIndex];
-      
-      if (selectedOption.value) {
-        document.getElementById('vendor_name').value = selectedOption.dataset.vendor || '';
-        document.getElementById('project_description').value = selectedOption.dataset.project || '';
-        document.getElementById('cost_center').value = selectedOption.dataset.costCenter || '';
-      } else {
-        document.getElementById('vendor_name').value = '';
-        document.getElementById('project_description').value = '';
-        document.getElementById('cost_center').value = '';
+    // Auto-clear success message after 3 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+      const successAlert = document.querySelector('.alert.success');
+      if (successAlert) {
+        setTimeout(() => {
+          successAlert.style.opacity = '0';
+          setTimeout(() => successAlert.remove(), 300);
+        }, 3000);
       }
-    }
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const requiredFields = this.querySelectorAll('input[required], textarea[required]');
+      let isValid = true;
+      
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          field.style.borderColor = 'var(--destructive)';
+          isValid = false;
+        } else {
+          field.style.borderColor = 'var(--border)';
+        }
+      });
+      
+      if (!isValid) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+      }
+    });
   </script>
 </body>
 </html>
