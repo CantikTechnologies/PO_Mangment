@@ -17,9 +17,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
         if (password_verify($password, $user['password'])) {
-            $_SESSION['username'] = $user['username'];
-            header("Location: ../index.php");
-            exit();
+            // Check if user is active
+            if (!$user['is_active']) {
+                $error = "Your account has been deactivated. Please contact administrator.";
+            } else {
+                // Set session variables
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['first_name'] = $user['first_name'];
+                $_SESSION['last_name'] = $user['last_name'];
+                $_SESSION['department'] = $user['department'];
+                
+                // Update last login
+                $update_sql = "UPDATE users_login_signup SET last_login = NOW() WHERE id = ?";
+                $update_stmt = $conn->prepare($update_sql);
+                $update_stmt->bind_param("i", $user['id']);
+                $update_stmt->execute();
+                
+                // Log login action
+                include_once '../auth.php';
+                $auth->logAction('login');
+                
+                header("Location: ../index.php");
+                exit();
+            }
         } else {
             $error = "Invalid password!";
         }

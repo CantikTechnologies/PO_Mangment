@@ -5,14 +5,18 @@ if (!isset($_SESSION['username'])) {
   exit();
 }
 include '../db.php';
+include '../auth.php';
+requirePermission('delete_invoices');
 
 $id = intval($_GET['id'] ?? 0);
 
 if ($id) {
-  $stmt = $conn->prepare("DELETE FROM invoices WHERE invoice_id = ?");
-  $stmt->bind_param("i", $id);
-  $stmt->execute();
-  $stmt->close();
+  $stmt = $conn->prepare("DELETE FROM billing_details WHERE id = ?");
+  if ($stmt) {
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
+  }
 }
 
 header('Location: list.php');

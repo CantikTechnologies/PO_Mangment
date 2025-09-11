@@ -1,262 +1,268 @@
 <?php
 session_start();
 if (!isset($_SESSION['username'])) {
-  header('Location: ../1Login_signuppage/login.php');
-  exit();
+    header('Location: ../1Login_signuppage/login.php');
+    exit();
 }
 include '../db.php';
+include '../auth.php';
+requirePermission('edit_po_details');
 
 $id = intval($_GET['id'] ?? 0);
 if (!$id) {
-  header('Location: list.php');
-  exit;
+    header('Location: list.php');
+    exit();
 }
 
 $success = '';
 $error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // update
-  $project = $conn->real_escape_string($_POST['project_description']);
-  $cost_center = $conn->real_escape_string($_POST['cost_center']);
-  $sow = $conn->real_escape_string($_POST['sow_number']);
-  $start = $_POST['start_date'] ?: null;
-  $end = $_POST['end_date'] ?: null;
-  $po_number = $conn->real_escape_string($_POST['po_number']);
-  $po_date = $_POST['po_date'] ?: null;
-  $po_value = $_POST['po_value'] ?: 0;
-  $billing = $conn->real_escape_string($_POST['billing_frequency']);
-  $target_gm = $_POST['target_gm'] ?: null;
-  $status = $conn->real_escape_string($_POST['po_status']);
-  $remarks = $conn->real_escape_string($_POST['remarks']);
-  $vendor = $conn->real_escape_string($_POST['vendor_name']);
+// Get existing PO data
+$sql = "SELECT * FROM po_details WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$po = $result->fetch_assoc();
+$stmt->close();
 
-  $sql = "UPDATE purchase_orders SET project_description='{$project}', cost_center='{$cost_center}', sow_number='{$sow}', ";
-  $sql .= $start ? "start_date='{$start}'," : "start_date=NULL,";
-  $sql .= $end ? "end_date='{$end}'," : "end_date=NULL,";
-  $sql .= "po_number='{$po_number}', po_date=" . ($po_date ? "'{$po_date}'" : "NULL") . ", po_value={$po_value}, billing_frequency='{$billing}', target_gm=" . ($target_gm ? "{$target_gm}" : "NULL") . ", po_status='{$status}', remarks='{$remarks}', vendor_name='{$vendor}' WHERE po_id={$id}";
-
-  if ($conn->query($sql)) {
-    $success = "Purchase order updated successfully!";
-  } else {
-    $error = "Error: " . $conn->error;
-  }
+if (!$po) {
+    header('Location: list.php');
+    exit();
 }
 
-$res = $conn->query("SELECT * FROM purchase_orders WHERE po_id={$id}");
-$row = $res->fetch_assoc();
-if (!$row) {
-  header('Location: list.php');
-  exit;
+// Convert Excel dates to readable format
+function excelToDate($excel_date) {
+    if (empty($excel_date)) return '';
+    $unix_date = ($excel_date - 25569) * 86400;
+    return date('Y-m-d', $unix_date);
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $project = trim($_POST['project_description']);
+    $cost_center = trim($_POST['cost_center']);
+    $sow = trim($_POST['sow_number']);
+    $start = $_POST['start_date'] ?: null;
+    $end = $_POST['end_date'] ?: null;
+    $po_number = trim($_POST['po_number']);
+    $po_date = $_POST['po_date'] ?: null;
+    $po_value = $_POST['po_value'] ?: 0;
+    $billing = trim($_POST['billing_frequency']);
+    $target_gm = $_POST['target_gm'] ?: null;
+    $status = trim($_POST['po_status']);
+    $remarks = trim($_POST['remarks']);
+    $vendor = trim($_POST['vendor_name']);
+
+    // Convert dates to Excel format if provided
+    $start_excel = $start ? (strtotime($start) / 86400) + 25569 : null;
+    $end_excel = $end ? (strtotime($end) / 86400) + 25569 : null;
+    $po_date_excel = $po_date ? (strtotime($po_date) / 86400) + 25569 : null;
+
+    $sql = "UPDATE po_details SET project_description = ?, cost_center = ?, sow_number = ?, start_date = ?, end_date = ?, po_number = ?, po_date = ?, po_value = ?, billing_frequency = ?, target_gm = ?, po_status = ?, remarks = ?, vendor_name = ? WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    
+    if ($stmt) {
+        $stmt->bind_param("sssiisssdsssi", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $id);
+        
+        if ($stmt->execute()) {
+            $success = "Purchase order updated successfully!";
+            $auth->logAction('update_po', 'po_details', $id);
+            // Refresh PO data
+            $sql = "SELECT * FROM po_details WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $po = $result->fetch_assoc();
+            $stmt->close();
+        } else {
+            $error = "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    } else {
+        $error = "Error preparing statement: " . $conn->error;
+    }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Edit Purchase Order - Cantik Homemade</title>
-  <meta name="description" content="Edit purchase order details">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Edit Purchase Order - Cantik Homemade</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Public+Sans%3Awght%40400%3B500%3B600%3B700%3B800" onload="this.rel='stylesheet'" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
-<body>
-  <div class="container">
-    <?php include '../shared/nav.php'; ?>
-    
-    <main>
-      <!-- Page Header -->
-      <div class="page-header">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <a href="list.php" class="btn btn-outline">
-            <i class="fas fa-arrow-left"></i>
-            Back to PO List
-          </a>
-          <div>
-            <h1>Edit Purchase Order</h1>
-            <p>Update purchase order details</p>
-          </div>
-        </div>
-      </div>
+<body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+    <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
+        <?php include '../shared/nav.php'; ?>
+        
+        <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+            <div class="max-w-4xl mx-auto">
+                <!-- Page Header -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">Edit Purchase Order</h1>
+                            <p class="text-gray-600 mt-2">Update purchase order #<?= htmlspecialchars($po['po_number']) ?></p>
+                        </div>
+                        <a href="list.php" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <span class="material-symbols-outlined mr-2 text-sm">arrow_back</span>
+                            Back to List
+                        </a>
+                    </div>
+                </div>
 
-      <!-- Form -->
-      <form method="post">
-        <!-- Project Information -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Project Information</h2>
-            <p class="card-description">Basic project details and description</p>
-          </div>
-          <div class="card-content">
-            <?php if ($success): ?>
-              <div class="alert success">
-                <i class="fas fa-check-circle"></i>
-                <?= htmlspecialchars($success) ?>
-              </div>
-            <?php endif; ?>
-            
-            <?php if ($error): ?>
-              <div class="alert danger">
-                <i class="fas fa-exclamation-circle"></i>
-                <?= htmlspecialchars($error) ?>
-              </div>
-            <?php endif; ?>
+                <?php if ($success): ?>
+                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <p class="text-green-800"><?= htmlspecialchars($success) ?></p>
+                    </div>
+                <?php endif; ?>
 
-            <div class="form-group">
-              <div class="form-field">
-                <label for="project_description">Project Description *</label>
-                <input type="text" name="project_description" id="project_description" 
-                       value="<?= htmlspecialchars($row['project_description'] ?? '') ?>" 
-                       placeholder="Enter project description" required>
-              </div>
-              <div class="form-field">
-                <label for="cost_center">Cost Center *</label>
-                <input type="text" name="cost_center" id="cost_center" 
-                       value="<?= htmlspecialchars($row['cost_center'] ?? '') ?>" 
-                       placeholder="Enter cost center" required>
-              </div>
+                <?php if ($error): ?>
+                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p class="text-red-800"><?= htmlspecialchars($error) ?></p>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Form -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">Purchase Order Details</h2>
+                    </div>
+                    <form method="POST" class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Project Description -->
+                            <div class="md:col-span-2">
+                                <label for="project_description" class="block text-sm font-medium text-gray-700 mb-2">Project Description *</label>
+                                <input type="text" id="project_description" name="project_description" required
+                                       value="<?= htmlspecialchars($po['project_description']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- Cost Center -->
+                            <div>
+                                <label for="cost_center" class="block text-sm font-medium text-gray-700 mb-2">Cost Center *</label>
+                                <input type="text" id="cost_center" name="cost_center" required
+                                       value="<?= htmlspecialchars($po['cost_center']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- SOW Number -->
+                            <div>
+                                <label for="sow_number" class="block text-sm font-medium text-gray-700 mb-2">SOW Number *</label>
+                                <input type="text" id="sow_number" name="sow_number" required
+                                       value="<?= htmlspecialchars($po['sow_number']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- Start Date -->
+                            <div>
+                                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                                <input type="date" id="start_date" name="start_date"
+                                       value="<?= excelToDate($po['start_date']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- End Date -->
+                            <div>
+                                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                                <input type="date" id="end_date" name="end_date"
+                                       value="<?= excelToDate($po['end_date']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- PO Number -->
+                            <div>
+                                <label for="po_number" class="block text-sm font-medium text-gray-700 mb-2">PO Number *</label>
+                                <input type="text" id="po_number" name="po_number" required
+                                       value="<?= htmlspecialchars($po['po_number']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- PO Date -->
+                            <div>
+                                <label for="po_date" class="block text-sm font-medium text-gray-700 mb-2">PO Date</label>
+                                <input type="date" id="po_date" name="po_date"
+                                       value="<?= excelToDate($po['po_date']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- PO Value -->
+                            <div>
+                                <label for="po_value" class="block text-sm font-medium text-gray-700 mb-2">PO Value *</label>
+                                <input type="number" id="po_value" name="po_value" step="0.01" required
+                                       value="<?= htmlspecialchars($po['po_value']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- Billing Frequency -->
+                            <div>
+                                <label for="billing_frequency" class="block text-sm font-medium text-gray-700 mb-2">Billing Frequency *</label>
+                                <select id="billing_frequency" name="billing_frequency" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <option value="">Select frequency</option>
+                                    <option value="Monthly" <?= $po['billing_frequency'] === 'Monthly' ? 'selected' : '' ?>>Monthly</option>
+                                    <option value="Quarterly" <?= $po['billing_frequency'] === 'Quarterly' ? 'selected' : '' ?>>Quarterly</option>
+                                    <option value="Half-yearly" <?= $po['billing_frequency'] === 'Half-yearly' ? 'selected' : '' ?>>Half-yearly</option>
+                                    <option value="Yearly" <?= $po['billing_frequency'] === 'Yearly' ? 'selected' : '' ?>>Yearly</option>
+                                    <option value="One-time" <?= $po['billing_frequency'] === 'One-time' ? 'selected' : '' ?>>One-time</option>
+                                </select>
+                            </div>
+
+                            <!-- Target GM -->
+                            <div>
+                                <label for="target_gm" class="block text-sm font-medium text-gray-700 mb-2">Target GM (%)</label>
+                                <input type="number" id="target_gm" name="target_gm" step="0.0001" min="0" max="100"
+                                       value="<?= htmlspecialchars($po['target_gm']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- PO Status -->
+                            <div>
+                                <label for="po_status" class="block text-sm font-medium text-gray-700 mb-2">PO Status</label>
+                                <select id="po_status" name="po_status"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <option value="Active" <?= $po['po_status'] === 'Active' ? 'selected' : '' ?>>Active</option>
+                                    <option value="Inactive" <?= $po['po_status'] === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
+                                    <option value="Completed" <?= $po['po_status'] === 'Completed' ? 'selected' : '' ?>>Completed</option>
+                                    <option value="Cancelled" <?= $po['po_status'] === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                </select>
+                            </div>
+
+                            <!-- Vendor Name -->
+                            <div>
+                                <label for="vendor_name" class="block text-sm font-medium text-gray-700 mb-2">Vendor Name</label>
+                                <input type="text" id="vendor_name" name="vendor_name"
+                                       value="<?= htmlspecialchars($po['vendor_name']) ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- Remarks -->
+                            <div class="md:col-span-2">
+                                <label for="remarks" class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
+                                <textarea id="remarks" name="remarks" rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"><?= htmlspecialchars($po['remarks']) ?></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="mt-8 flex justify-end gap-4">
+                            <a href="list.php" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                Cancel
+                            </a>
+                            <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <span class="material-symbols-outlined mr-2 text-sm">save</span>
+                                Update Purchase Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            
-            <div class="form-group">
-              <div class="form-field">
-                <label for="sow_number">SOW Number</label>
-                <input type="text" name="sow_number" id="sow_number" 
-                       value="<?= htmlspecialchars($row['sow_number'] ?? '') ?>" 
-                       placeholder="Enter SOW number">
-              </div>
-              <div class="form-field">
-                <label for="vendor_name">Vendor Name *</label>
-                <input type="text" name="vendor_name" id="vendor_name" 
-                       value="<?= htmlspecialchars($row['vendor_name'] ?? '') ?>" 
-                       placeholder="Enter vendor name" required>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <div class="form-field">
-                <label for="start_date">Start Date</label>
-                <input type="date" name="start_date" id="start_date" 
-                       value="<?= htmlspecialchars($row['start_date'] ?? '') ?>">
-              </div>
-              <div class="form-field">
-                <label for="end_date">End Date</label>
-                <input type="date" name="end_date" id="end_date" 
-                       value="<?= htmlspecialchars($row['end_date'] ?? '') ?>">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Purchase Order Details -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Purchase Order Details</h2>
-            <p class="card-description">PO-specific information and financial details</p>
-          </div>
-          <div class="card-content">
-            <div class="form-group">
-              <div class="form-field">
-                <label for="po_number">PO Number *</label>
-                <input type="text" name="po_number" id="po_number" 
-                       value="<?= htmlspecialchars($row['po_number'] ?? '') ?>" 
-                       placeholder="Enter PO number" required>
-              </div>
-              <div class="form-field">
-                <label for="po_date">PO Date</label>
-                <input type="date" name="po_date" id="po_date" 
-                       value="<?= htmlspecialchars($row['po_date'] ?? '') ?>">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <div class="form-field">
-                <label for="po_value">PO Value (₹)</label>
-                <input type="number" step="0.01" name="po_value" id="po_value" 
-                       value="<?= htmlspecialchars($row['po_value'] ?? '') ?>" 
-                       placeholder="Enter PO value">
-              </div>
-              <div class="form-field">
-                <label for="target_gm">Target GM (%)</label>
-                <input type="number" step="0.01" name="target_gm" id="target_gm" 
-                       value="<?= htmlspecialchars($row['target_gm'] ?? '') ?>" 
-                       placeholder="Enter target GM percentage">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <div class="form-field">
-                <label for="billing_frequency">Billing Frequency</label>
-                <select name="billing_frequency" id="billing_frequency">
-                  <option value="Monthly" <?= ($row['billing_frequency'] ?? '') == 'Monthly' ? 'selected' : '' ?>>Monthly</option>
-                  <option value="Quarterly" <?= ($row['billing_frequency'] ?? '') == 'Quarterly' ? 'selected' : '' ?>>Quarterly</option>
-                  <option value="Yearly" <?= ($row['billing_frequency'] ?? '') == 'Yearly' ? 'selected' : '' ?>>Yearly</option>
-                  <option value="Other" <?= ($row['billing_frequency'] ?? '') == 'Other' ? 'selected' : '' ?>>Other</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label for="po_status">Status</label>
-                <select name="po_status" id="po_status">
-                  <option value="Active" <?= ($row['po_status'] ?? '') == 'Active' ? 'selected' : '' ?>>Active</option>
-                  <option value="Pending" <?= ($row['po_status'] ?? '') == 'Pending' ? 'selected' : '' ?>>Pending</option>
-                  <option value="Completed" <?= ($row['po_status'] ?? '') == 'Completed' ? 'selected' : '' ?>>Completed</option>
-                  <option value="Cancelled" <?= ($row['po_status'] ?? '') == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label for="remarks">Remarks</label>
-              <textarea name="remarks" id="remarks" rows="3" 
-                        placeholder="Enter any additional remarks or notes"><?= htmlspecialchars($row['remarks'] ?? '') ?></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="card">
-          <div class="card-content">
-            <div class="actions">
-              <a href="list.php" class="btn btn-outline">Cancel</a>
-              <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i>
-                Update PO
-              </button>
-            </div>
-          </div>
-        </div>
-      </form>
-    </main>
-  </div>
-
-  <script>
-    // Auto-clear success message after 3 seconds
-    document.addEventListener('DOMContentLoaded', function() {
-      const successAlert = document.querySelector('.alert.success');
-      if (successAlert) {
-        setTimeout(() => {
-          successAlert.style.opacity = '0';
-          setTimeout(() => successAlert.remove(), 300);
-        }, 3000);
-      }
-    });
-
-    // Form validation
-    document.querySelector('form').addEventListener('submit', function(e) {
-      const requiredFields = this.querySelectorAll('input[required]');
-      let isValid = true;
-      
-      requiredFields.forEach(field => {
-        if (!field.value.trim()) {
-          field.style.borderColor = 'var(--destructive)';
-          isValid = false;
-        } else {
-          field.style.borderColor = 'var(--border)';
-        }
-      });
-      
-      if (!isValid) {
-        e.preventDefault();
-        alert('Please fill in all required fields.');
-      }
-    });
-  </script>
+        </main>
+    </div>
 </body>
 </html>

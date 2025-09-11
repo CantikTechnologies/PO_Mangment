@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Public+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+      :root {
+        --primary-50: #fef2f2;
+        --primary-100: #fee2e2;
+        --primary-200: #fecaca;
+        --primary-300: #fca5a5;
+        --primary-400: #f87171;
+        --primary-500: #ef4444;
+        --primary-600: #dc2626;
+        --primary-700: #b91c1c;
+        --primary-800: #991b1b;
+        --primary-900: #7f1d1d;
+        --primary-950: #450a0a;
+      }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 bg-white px-6 py-4">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3 text-red-600">
+<span class="material-symbols-outlined text-3xl"> local_florist </span>
+<h2 class="text-xl font-bold">Cantik Homemade</h2>
+</div>
+<nav class="hidden md:flex items-center gap-4">
+<a class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors" href="#">Dashboard</a>
+<a class="text-red-600 bg-red-50 px-3 py-2 rounded-md text-sm font-medium" href="#">Purchase Orders</a>
+<a class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors" href="#">Vendors</a>
+<a class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors" href="#">Inventory</a>
+<a class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"> search </span>
+<input class="form-input w-full rounded-full border-gray-300 bg-gray-100 pl-10 pr-4 py-2 text-sm focus:bg-white focus:border-red-500 focus:ring-red-500" placeholder="Search..." type="search"/>
+</div>
+<button class="relative rounded-full p-2 hover:bg-gray-100">
+<span class="material-symbols-outlined text-gray-600"> notifications </span>
+<span class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCEVNoFidnAnsPx-l65ZFYVghXpDFAkOMazeTipUwm-ItEoHdV9-9Ss0nXRyJ3gB8OGHEX72V3NT4Uoofe2fxXJb8sAEC6q878qW9e6eUNiENgmH5SkrRhhmh6IyUUMlXRa3YTLMd0TI7EJ-Ch1QBRlGsdQrhSRn8HXtWLaclIalL61F3n9lqaip-W-14yZxrON33sVi0X8K8OMwPHm78YNtmOUaoBbfUMXpfYS3cVCIU732w8IjvGxLn78g-99D3RjADVHj0xxEnk");'></div>
+</div>
+</header>
+<main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+<h1 class="text-3xl font-bold text-gray-900">Purchase Orders</h1>
+<button class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
+<span class="material-symbols-outlined"> add </span>
+<span class="truncate">New Purchase Order</span>
+</button>
+</div>
+<div class="bg-white rounded-lg shadow-sm p-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"> search </span>
+<input class="form-input w-full rounded-full border-gray-200 bg-gray-50 pl-10 pr-4 py-2 text-sm focus:bg-white focus:border-red-500 focus:ring-red-500" placeholder="Search PO number, project, or vendor" type="search"/>
+</div>
+<div class="relative">
+<select class="form-select w-full appearance-none rounded-full border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
+<option selected="">All Projects</option>
+<option>Project A</option>
+<option>Project B</option>
+<option>Project C</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"> expand_more </span>
+</div>
+<div class="relative">
+<select class="form-select w-full appearance-none rounded-full border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
+<option selected="">All Statuses</option>
+<option>Pending</option>
+<option>Approved</option>
+<option>Completed</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"> expand_more </span>
+</div>
+<div class="relative">
+<input class="form-input w-full rounded-full border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500" type="date"/>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+<thead class="bg-gray-50">
+<tr>
+<th class="px-4 py-3 text-left font-medium text-gray-600">PO Number</th>
+<th class="px-4 py-3 text-left font-medium text-gray-600">Project</th>
+<th class="px-4 py-3 text-left font-medium text-gray-600">Vendor</th>
+<th class="px-4 py-3 text-left font-medium text-gray-600">Date</th>
+<th class="px-4 py-3 text-left font-medium text-gray-600">Status</th>
+<th class="px-4 py-3 text-left font-medium text-gray-600">Total</th>
+<th class="px-4 py-3 text-right font-medium text-gray-600">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200">
+<tr class="hover:bg-gray-50">
+<td class="px-4 py-3 font-medium text-gray-900">PO-2024-001</td>
+<td class="px-4 py-3 text-gray-600">Project A</td>
+<td class="px-4 py-3 text-gray-600">Supplier X</td>
+<td class="px-4 py-3 text-gray-600">2024-07-26</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800"> Pending </span>
+</td>
+<td class="px-4 py-3 text-gray-600">$5,000</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-base"> edit </span></button>
+<button class="p-1 text-gray-400 hover:text-red-600"><span class="material-symbols-outlined text-base"> delete </span></button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50">
+<td class="px-4 py-3 font-medium text-gray-900">PO-2024-002</td>
+<td class="px-4 py-3 text-gray-600">Project B</td>
+<td class="px-4 py-3 text-gray-600">Supplier Y</td>
+<td class="px-4 py-3 text-gray-600">2024-07-25</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"> Approved </span>
+</td>
+<td class="px-4 py-3 text-gray-600">$10,000</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-base"> edit </span></button>
+<button class="p-1 text-gray-400 hover:text-red-600"><span class="material-symbols-outlined text-base"> delete </span></button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50">
+<td class="px-4 py-3 font-medium text-gray-900">PO-2024-003</td>
+<td class="px-4 py-3 text-gray-600">Project C</td>
+<td class="px-4 py-3 text-gray-600">Supplier Z</td>
+<td class="px-4 py-3 text-gray-600">2024-07-24</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800"> Completed </span>
+</td>
+<td class="px-4 py-3 text-gray-600">$2,500</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-base"> edit </span></button>
+<button class="p-1 text-gray-400 hover:text-red-600"><span class="material-symbols-outlined text-base"> delete </span></button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50">
+<td class="px-4 py-3 font-medium text-gray-900">PO-2024-004</td>
+<td class="px-4 py-3 text-gray-600">Project A</td>
+<td class="px-4 py-3 text-gray-600">Supplier X</td>
+<td class="px-4 py-3 text-gray-600">2024-07-23</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800"> Pending </span>
+</td>
+<td class="px-4 py-3 text-gray-600">$7,500</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-base"> edit </span></button>
+<button class="p-1 text-gray-400 hover:text-red-600"><span class="material-symbols-outlined text-base"> delete </span></button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50">
+<td class="px-4 py-3 font-medium text-gray-900">PO-2024-005</td>
+<td class="px-4 py-3 text-gray-600">Project B</td>
+<td class="px-4 py-3 text-gray-600">Supplier Y</td>
+<td class="px-4 py-3 text-gray-600">2024-07-22</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"> Approved </span>
+</td>
+<td class="px-4 py-3 text-gray-600">$12,000</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-base"> edit </span></button>
+<button class="p-1 text-gray-400 hover:text-red-600"><span class="material-symbols-outlined text-base"> delete </span></button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50">
+<td class="px-4 py-3 font-medium text-gray-900">PO-2024-006</td>
+<td class="px-4 py-3 text-gray-600">Project C</td>
+<td class="px-4 py-3 text-gray-600">Supplier Z</td>
+<td class="px-4 py-3 text-gray-600">2024-07-21</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800"> Completed </span>
+</td>
+<td class="px-4 py-3 text-gray-600">$3,000</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-base"> edit </span></button>
+<button class="p-1 text-gray-400 hover:text-red-600"><span class="material-symbols-outlined text-base"> delete </span></button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50">
+<td class="px-4 py-3 font-medium text-gray-900">PO-2024-007</td>
+<td class="px-4 py-3 text-gray-600">Project A</td>
+<td class="px-4 py-3 text-gray-600">Supplier X</td>
+<td class="px-4 py-3 text-gray-600">2024-07-20</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800"> Pending </span>
+</td>
+<td class="px-4 py-3 text-gray-600">$6,000</td>
+<td class="px-4 py-3 text-right">
+<button class="p-1 text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-base"> edit </span></button>
+<button class="p-1 text-gray-400 hover:text-red-600"><span class="material-symbols-outlined text-base"> delete </span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between border-t border-gray-200 pt-4 mt-4">
+<p class="text-sm text-gray-500">Showing 7 of 10 results</p>
+<div class="flex gap-1">
+<button class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50">Previous</button>
+<button class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>
