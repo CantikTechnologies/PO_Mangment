@@ -54,31 +54,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vendor = trim($_POST['vendor_name']);
 
     // Convert dates to Excel format if provided
-    $start_excel = $start ? (strtotime($start) / 86400) + 25569 : null;
-    $end_excel = $end ? (strtotime($end) / 86400) + 25569 : null;
-    $po_date_excel = $po_date ? (strtotime($po_date) / 86400) + 25569 : null;
+    $start_excel = $start ? (int)floor((strtotime($start) / 86400) + 25569) : null;
+    $end_excel = $end ? (int)floor((strtotime($end) / 86400) + 25569) : null;
+    $po_date_excel = $po_date ? (int)floor((strtotime($po_date) / 86400) + 25569) : null;
 
     $sql = "UPDATE po_details SET project_description = ?, cost_center = ?, sow_number = ?, start_date = ?, end_date = ?, po_number = ?, po_date = ?, po_value = ?, billing_frequency = ?, target_gm = ?, po_status = ?, remarks = ?, vendor_name = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
-        $stmt->bind_param("sssiisssdsssi", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $id);
+        $stmt->bind_param("sssiisidsdsssi", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $id);
         
         if ($stmt->execute()) {
             $success = "Purchase order updated successfully!";
             $auth->logAction('update_po', 'po_details', $id);
             // Refresh PO data
             $sql = "SELECT * FROM po_details WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $po = $result->fetch_assoc();
-            $stmt->close();
+            $stmt2 = $conn->prepare($sql);
+            if ($stmt2) {
+                $stmt2->bind_param("i", $id);
+                $stmt2->execute();
+                $result = $stmt2->get_result();
+                $po = $result->fetch_assoc();
+                $stmt2->close();
+            }
         } else {
             $error = "Error: " . $stmt->error;
         }
-        $stmt->close();
+        if ($stmt) { $stmt->close(); }
     } else {
         $error = "Error preparing statement: " . $conn->error;
     }

@@ -53,31 +53,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_advise_no = trim($_POST['payment_advise_no']);
     $vendor_name = trim($_POST['vendor_name']);
 
-    // Convert dates to Excel format if provided
-    $cantik_invoice_date_excel = $cantik_invoice_date ? (strtotime($cantik_invoice_date) / 86400) + 25569 : null;
-    $payment_receipt_date_excel = $payment_receipt_date ? (strtotime($payment_receipt_date) / 86400) + 25569 : null;
+    // Convert dates to Excel format if provided (cast to integers)
+    $cantik_invoice_date_excel = $cantik_invoice_date ? (int)floor((strtotime($cantik_invoice_date) / 86400) + 25569) : null;
+    $payment_receipt_date_excel = $payment_receipt_date ? (int)floor((strtotime($payment_receipt_date) / 86400) + 25569) : null;
 
     $sql = "UPDATE billing_details SET project_details = ?, cost_center = ?, customer_po = ?, remaining_balance_in_po = ?, cantik_invoice_no = ?, cantik_invoice_date = ?, cantik_inv_value_taxable = ?, tds = ?, receivable = ?, against_vendor_inv_number = ?, payment_receipt_date = ?, payment_advise_no = ?, vendor_name = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
-        $stmt->bind_param("sssdsisddsssi", $project_details, $cost_center, $customer_po, $remaining_balance, $cantik_invoice_no, $cantik_invoice_date_excel, $cantik_inv_value_taxable, $tds, $receivable, $against_vendor_inv_number, $payment_receipt_date_excel, $payment_advise_no, $vendor_name, $id);
+        // Types: s s s d s i d d d s i s s i (14 params)
+        $stmt->bind_param("sssdsidddsissi", $project_details, $cost_center, $customer_po, $remaining_balance, $cantik_invoice_no, $cantik_invoice_date_excel, $cantik_inv_value_taxable, $tds, $receivable, $against_vendor_inv_number, $payment_receipt_date_excel, $payment_advise_no, $vendor_name, $id);
 
   if ($stmt->execute()) {
             $success = "Invoice updated successfully!";
             $auth->logAction('update_invoice', 'billing_details', $id);
             // Refresh invoice data
             $sql = "SELECT * FROM billing_details WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $invoice = $result->fetch_assoc();
-            $stmt->close();
+            $stmt2 = $conn->prepare($sql);
+            if ($stmt2) {
+                $stmt2->bind_param("i", $id);
+                $stmt2->execute();
+                $result = $stmt2->get_result();
+                $invoice = $result->fetch_assoc();
+                $stmt2->close();
+            }
   } else {
     $error = "Error: " . $stmt->error;
   }
-  $stmt->close();
+  if ($stmt) { $stmt->close(); }
     } else {
         $error = "Error preparing statement: " . $conn->error;
     }

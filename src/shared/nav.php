@@ -1,40 +1,20 @@
 <?php
-// Determine the relative path to root based on current file location
-$currentScript = $_SERVER['SCRIPT_NAME'] ?? '';
+// Robust project base path resolver (works from any depth)
+$docRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+$projectRoot = rtrim(str_replace('\\', '/', realpath(__DIR__ . '/../../') ?: ''), '/');
+$base = str_replace($docRoot, '', $projectRoot);
+if ($base === '' || $base[0] !== '/') { $base = '/' . ltrim($base, '/'); }
 
-// Calculate how many directory levels deep we are from the project root
-// Count the number of '/' in the path after the project name
-$pathParts = explode('/', trim($currentScript, '/'));
-$projectIndex = array_search('po-mgmt', $pathParts);
-
-if ($projectIndex !== false) {
-    // Count levels after the project directory
-    $levelsDeep = count($pathParts) - $projectIndex - 2; // -2 for project name and filename
-    $rootPath = str_repeat('../', max(0, $levelsDeep));
-} else {
-    // Fallback: assume we're in root if we can't find project structure
-    $rootPath = '';
-}
-
-// For active class detection, use REQUEST_URI and current script
+// Active route helpers
 $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
 $current_file = basename($_SERVER['SCRIPT_NAME'] ?? '');
 $current_dir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
 
 $activeClass = function(array $needles) use ($request_uri, $current_file, $current_dir): string {
   foreach ($needles as $needle) {
-    // Check if current file exactly matches the needle
-    if ($current_file === $needle) {
-      return 'active';
-    }
-    // Check if current directory contains the needle (for module detection)
-    if (strpos($current_dir, $needle) !== false) {
-      return 'active';
-    }
-    // Check REQUEST_URI for broader matching
-    if (strpos($request_uri, $needle) !== false) {
-      return 'active';
-    }
+    if ($current_file === $needle) { return 'active'; }
+    if ($needle !== '' && strpos($current_dir, $needle) !== false) { return 'active'; }
+    if ($needle !== '' && strpos($request_uri, $needle) !== false) { return 'active'; }
   }
   return '';
 };
@@ -42,10 +22,10 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
 
 <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 bg-white px-10 py-3">
   <div class="flex items-center gap-3 text-gray-900">
-    <a href="<?= $rootPath ?>index.php" aria-label="Cantik Homemade" class="inline-flex items-center justify-center">
+    <a href="<?= $base ?>/index.php" aria-label="Cantik Homemade" class="inline-flex items-center justify-center">
       <span class="inline-flex p-[2px] rounded-full bg-gradient-to-br from-rose-500 via-fuchsia-500 to-indigo-500 shadow-sm ring-1 ring-rose-200/50">
         <span class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-white">
-          <img src="<?= $rootPath ?>assets/cantik_logo.png" alt="Cantik Homemade" class="h-7 w-7 object-contain"/>
+          <img src="<?= $base ?>/assets/cantik_logo.png" alt="Cantik Homemade" class="h-7 w-7 object-contain"/>
         </span>
       </span>
     </a>
@@ -57,62 +37,62 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
   <div class="flex flex-1 items-center justify-end gap-4">
     <nav class="hidden md:flex items-center gap-2">
       <?php $dashActive = $activeClass(["index.php"]); ?>
-      <a class="rounded-full px-4 py-2 text-sm font-medium <?= $dashActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $rootPath ?>index.php">Dashboard</a>
+      <a class="rounded-full px-4 py-2 text-sm font-medium <?= $dashActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/index.php">Dashboard</a>
       
       <?php $poActive = $activeClass(["po_details"]); ?>
       <div class="relative group">
-        <a class="rounded-full px-4 py-2 text-sm font-medium <?= $poActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $rootPath ?>src/Modules/po_details/list.php">
+        <a class="rounded-full px-4 py-2 text-sm font-medium <?= $poActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/src/Modules/po_details/list.php">
           Purchase Orders
           <span class="material-symbols-outlined text-sm ml-1">expand_more</span>
         </a>
         <div class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-          <a href="<?= $rootPath ?>src/Modules/po_details/list.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">View All POs</a>
+          <a href="<?= $base ?>/src/Modules/po_details/list.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">View All POs</a>
           <?php if (hasPermission('add_po_details')): ?>
-          <a href="<?= $rootPath ?>src/Modules/po_details/add.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Add New PO</a>
+          <a href="<?= $base ?>/src/Modules/po_details/add.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Add New PO</a>
           <?php endif; ?>
         </div>
       </div>
       
       <?php $invActive = $activeClass(["invoices"]); ?>
       <div class="relative group">
-        <a class="rounded-full px-4 py-2 text-sm font-medium <?= $invActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $rootPath ?>src/Modules/invoices/list.php">
+        <a class="rounded-full px-4 py-2 text-sm font-medium <?= $invActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/src/Modules/invoices/list.php">
           Invoices
           <span class="material-symbols-outlined text-sm ml-1">expand_more</span>
         </a>
         <div class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-          <a href="<?= $rootPath ?>src/Modules/invoices/list.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">View All Invoices</a>
+          <a href="<?= $base ?>/src/Modules/invoices/list.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">View All Invoices</a>
           <?php if (hasPermission('add_invoices')): ?>
-          <a href="<?= $rootPath ?>src/Modules/invoices/add.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Add New Invoice</a>
+          <a href="<?= $base ?>/src/Modules/invoices/add.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Add New Invoice</a>
           <?php endif; ?>
         </div>
       </div>
       
       <?php $outActive = $activeClass(["outsourcing"]); ?>
       <div class="relative group">
-        <a class="rounded-full px-4 py-2 text-sm font-medium <?= $outActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $rootPath ?>src/Modules/outsourcing/list.php">
+        <a class="rounded-full px-4 py-2 text-sm font-medium <?= $outActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/src/Modules/outsourcing/list.php">
           Outsourcing
           <span class="material-symbols-outlined text-sm ml-1">expand_more</span>
         </a>
         <div class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-          <a href="<?= $rootPath ?>src/Modules/outsourcing/list.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">View All Records</a>
+          <a href="<?= $base ?>/src/Modules/outsourcing/list.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">View All Records</a>
           <?php if (hasPermission('add_outsourcing')): ?>
-          <a href="<?= $rootPath ?>src/Modules/outsourcing/add.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Add New Record</a>
+          <a href="<?= $base ?>/src/Modules/outsourcing/add.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Add New Record</a>
           <?php endif; ?>
         </div>
       </div>
       
       <?php $soActive = $activeClass(["so_form.php"]); ?>
-      <a class="rounded-full px-4 py-2 text-sm font-medium <?= $soActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $rootPath ?>so_form.php">Reports</a>
+      <a class="rounded-full px-4 py-2 text-sm font-medium <?= $soActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/so_form.php">Reports</a>
       
       <?php $trackerActive = $activeClass(["Tracker"]); ?>
       <div class="relative group">
-          <a class="rounded-full px-4 py-2 text-sm font-medium <?= $trackerActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $rootPath ?>src/Modules/Tracker/index.php">
+          <a class="rounded-full px-4 py-2 text-sm font-medium <?= $trackerActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/src/Modules/Tracker/index.php">
           Tracker Updates
           <span class="material-symbols-outlined text-sm ml-1">expand_more</span>
         </a>
         <div class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-          <a href="<?= $rootPath ?>src/Modules/Tracker/index.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">View All Tasks</a>
-          <a href="<?= $rootPath ?>src/Modules/Tracker/add.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Add New Task</a>
+          <a href="<?= $base ?>/src/Modules/Tracker/index.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg">View All Tasks</a>
+          <a href="<?= $base ?>/src/Modules/Tracker/add.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Add New Task</a>
         </div>
       </div>
     </nav>
@@ -144,21 +124,21 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
             <p class="text-xs text-gray-500"><?= htmlspecialchars($_SESSION['department']) ?></p>
             <?php endif; ?>
           </div>
-          <a href="<?= $rootPath ?>src/Modules/User/profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+          <a href="<?= $base ?>/src/Modules/User/profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
             <span class="material-symbols-outlined text-sm mr-2">person</span>My Profile
           </a>
-          <a href="<?= $rootPath ?>src/Modules/User/upload_profile_image.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+          <a href="<?= $base ?>/src/Modules/User/upload_profile_image.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
             <span class="material-symbols-outlined text-sm mr-2">photo_camera</span>Upload Photo
           </a>
           <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-          <a href="<?= $rootPath ?>src/Modules/admin/users.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+          <a href="<?= $base ?>/src/Modules/admin/users.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
             <span class="material-symbols-outlined text-sm mr-2">admin_panel_settings</span>Manage Users
           </a>
-          <a href="<?= $rootPath ?>src/Modules/admin/audit_log.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+          <a href="<?= $base ?>/src/Modules/admin/audit_log.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
             <span class="material-symbols-outlined text-sm mr-2">history</span>Audit Log
           </a>
           <?php endif; ?>
-          <a href="<?= $rootPath ?>logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+          <a href="<?= $base ?>/logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
             <span class="material-symbols-outlined text-sm mr-2">logout</span>Logout
           </a>
         </div>
