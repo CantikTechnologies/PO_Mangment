@@ -11,7 +11,6 @@ include '../auth.php';
 // Require admin access
 requireAdmin();
 
-include '../shared/nav.php';
 
 $message = '';
 $error = '';

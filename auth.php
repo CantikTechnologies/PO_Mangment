@@ -83,7 +83,11 @@ class Auth {
         $user_id = $_SESSION['user_id'];
         
         // First try to get user with profile info
-        $sql = "SELECT u.*, p.profile_picture, p.bio, p.department, p.employee_id 
+        $sql = "SELECT u.*, 
+                       p.profile_picture, 
+                       p.bio, 
+                       p.employee_id,
+                       u.department AS department
                 FROM users_login_signup u 
                 LEFT JOIN user_profiles p ON u.id = p.user_id 
                 WHERE u.id = ?";

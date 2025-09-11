@@ -16,11 +16,18 @@ $activeClass = function(array $needles) use ($request_uri): string {
 ?>
 
 <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 bg-white px-10 py-3">
-  <div class="flex items-center gap-4 text-gray-900">
-    <a href="<?= $base ?>/index.php" class="size-8 text-rose-500 inline-flex items-center justify-center">
-      <img src="<?= $base ?>/assets/cantik_logo.png" alt="Cantik Homemade" class="h-8 w-auto" />
+  <div class="flex items-center gap-3 text-gray-900">
+    <a href="<?= $base ?>/index.php" aria-label="Cantik Homemade" class="inline-flex items-center justify-center">
+      <span class="inline-flex p-[2px] rounded-full bg-gradient-to-br from-rose-500 via-fuchsia-500 to-indigo-500 shadow-sm ring-1 ring-rose-200/50">
+        <span class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-white">
+          <img src="<?= $base ?>/assets/cantik_logo.png" alt="Cantik Homemade" class="h-7 w-7 object-contain"/>
+        </span>
+      </span>
     </a>
-    <h2 class="text-gray-900 text-xl font-bold leading-tight tracking-[-0.015em]">Cantik</h2>
+    <div class="leading-tight">
+      <div class="text-xl font-extrabold tracking-[-0.02em] bg-gradient-to-r from-gray-900 via-rose-700 to-fuchsia-600 bg-clip-text text-transparent">Cantik</div>
+      <div class="text-[11px] uppercase tracking-[0.18em] text-gray-500">Homemade</div>
+    </div>
   </div>
   <div class="flex flex-1 items-center justify-end gap-4">
     <nav class="hidden md:flex items-center gap-2">
