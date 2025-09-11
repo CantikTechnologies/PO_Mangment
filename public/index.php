@@ -184,7 +184,7 @@ function formatDate($excel_date) {
                     <div class="p-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <?php if (hasPermission('add_po_details')): ?>
-                            <a href="po_details/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="/PO-Management/src/Modules/po_details/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-blue-600">add</span>
             <div>
                                     <p class="font-medium text-gray-900">New PO</p>
@@ -194,7 +194,7 @@ function formatDate($excel_date) {
                 <?php endif; ?>
                             
                             <?php if (hasPermission('add_invoices')): ?>
-                            <a href="invoices/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="/PO-Management/src/Modules/invoices/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-green-600">add</span>
                                 <div>
                                     <p class="font-medium text-gray-900">New Invoice</p>
@@ -204,7 +204,7 @@ function formatDate($excel_date) {
                             <?php endif; ?>
                             
                             <?php if (hasPermission('add_outsourcing')): ?>
-                            <a href="outsourcing/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="/PO-Management/src/Modules/outsourcing/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-purple-600">add</span>
             <div>
                                     <p class="font-medium text-gray-900">New Outsourcing</p>
