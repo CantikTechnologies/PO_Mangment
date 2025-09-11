@@ -4,8 +4,8 @@ if (!isset($_SESSION['username'])) {
   header('Location: login.php');
   exit();
 }
-include '../config/db.php';
-include '../config/auth.php';
+include 'config/db.php';
+include 'config/auth.php';
 requirePermission('view_dashboard');
 
 // Get current user
@@ -48,7 +48,7 @@ function formatCurrency($amount) {
 }
 
 // Get recent activity
-$recentPOs = $conn->query("SELECT po_id, po_number, project_description, po_status, po_value FROM po_details ORDER BY created_at DESC LIMIT 5");
+$recentPOs = $conn->query("SELECT id, po_number, project_description, po_status, po_value FROM po_details ORDER BY created_at DESC LIMIT 5");
 $recentInvoices = $conn->query("SELECT id, cantik_invoice_no, cantik_invoice_date, receivable FROM billing_details ORDER BY created_at DESC LIMIT 5");
 $recentOutsourcing = $conn->query("SELECT id, cantik_po_no, project_details, vendor_name, pending_payment FROM outsourcing_detail ORDER BY created_at DESC LIMIT 5");
 
@@ -72,7 +72,7 @@ function formatDate($excel_date) {
 </head>
 <body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
     <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
-        <?php include '../src/shared/nav.php'; ?>   
+        <?php include 'src/shared/nav.php'; ?>   
         
         <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
             <div class="max-w-7xl mx-auto">
@@ -120,7 +120,7 @@ function formatDate($excel_date) {
                             </div>
                         </div>
                         <div class="mt-4">
-                            <a href="po_details/list.php" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View all POs →</a>
+                            <a href="src/Modules/po_details/list.php" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View all POs →</a>
                         </div>
                     </div>
 
@@ -137,7 +137,7 @@ function formatDate($excel_date) {
                             </div>
                         </div>
                         <div class="mt-4">
-                            <a href="invoices/list.php" class="text-sm text-green-600 hover:text-green-800 font-medium">View all invoices →</a>
+                            <a href="src/Modules/invoices/list.php" class="text-sm text-green-600 hover:text-green-800 font-medium">View all invoices →</a>
                         </div>
                     </div>
 
@@ -154,7 +154,7 @@ function formatDate($excel_date) {
                             </div>
                         </div>
                         <div class="mt-4">
-                            <a href="outsourcing/list.php" class="text-sm text-purple-600 hover:text-purple-800 font-medium">View all records →</a>
+                            <a href="src/Modules/outsourcing/list.php" class="text-sm text-purple-600 hover:text-purple-800 font-medium">View all records →</a>
         </div>
         </div>
 
@@ -184,7 +184,7 @@ function formatDate($excel_date) {
                     <div class="p-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <?php if (hasPermission('add_po_details')): ?>
-                            <a href="po_details/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="src/Modules/po_details/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-blue-600">add</span>
             <div>
                                     <p class="font-medium text-gray-900">New PO</p>
@@ -194,7 +194,7 @@ function formatDate($excel_date) {
                 <?php endif; ?>
                             
                             <?php if (hasPermission('add_invoices')): ?>
-                            <a href="invoices/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="src/Modules/invoices/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-green-600">add</span>
                                 <div>
                                     <p class="font-medium text-gray-900">New Invoice</p>
@@ -204,7 +204,7 @@ function formatDate($excel_date) {
                             <?php endif; ?>
                             
                             <?php if (hasPermission('add_outsourcing')): ?>
-                            <a href="outsourcing/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="src/Modules/outsourcing/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-purple-600">add</span>
             <div>
                                     <p class="font-medium text-gray-900">New Outsourcing</p>

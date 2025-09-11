@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['username'])) {
-    header('Location: ../../public/login.php');
+    header('Location: ../../../login.php');
     exit();
 }
 
@@ -11,7 +11,6 @@ include '../../../config/auth.php';
 // Require admin access
 requireAdmin();
 
-include '../../shared/nav.php';
 
 // Pagination
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;

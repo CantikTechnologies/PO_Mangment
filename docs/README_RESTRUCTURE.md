@@ -1,6 +1,6 @@
 This repository is being restructured to the following layout:
 
-public/
+
   index.php
   so_form.php
   assets/

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../config/db.php';
+require_once 'config/db.php';
 
 $error = "";
 
@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
                 $update_stmt->execute();
                 
                 // Log login action
-                include_once '../config/auth.php';
+                include_once 'config/auth.php';
                 $auth->logAction('login');
                 
                 header("Location: index.php");
@@ -94,6 +94,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
 
   </div>
 
-  <script src="login.js"></script>
+  <script src="assets/login.js"></script>
 </body>
 </html>
