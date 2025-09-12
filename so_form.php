@@ -45,7 +45,7 @@ $cost_centers_query = "SELECT DISTINCT cost_center FROM posummary WHERE cost_cen
 $cost_centers_result = $conn->query($cost_centers_query);
 
 function formatCurrency($amount) {
-    return '₹' . number_format((float)$amount, 2);
+    return number_format((float)$amount, 2);
 }
 
 function formatPercentage($value) {
