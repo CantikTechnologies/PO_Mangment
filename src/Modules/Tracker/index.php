@@ -26,6 +26,32 @@ if (strpos($reqUri, 'index.php/delete.php') !== false) {
     include '../../../config/auth.php';
 requirePermission('view_finance_tasks');
 
+// Role and ownership helpers
+$isAdmin = false;
+try { $isAdmin = isAdmin(); } catch (Throwable $e) { $isAdmin = (($_SESSION['role'] ?? '') === 'admin'); }
+
+// Build identifiers for ownership checks
+$currentUserIdentifiers = [];
+$uUsername = trim(strtolower((string)($_SESSION['username'] ?? '')));
+if ($uUsername !== '') { $currentUserIdentifiers[] = $uUsername; }
+$uEmail = trim(strtolower((string)($_SESSION['email'] ?? '')));
+if ($uEmail !== '') { $currentUserIdentifiers[] = $uEmail; }
+$uFirst = trim((string)($_SESSION['first_name'] ?? ''));
+$uLast = trim((string)($_SESSION['last_name'] ?? ''));
+if ($uFirst !== '' || $uLast !== '') {
+    $full = strtolower(trim($uFirst . ' ' . $uLast));
+    if ($full !== '') { $currentUserIdentifiers[] = $full; }
+}
+
+function currentUserOwnsTask(array $task, array $identifiers): bool {
+    $owner = strtolower(trim((string)($task['action_owner'] ?? '')));
+    if ($owner === '') return false;
+    foreach ($identifiers as $idn) {
+        if ($idn !== '' && $owner === $idn) { return true; }
+    }
+    return false;
+}
+
 // Ensure status_of_action defaults to 'Pending' when NULL/empty
 if ($conn->query("UPDATE finance_tasks SET status = 'Pending' WHERE status IS NULL OR status = ''") === false) {
     error_log('Failed to normalize status: ' . $conn->error);
@@ -215,15 +241,19 @@ function formatDate($date) {
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex items-center gap-2">
-                                                <a href="edit.php?id=<?= $task['id'] ?>" class="text-red-600 hover:text-red-900">
+                                                <?php if ($isAdmin || currentUserOwnsTask($task, $currentUserIdentifiers)): ?>
+                                                <a href="edit.php?id=<?= $task['id'] ?>" class="text-red-600 hover:text-red-900" title="Edit">
                                                     <span class="material-symbols-outlined text-sm">edit</span>
                                                 </a>
-                                                <a href="view.php?id=<?= $task['id'] ?>" class="text-blue-600 hover:text-blue-900">
+                                                <?php endif; ?>
+                                                <a href="view.php?id=<?= $task['id'] ?>" class="text-blue-600 hover:text-blue-900" title="View">
                                                     <span class="material-symbols-outlined text-sm">visibility</span>
                                                 </a>
-                                                <a href="delete.php?id=<?= $task['id'] ?>" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this task?')">
+                                                <?php if ($isAdmin): ?>
+                                                <a href="delete.php?id=<?= $task['id'] ?>" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this task?')" title="Delete">
                                                     <span class="material-symbols-outlined text-sm">delete</span>
                                                 </a>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>

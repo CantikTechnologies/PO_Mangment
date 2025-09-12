@@ -8,6 +8,27 @@ include '../../../config/db.php';
 include '../../../config/auth.php';
 requirePermission('view_finance_tasks');
 
+// Role/ownership helpers
+$isAdmin = false;
+try { $isAdmin = isAdmin(); } catch (Throwable $e) { $isAdmin = (($_SESSION['role'] ?? '') === 'admin'); }
+$currentUserIdentifiers = [];
+$uUsername = trim(strtolower((string)($_SESSION['username'] ?? '')));
+if ($uUsername !== '') { $currentUserIdentifiers[] = $uUsername; }
+$uEmail = trim(strtolower((string)($_SESSION['email'] ?? '')));
+if ($uEmail !== '') { $currentUserIdentifiers[] = $uEmail; }
+$uFirst = trim((string)($_SESSION['first_name'] ?? ''));
+$uLast = trim((string)($_SESSION['last_name'] ?? ''));
+if ($uFirst !== '' || $uLast !== '') {
+    $full = strtolower(trim($uFirst . ' ' . $uLast));
+    if ($full !== '') { $currentUserIdentifiers[] = $full; }
+}
+function currentUserOwnsTaskView(array $task, array $identifiers): bool {
+    $owner = strtolower(trim((string)($task['action_owner'] ?? '')));
+    if ($owner === '') return false;
+    foreach ($identifiers as $idn) { if ($idn !== '' && $owner === $idn) return true; }
+    return false;
+}
+
 $id = intval($_GET['id'] ?? 0);
 if (!$id) {
     header('Location: index.php');
@@ -77,10 +98,12 @@ function formatDateTime($datetime) {
                             <p class="text-gray-600 mt-2">Task #<?= $task['id'] ?> - <?= htmlspecialchars($task['action_req_by']) ?></p>
                         </div>
                         <div class="flex items-center gap-3">
+                            <?php if ($isAdmin || currentUserOwnsTaskView($task, $currentUserIdentifiers)): ?>
                             <a href="edit.php?id=<?= $task['id'] ?>" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500">
                                 <span class="material-symbols-outlined mr-2 text-sm">edit</span>
                                 Edit Task
                             </a>
+                            <?php endif; ?>
                             <a href="index.php" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500">
                                 <span class="material-symbols-outlined mr-2 text-sm">arrow_back</span>
                                 Back to Tasks
@@ -165,10 +188,12 @@ function formatDateTime($datetime) {
                                 <h2 class="text-lg font-semibold text-gray-900">Quick Actions</h2>
                             </div>
                             <div class="p-6 space-y-3">
+                                <?php if ($isAdmin || currentUserOwnsTaskView($task, $currentUserIdentifiers)): ?>
                                 <a href="edit.php?id=<?= $task['id'] ?>" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
                                     <span class="material-symbols-outlined mr-2 text-sm">edit</span>
                                     Edit Task
                                 </a>
+                                <?php endif; ?>
                                 <a href="index.php" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500">
                                     <span class="material-symbols-outlined mr-2 text-sm">list</span>
                                     View All Tasks
