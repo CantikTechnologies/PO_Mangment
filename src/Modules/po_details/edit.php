@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $po_date = $_POST['po_date'] ?: null;
     $po_value = $_POST['po_value'] ?: 0;
     $billing = trim($_POST['billing_frequency']);
-    $target_gm = $_POST['target_gm'] ?: null;
+    $target_gm = $_POST['target_gm'] ? ($_POST['target_gm'] / 100) : null; // Convert percentage to decimal
     $status = trim($_POST['po_status']);
     $remarks = trim($_POST['remarks']);
     $vendor = trim($_POST['vendor_name']);
@@ -218,8 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Target GM -->
                             <div>
                                 <label for="target_gm" class="block text-sm font-medium text-gray-700 mb-2">Target GM (%)</label>
-                                <input type="number" id="target_gm" name="target_gm" step="0.0001" min="0" max="100"
-                                       value="<?= htmlspecialchars($po['target_gm']) ?>"
+                                <input type="number" id="target_gm" name="target_gm" step="0.01" min="0" max="100"
+                                       value="<?= htmlspecialchars(is_numeric($po['target_gm']) ? $po['target_gm'] * 100 : $po['target_gm']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 

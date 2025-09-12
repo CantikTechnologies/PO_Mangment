@@ -212,7 +212,7 @@ function formatCurrency($amount) {
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900"><?= formatCurrency($po['po_value']) ?></div>
                                         <div class="text-sm text-gray-500">Pending: <?= formatCurrency($po['pending_amount']) ?></div>
-                                        <div class="text-sm text-gray-500">GM: <?= number_format($po['target_gm'] * 100, 1) ?>%</div>
+                                        <div class="text-sm text-gray-500">GM: <?= is_numeric($po['target_gm']) ? (($po['target_gm'] < 1) ? number_format($po['target_gm'] * 100, 1) : number_format($po['target_gm'], 1)) : '0' ?>%</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $po['po_status'] === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' ?>">

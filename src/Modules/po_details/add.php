@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $po_date = $_POST['po_date'] ?: null;
     $po_value = $_POST['po_value'] ?: 0;
     $billing = trim($_POST['billing_frequency']);
-    $target_gm = $_POST['target_gm'] ?: null;
+    $target_gm = $_POST['target_gm'] ? ($_POST['target_gm'] / 100) : null; // Convert percentage to decimal
     $status = trim($_POST['po_status']);
     $remarks = trim($_POST['remarks']);
     $vendor = trim($_POST['vendor_name']);
