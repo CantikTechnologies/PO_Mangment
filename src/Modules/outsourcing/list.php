@@ -177,14 +177,16 @@ function formatCurrency($amount) {
                             </div>
                             
                             <div>
-                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500" 
-                                       type="date" name="date_from" placeholder="From Date" 
+                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 placeholder-gray-400 focus:border-red-500 focus:ring-red-500" 
+                                       type="text" name="date_from" placeholder="From date" 
+                                       onfocus="this.type='date'" onblur="if(!this.value) this.type='text'" 
                                        value="<?= htmlspecialchars($date_from) ?>"/>
                             </div>
                             
                             <div>
-                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500" 
-                                       type="date" name="date_to" placeholder="To Date" 
+                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 placeholder-gray-400 focus:border-red-500 focus:ring-red-500" 
+                                       type="text" name="date_to" placeholder="To date" 
+                                       onfocus="this.type='date'" onblur="if(!this.value) this.type='text'" 
                                        value="<?= htmlspecialchars($date_to) ?>"/>
                             </div>
                         </div>
