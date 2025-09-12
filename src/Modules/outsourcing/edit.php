@@ -147,33 +147,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Project Details -->
                             <div class="md:col-span-2 lg:col-span-3">
                                 <label for="project_details" class="block text-sm font-medium text-gray-700 mb-2">Project Details *</label>
-                                <input type="text" id="project_details" name="project_details" required
+                                <input type="text" id="project_details" name="project_details" required readonly
                                        value="<?= htmlspecialchars($outsourcing['project_details']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Cost Center -->
                             <div>
                                 <label for="cost_center" class="block text-sm font-medium text-gray-700 mb-2">Cost Center *</label>
-                                <input type="text" id="cost_center" name="cost_center" required
+                                <input type="text" id="cost_center" name="cost_center" required readonly
                                        value="<?= htmlspecialchars($outsourcing['cost_center']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Customer PO -->
                             <div>
                                 <label for="customer_po" class="block text-sm font-medium text-gray-700 mb-2">Customer PO *</label>
-                                <input type="text" id="customer_po" name="customer_po" required
+                                <input type="text" id="customer_po" name="customer_po" required readonly
                                        value="<?= htmlspecialchars($outsourcing['customer_po']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Vendor Name -->
                             <div>
                                 <label for="vendor_name" class="block text-sm font-medium text-gray-700 mb-2">Vendor Name *</label>
-                                <input type="text" id="vendor_name" name="vendor_name" required
+                                <input type="text" id="vendor_name" name="vendor_name" required readonly
                                        value="<?= htmlspecialchars($outsourcing['vendor_name']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Cantik PO Number -->
