@@ -88,7 +88,7 @@ function formatDate($excel_date) {
 }
 
 function formatCurrency($amount) {
-    return '₹ ' . number_format($amount, 2);
+    return '₹' . number_format((float)$amount, 2);
 }
 ?>
 
@@ -244,9 +244,21 @@ function formatCurrency($amount) {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">Status: <?= htmlspecialchars($record['payment_status_from_ntt'] ?: 'Pending') ?></div>
-                                        <div class="text-sm text-gray-500">Payment: <?= formatCurrency($record['payment_value']) ?></div>
+                                        <?php 
+                                          $net = is_numeric($record['net_payble'] ?? null) ? (float)$record['net_payble'] : 0.0;
+                                          $paid = is_numeric($record['payment_value'] ?? null) ? (float)$record['payment_value'] : 0.0;
+                                          $status = strtolower(trim((string)($record['payment_status_from_ntt'] ?? '')));
+                                          if ($paid <= 0.0) {
+                                              $pending = ($status === 'paid') ? 0.0 : $net;
+                                          } else {
+                                              $pending = max($net - $paid, 0.0);
+                                              if ($status === 'paid') { $pending = 0.0; }
+                                          }
+                                          $pendingClass = $pending > 0.0 ? 'text-red-600' : 'text-green-600';
+                                        ?>
+                                        <div class="text-sm text-gray-500">Payment: <?= formatCurrency($paid) ?></div>
                                         <div class="text-sm text-gray-500">Date: <?= formatDate($record['payment_date']) ?></div>
-                                        <div class="text-sm font-medium text-red-600">Pending: <?= formatCurrency($record['pending_payment']) ?></div>
+                                        <div class="text-sm font-medium <?= $pendingClass ?>">Pending: <?= formatCurrency($pending) ?></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex gap-2">

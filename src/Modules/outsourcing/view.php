@@ -45,7 +45,7 @@ $po = $po_result->fetch_assoc();
 $po_stmt->close();
 
 function formatCurrency($amount) {
-    return '₹ ' . number_format($amount, 0, '.', ',');
+    return '₹' . number_format((float)$amount, 2);
 }
 
 function getBadgeClass($status) {
@@ -220,8 +220,18 @@ function getBadgeClass($status) {
                                     </div>
                                     <div class="border-t pt-4">
                                         <div class="flex justify-between items-center">
+                                            <?php 
+                                              $net = (float)$outsourcing['net_payble'];
+                                              $paid = ($outsourcing['payment_value'] === null || $outsourcing['payment_value'] === '') ? 0.0 : (float)$outsourcing['payment_value'];
+                                              $status = strtolower(trim((string)($outsourcing['payment_status_from_ntt'] ?? '')));
+                                              $pending = $net - $paid;
+                                              if ($status === 'paid') { $pending = 0.0; }
+                                              if ($paid <= 0) { $pending = $net; }
+                                              if ($pending < 0) { $pending = 0.0; }
+                                              $pendingClass = $pending > 0 ? 'text-red-600' : 'text-green-600';
+                                            ?>
                                             <span class="text-sm text-gray-500">Pending Payment</span>
-                                            <span class="text-lg font-bold text-red-600"><?= formatCurrency($outsourcing['pending_payment']) ?></span>
+                                            <span class="text-lg font-bold <?= $pendingClass ?>"><?= formatCurrency($pending) ?></span>
                                         </div>
                                     </div>
                                 </div>

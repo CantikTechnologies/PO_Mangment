@@ -45,7 +45,7 @@ $cost_centers_query = "SELECT DISTINCT cost_center FROM posummary WHERE cost_cen
 $cost_centers_result = $conn->query($cost_centers_query);
 
 function formatCurrency($amount) {
-    return '₹ ' . number_format($amount, 2);
+    return '₹' . number_format((float)$amount, 2);
 }
 
 function formatPercentage($value) {
@@ -73,27 +73,27 @@ function formatPercentage($value) {
                 <!-- Header -->
                 <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900">SO Form - Summary Report</h1>
+                        <h1 class="text-3xl font-bold text-gray-900">So Form - Summary Report</h1>
                         <p class="text-gray-600 mt-2">Comprehensive overview of projects, billing, and margins</p>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="exportToExcel()" class="flex items-center justify-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-green-700 transition-colors">
-                            <span class="material-symbols-outlined">download</span>
-                            <span class="truncate">Export Excel</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportToExcel()" class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            <span class="material-symbols-outlined text-base">download</span>
+                            Export Excel
                         </button>
-                        <button onclick="window.print()" class="flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
-                            <span class="material-symbols-outlined">print</span>
-                            <span class="truncate">Print</span>
+                        <button onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            <span class="material-symbols-outlined text-base">print</span>
+                            Print
                         </button>
                     </div>
                 </div>
 
                 <!-- Filters -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-                    <div class="px-6 py-4 border-b border-gray-200">
+                <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="pb-4 border-b border-gray-200">
                         <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
                     </div>
-                    <form method="GET" class="p-6">
+                    <form method="GET" class="pt-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div class="relative">
                                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
@@ -128,32 +128,37 @@ function formatPercentage($value) {
                                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
                             </div>
                         </div>
-                        <div class="flex gap-4 mt-4">
-                            <button type="submit" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-                                Apply Filters
-                            </button>
-                            <a href="so_form.php" class="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                                Clear Filters
-                            </a>
+                        <div class="mt-6 flex justify-end gap-3">
+                            <a href="so_form.php" class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">Reset</a>
+                            <button type="submit" class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Apply Filters</button>
                         </div>
                     </form>
                 </div>
 
                 <!-- Summary Report Table -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Project Summary Report</h2>
+                        <h2 class="text-lg font-semibold text-gray-900">Project summary report</h2>
+                        <p class="text-xs text-gray-500 mt-1">Sale Margin Till date = (Billed till date − Vendor Invoicing Till Date) / Billed till date. Variance = Sale Margin − Target GM.</p>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Project Details</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Customer PO</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Billing Status</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Vendor Details</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Vendor Billing</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Margins</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Project name</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Cost centre</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Customer PO no</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Customer PO value</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Billed till date</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Remaining balance in PO</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Vendor name</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Cantik PO no</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Vendor PO value</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Vendor invoicing till date</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Remaining balance in PO</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Sale margin till date</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Target GM</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Variance in GM</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -171,9 +176,11 @@ $sql = "
     COALESCE(osum.total_vendor_po_value, 0) AS vendor_po_value,
     COALESCE(osum.total_vendor_invoicing, 0) AS vendor_invoicing_till_date,
     GREATEST(COALESCE(osum.total_vendor_po_value, 0) - COALESCE(osum.total_vendor_invoicing, 0), 0) AS remaining_balance_in_po,
-    ROUND(NULLIF(COALESCE(bsum.total_billed, 0), 0) / NULLIF(ps.po_value, 0) * 100, 2) AS margin_till_date,
+    COALESCE(ROUND(((COALESCE(bsum.total_billed, 0) - COALESCE(osum.total_vendor_invoicing, 0))
+                   / NULLIF(COALESCE(bsum.total_billed, 0), 0)) * 100, 2), 0) AS margin_till_date,
     ROUND(ps.target_gm * 100, 2) AS target_gm,
-    ROUND((NULLIF(COALESCE(bsum.total_billed, 0), 0) / NULLIF(ps.po_value, 0) * 100) - (ps.target_gm * 100), 2) AS variance_in_gm
+    COALESCE(ROUND((((COALESCE(bsum.total_billed, 0) - COALESCE(osum.total_vendor_invoicing, 0))
+                    / NULLIF(COALESCE(bsum.total_billed, 0), 0)) * 100) - (ps.target_gm * 100), 2), 0) AS variance_in_gm
   FROM posummary ps
   LEFT JOIN (
     SELECT customer_po AS po_number,
@@ -184,7 +191,7 @@ $sql = "
   LEFT JOIN (
     SELECT customer_po,
            MAX(cantik_po_no) AS latest_vendor_po_no,
-           SUM(cantik_po_value) AS total_vendor_po_value,
+           MAX(cantik_po_value) AS total_vendor_po_value,
            SUM(vendor_inv_value) AS total_vendor_invoicing
     FROM outsourcing_summary
     GROUP BY customer_po
@@ -212,46 +219,26 @@ if (isset($prep_error)) {
 } elseif ($res && $res->num_rows > 0) {
     while ($r = $res->fetch_assoc()) {
         echo "<tr class='hover:bg-gray-50'>";
-                                        
-                                        // Project Details
-                                        echo "<td class='px-4 py-3'>";
-                                        echo "<div class='text-sm font-medium text-gray-900'>" . htmlspecialchars($r['project'] ?? '') . "</div>";
-                                        echo "<div class='text-sm text-gray-500'>" . htmlspecialchars($r['cost_center'] ?? '') . "</div>";
-                                        echo "</td>";
-                                        
-                                        // Customer PO
-                                        echo "<td class='px-4 py-3'>";
-                                        echo "<div class='text-sm font-medium text-gray-900'>" . htmlspecialchars($r['customer_po_no'] ?? '') . "</div>";
-                                        echo "<div class='text-sm text-gray-500'>" . formatCurrency($r['customer_po_value'] ?? 0) . "</div>";
-                                        echo "</td>";
-                                        
-                                        // Billing Status
-                                        echo "<td class='px-4 py-3'>";
-                                        echo "<div class='text-sm text-gray-900'>Billed: " . formatCurrency($r['billed_till_date'] ?? 0) . "</div>";
-                                        echo "<div class='text-sm text-gray-500'>Remaining: " . formatCurrency($r['remaining_balance_po'] ?? 0) . "</div>";
-                                        echo "</td>";
-                                        
-                                        // Vendor Details
-                                        echo "<td class='px-4 py-3'>";
-                                        echo "<div class='text-sm font-medium text-gray-900'>" . htmlspecialchars($r['vendor_name'] ?? 'No vendor') . "</div>";
-                                        echo "<div class='text-sm text-gray-500'>PO: " . htmlspecialchars($r['cantik_po_no'] ?? '') . "</div>";
-                                        echo "<div class='text-sm text-gray-500'>Value: " . formatCurrency($r['vendor_po_value'] ?? 0) . "</div>";
-                                        echo "</td>";
-                                        
-                                        // Vendor Billing
-                                        echo "<td class='px-4 py-3'>";
-                                        echo "<div class='text-sm text-gray-900'>Invoiced: " . formatCurrency($r['vendor_invoicing_till_date'] ?? 0) . "</div>";
-                                        echo "<div class='text-sm text-gray-500'>Remaining: " . formatCurrency($r['remaining_balance_in_po'] ?? 0) . "</div>";
-                                        echo "</td>";
-                                        
-                                        // Margins
-                                        echo "<td class='px-4 py-3'>";
-                                        echo "<div class='text-sm text-gray-900'>Current: " . formatPercentage($r['margin_till_date'] ?? 0) . "</div>";
-                                        echo "<div class='text-sm text-gray-500'>Target: " . formatPercentage($r['target_gm'] ?? 0) . "</div>";
-                                        $variance = $r['variance_in_gm'] ?? 0;
-                                        $variance_class = $variance >= 0 ? 'text-green-600' : 'text-red-600';
-                                        echo "<div class='text-sm font-medium $variance_class'>Variance: " . formatPercentage($variance) . "</div>";
-                                        echo "</td>";
+        echo "<td class='px-4 py-3'>" . htmlspecialchars($r['project'] ?? '') . "</td>";
+        echo "<td class='px-4 py-3'>" . htmlspecialchars($r['cost_center'] ?? '') . "</td>";
+        echo "<td class='px-4 py-3'>" . htmlspecialchars($r['customer_po_no'] ?? '') . "</td>";
+        echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['customer_po_value'] ?? 0) . "</td>";
+        echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['billed_till_date'] ?? 0) . "</td>";
+        echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['remaining_balance_po'] ?? 0) . "</td>";
+        $vendorName = trim((string)($r['vendor_name'] ?? ''));
+        if ($vendorName === '') { $vendorName = '-'; }
+        $cantikPo = trim((string)($r['cantik_po_no'] ?? ''));
+        if ($cantikPo === '') { $cantikPo = '-'; }
+        echo "<td class='px-4 py-3'>" . htmlspecialchars($vendorName) . "</td>";
+        echo "<td class='px-4 py-3'>" . htmlspecialchars($cantikPo) . "</td>";
+        echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['vendor_po_value'] ?? 0) . "</td>";
+        echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['vendor_invoicing_till_date'] ?? 0) . "</td>";
+        echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['remaining_balance_in_po'] ?? 0) . "</td>";
+        echo "<td class='px-4 py-3 text-right'>" . formatPercentage($r['margin_till_date'] ?? 0) . "</td>";
+        echo "<td class='px-4 py-3 text-right'>" . formatPercentage($r['target_gm'] ?? 0) . "</td>";
+        $variance = $r['variance_in_gm'] ?? 0;
+        $variance_class = ($variance >= 0) ? 'text-green-600' : 'text-red-600';
+        echo "<td class='px-4 py-3 text-right font-medium $variance_class'>" . formatPercentage($variance) . "</td>";
                                         
         echo "</tr>";
     }

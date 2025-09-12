@@ -9,6 +9,7 @@ if ($base === '' || $base[0] !== '/') { $base = '/' . ltrim($base, '/'); }
 $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
 $current_file = basename($_SERVER['SCRIPT_NAME'] ?? '');
 $current_dir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+$isReportsPage = ($current_file === 'so_form.php');
 
 $activeClass = function(array $needles) use ($request_uri, $current_file, $current_dir): string {
   foreach ($needles as $needle) {
@@ -37,13 +38,12 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
   <div class="flex flex-1 items-center justify-end gap-4">
     <nav class="hidden md:flex items-center gap-2">
       <?php 
-        // Dashboard should be active only on project root, not on submodule index.php files
-        $isRoot = in_array(rtrim($request_uri, '/'), [rtrim($base, '/'), rtrim($base, '/') . '/index.php'], true)
-                  || in_array(rtrim($current_dir, '/'), [rtrim($base, '/')], true);
+        // Dashboard should be active only on project root index
+        $isRoot = ($current_file === 'index.php');
       ?>
       <a class="rounded-full px-4 py-2 text-sm font-medium <?= $isRoot ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/index.php">Dashboard</a>
       
-      <?php $poActive = $activeClass(["po_details"]); ?>
+      <?php $poActive = !$isReportsPage && $activeClass(["po_details"]); ?>
       <div class="relative group">
         <a class="rounded-full px-4 py-2 text-sm font-medium <?= $poActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/src/Modules/po_details/list.php">
           Purchase Orders
@@ -57,7 +57,7 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
         </div>
       </div>
       
-      <?php $invActive = $activeClass(["invoices"]); ?>
+      <?php $invActive = !$isReportsPage && $activeClass(["invoices"]); ?>
       <div class="relative group">
         <a class="rounded-full px-4 py-2 text-sm font-medium <?= $invActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/src/Modules/invoices/list.php">
           Invoices
@@ -71,7 +71,7 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
         </div>
       </div>
       
-      <?php $outActive = $activeClass(["outsourcing"]); ?>
+      <?php $outActive = !$isReportsPage && $activeClass(["outsourcing"]); ?>
       <div class="relative group">
         <a class="rounded-full px-4 py-2 text-sm font-medium <?= $outActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/src/Modules/outsourcing/list.php">
           Outsourcing
@@ -85,10 +85,10 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
         </div>
       </div>
       
-      <?php $soActive = $activeClass(["so_form.php"]); ?>
+      <?php $soActive = $isReportsPage || $activeClass(["so_form.php"]); ?>
       <a class="rounded-full px-4 py-2 text-sm font-medium <?= $soActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/so_form.php">Reports</a>
       
-      <?php $trackerActive = $activeClass(["Tracker"]); ?>
+      <?php $trackerActive = !$isReportsPage && $activeClass(["Tracker"]); ?>
       <div class="relative group">
           <a class="rounded-full px-4 py-2 text-sm font-medium <?= $trackerActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/src/Modules/Tracker/index.php">
           Tracker Updates
