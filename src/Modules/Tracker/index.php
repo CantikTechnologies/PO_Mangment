@@ -94,12 +94,7 @@ function formatDate($date) {
                         <div>
                             <h1 class="text-3xl font-bold text-gray-900">Tracker Updates</h1>
                             <p class="text-gray-600 mt-2">
-                                Manage and track finance tasks and updates
-                                <a href="add.php" class="inline-flex items-center gap-1 text-red-600 hover:text-red-700 font-medium ml-2 align-middle">
-                                    <span class="material-symbols-outlined text-sm">add</span>
-                                    Add New Task
-                                </a>
-                            </p>
+                                Manage and track finance tasks and updates  </p>
                         </div>
                         <a href="add.php" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
                             <span class="material-symbols-outlined mr-2 text-sm">add</span>

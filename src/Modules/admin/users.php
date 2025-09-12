@@ -12,8 +12,8 @@ include '../../../config/auth.php';
 requireAdmin();
 
 
-$message = '';
-$error = '';
+$message = isset($_GET['message']) ? $_GET['message'] : '';
+$error = isset($_GET['error']) ? $_GET['error'] : '';
 
 // Handle user creation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_user'])) {
