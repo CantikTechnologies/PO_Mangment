@@ -36,8 +36,12 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
   </div>
   <div class="flex flex-1 items-center justify-end gap-4">
     <nav class="hidden md:flex items-center gap-2">
-      <?php $dashActive = $activeClass(["index.php"]); ?>
-      <a class="rounded-full px-4 py-2 text-sm font-medium <?= $dashActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/index.php">Dashboard</a>
+      <?php 
+        // Dashboard should be active only on project root, not on submodule index.php files
+        $isRoot = in_array(rtrim($request_uri, '/'), [rtrim($base, '/'), rtrim($base, '/') . '/index.php'], true)
+                  || in_array(rtrim($current_dir, '/'), [rtrim($base, '/')], true);
+      ?>
+      <a class="rounded-full px-4 py-2 text-sm font-medium <?= $isRoot ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/index.php">Dashboard</a>
       
       <?php $poActive = $activeClass(["po_details"]); ?>
       <div class="relative group">
