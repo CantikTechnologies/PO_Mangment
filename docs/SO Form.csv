@@ -1,0 +1,44 @@
+,,,,,,To be select from drop down list already created,,,,,,,,
+,,,#N/A," 1,23,77,111 ",,#N/A,,," 98,47,727 ",,20%,," 25,29,384 ",
+Project Name,Cost Centre,Customer PO No, Customer PO Value , Billed till date , Remaining Balance in PO ,Vendor Name, cantik PO No , Vendor PO Value , Vendor Invocing Till Date , Remaining Balance in PO ,Sale Margin Till date,Target GM,Varinace in GM,
+Raptakos Resource Deployment - Anuj Kushwaha,Raptakos PT,4500095281," 1,75,500 "," 1,71,725 "," 3,775 ",VRATA TECH SOLUTIONS PRIVATE LIMITED,CTPL/PO/24-25/396," 1,67,143 "," 1,63,548 "," 3,595 ",4.76%,5.00%,-0.24%,
+Raptakos Resource Deployment - Anuj Kushwaha,Raptakos PT,4500098831," 1,36,500 "," 1,36,500 ", -   ,VRATA TECH SOLUTIONS PRIVATE LIMITED,CTPL/PO/25-26/104," 1,30,000 "," 1,30,000 ", -   ,5%,,0%,
+Panasonic Resource Deploment - Shankar Bhuyan,GGN-NTT-PANASONIC-PT-01,4500095649," 19,99,992 "," 13,28,308 "," 6,71,684 ",BCT Consulting Private Limited,CTPL/PO/24-25/400," 19,04,748 "," 12,10,559 "," 6,94,189 ",9%,,1%,
+HMSI Resource Deployment- Dotnet - Alok Kumar,GGN-NTT-HMSI-DOTNET-PT-01,4500098672," 10,43,120 "," 3,06,800 "," 7,36,320 ",CANTICLE TECHNOLOGIES PRIVATE LIMITED,CTPL/PO/25-26/101," 9,93,446 "," 2,92,190 "," 7,01,256 ",5%,,0%,
+Quess Corp Resource Deployment - Yallappa Satyappa Halagodi,NTT-Quesscorp-PT-01,4500097314," 6,25,000 "," 5,74,984 "," 50,016 ",TRIBAL SOLUTIONS CONSULTING SERVICES PVT,CTPL/PO/25-26/081," 5,46,241 "," 5,46,241 ", 0 ,5%,,0%,
+Sun Phrma - Website AMC ,Sun Phrama PT,4500095362," 10,68,054 "," 8,27,938 "," 2,40,116 ",CARMATEC IT SOLUTIONS PRIVATE LIMITED,CTPL/PO/24-25/392," 10,14,701 "," 7,89,775 "," 2,24,926 ",4.61%,,0%,
+HCIL - MDM - Soti,HCIL PT,4500092529," 3,90,141 "," 3,90,141 ", -   ,Winnovation Education Services Pvt,CTPL/PO/24-25/247," 16,34,844 "," 9,24,736 "," 7,10,108 ",-137%,,137%,
+HCIL - MDM - Soti,HCIL PT,4500097684," 5,78,813 "," 5,78,813 ", -   ,Winnovation Education Services Pvt,CTPL/PO/24-25/247," 16,34,844 ", -   ," 16,34,844 ",0%,,0%,
+HCIL - MDM - Soti,HCIL PT,4500097799," 2,57,800 "," 2,57,800 ", -   ,Winnovation Education Services Pvt,CTPL/PO/25-26/039," 2,45,500 "," 2,45,500 ", -   ,5%,,-5%,
+HCIL - ITSM & NMS,HCIL PT,4500092808," 5,52,500 "," 5,52,500 ", -   ,SeaInfonet Pvt Ltd,CTPL/PO/24-25/235," 30,53,531 "," 15,75,685 "," 14,77,846 ",-185%,,185%,
+HCIL - ITSM & NMS,HCIL PT,4500097527," 12,31,905 "," 12,31,905 ", -   ,SeaInfonet Pvt Ltd,CTPL/PO/24-25/235,,, -   ,100%,,-100%,
+HCIL - ITSM & NMS,HCIL PT,4500092930," 13,500 "," 13,500 ", -   ,SeaInfonet Pvt Ltd,CTPL/PO/24-25/235,,, -   ,100%,,-100%,
+Pay to Vendor - Finder Fee,NTT -PT -Finder Fees,4500091403," 2,29,075 "," 2,29,075 ", -   ,AUROPRO SOFT SYSTEMS PVT LTD,Without PO-1403," 1,97,838 "," 1,97,838 ", -   ,14%,,-14%,
+Pay to Vendor - Finder Fee,NTT -PT -Finder Fees,4500091408," 6,49,740 "," 6,49,740 ", -   ,AUROPRO SOFT SYSTEMS PVT LTD,Without PO-1408," 6,37,038 "," 6,37,038 ", -   ,2%,,-2%,
+,GGN-NTT-BMW-RPA- PT 01,4500087051," 5,25,000 "," 5,25,000 ", -   ,BUSYBOTS PRIVATE LIMITED,0, -   , -   , -   ,100%,,-95%,
+,GGN-NTT-HMSI-RPA-PT-01,,#N/A, -   ,#N/A,#N/A,#N/A,#N/A, -   ,#N/A,#DIV/0!,,#N/A,
+,NTT-BMW- BMW-penetration Testing  - PT-0,,#N/A, -   ,#N/A,#N/A,#N/A,#N/A, -   ,#N/A,#DIV/0!,,#N/A,
+BMW,NTT -PT -Finder Fees,4500092198," 1,68,000 "," 1,68,000 ", -   ,AUROPRO SOFT SYSTEMS PVT LTD,CTPL/PO/25-26/140," 1,60,000 "," 1,60,000 ", -   ,5%,,0%,
+Quess Corp Resource Deployment - Panchalal Yadav,QuessCorp,4500099372," 13,64,955 "," 7,67,787 "," 5,97,168 ",Highsky IT Solutions Private Limited,CTPL/PO/25-26/139," 12,99,957 "," 7,31,226 "," 5,68,731 ",5%,,0%,Need to fill target margin details from supporting
+"ADP Resource Deployment-Nagothi Sumitranjali
+",Finder Fees – PT,4500100033," 90,000 "," 90,000 ", -   ,BCT Consulting Private Limited,CTPL/PO/25-26/159," 85,500 "," 85,500 ", -   ,5%,,0%,
+"ADP Resource Deployment-Mounika Nandam
+",Finder Fees – PT,4500100034," 1,08,000 "," 1,08,000 ", -   ,BCT Consulting Private Limited,CTPL/PO/25-26/158," 1,02,600 "," 1,02,600 ", -   ,5%,,0%,
+HCIL - MDM - Soti,HCIL PT,4500100035," 52,500 "," 50,000 "," 2,500 ",Winnovation Education Services Pvt,CTPL/PO/24-25/454," 50,000 "," 50,000 ", -   ,0%,,5%,
+"Alkem Laboratories  Resource Deployment - Krunal Khode
+",Alkem Laboratories - PT,4500100039," 11,64,167 "," 6,50,833 "," 5,13,334 ",Abhiyanta India Solution Private Limited,CTPL/PO/25-26/160," 10,58,334 "," 5,91,667 "," 4,66,667 ",9.09%,,0.91%,Need to check margin is it sale or purchase
+"Raptakos Resource Deployment - Mayur Ghule
+",Raptakos PT,4500100053," 10,59,300 "," 94,682 "," 9,64,618 ",VRATA TECH SOLUTIONS PRIVATE LIMITED,CTPL/PO/25-26/161," 10,06,335 "," 90,173 "," 9,16,162 ",5%,,0%,
+"ADP Resource Deployment-Ankush Dilip Sangamwar
+
+",Finder Fees – PT,4500100130," 85,000 "," 85,000 ", -   ,AUROPRO SOFT SYSTEMS PVT LTD,CTPL/PO/25-26/179," 80,952 "," 80,952 ", -   ,5%,,0%,
+Sun Phrma - Website AMS- Ramu Verma,Sun Phrama PT,4500100177," 19,45,125 "," 6,48,375 "," 12,96,750 ",ITSHRI SOLUTION LLP,CTPL/PO/25-26/206," 18,52,497 "," 6,17,499 "," 12,34,998 ",5%,,0%,
+,GGN-NTT-BMW-OA - PT-01,4500083044," 18,12,600 "," 3,45,986 "," 14,66,614 ",Cinesonic Audio Visual Pvt Ltd,Without PO-83044," 3,25,440 ", -   ," 3,25,440 ",100%,,-95%,
+,GGN-NTT-BMW-OA - PT-01,4500094598," 6,73,920 "," 6,73,920 ", -   ,Cinesonic Audio Visual Pvt Ltd,Without PO-94598," 4,33,920 ", -   ," 4,33,920 ",100%,,-95%,
+"Saurabh Jamburgekar  Sreedhar Katakam
+",GGN-NTT-KTFL-PT-01,4500100823,"9,41,250", -   ," 9,41,250 ",KAPARTHI CONSULTANCY SERVICES,CTPL/PO/24-25/228," 6,25,000 "," 6,25,000 ", -   ,#DIV/0!,,#DIV/0!,
+HMSI Resource Deployment- Shubham Mishra,HMSI Bot Support-RPA,4500094574,"14,52,000"," 9,19,800 "," 5,32,200 ",BUSYBOTS PRIVATE LIMITED,0, -   , -   , -   ,100%,,-95%,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,

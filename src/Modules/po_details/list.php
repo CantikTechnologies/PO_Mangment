@@ -68,9 +68,10 @@ $vendors_query = "SELECT DISTINCT vendor_name FROM po_details WHERE vendor_name 
 $vendors_result = $conn->query($vendors_query);
 
 function formatDate($excel_date) {
-    if (empty($excel_date)) return '-';
-    $unix_date = ($excel_date - 25569) * 86400;
-    return date('d-m-Y', $unix_date);
+    if ($excel_date === null || $excel_date === '' || !is_numeric($excel_date)) return '-';
+    $unix_date = ((int)$excel_date - 25569) * 86400;
+    // Use GMT to avoid timezone-related off-by-one day issues
+    return gmdate('d-m-Y', $unix_date);
 }
 
 function formatCurrency($amount) {
@@ -101,12 +102,18 @@ function formatCurrency($amount) {
                         <h1 class="text-3xl font-bold text-gray-900">Purchase Orders</h1>
                         <p class="text-gray-600 mt-2">Manage and track all purchase orders</p>
                     </div>
-                    <?php if (hasPermission('add_po_details')): ?>
-                    <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
-                        <span class="material-symbols-outlined">add</span>
-                        <span class="truncate">New Purchase Order</span>
-                    </a>
-                    <?php endif; ?>
+                    <div class="flex gap-3">
+                        <?php if (hasPermission('add_po_details')): ?>
+                        <button onclick="openBulkUploadModal()" class="flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
+                            <span class="material-symbols-outlined">upload</span>
+                            <span class="truncate">Bulk Upload</span>
+                        </button>
+                        <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
+                            <span class="material-symbols-outlined">add</span>
+                            <span class="truncate">New Purchase Order</span>
+                        </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <!-- Filters -->
@@ -255,5 +262,328 @@ function formatCurrency($amount) {
       </div>
     </main>
   </div>
+
+  <!-- Bulk Upload Modal -->
+  <div id="bulkUploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900">Bulk Upload Purchase Orders</h3>
+          <button onclick="closeBulkUploadModal()" class="text-gray-400 hover:text-gray-600">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+            <h4 class="text-sm font-medium text-blue-800 mb-2">Upload Format Requirements:</h4>
+            <div class="text-sm text-blue-700">
+              <p class="mb-1">Required columns (case-sensitive). You can upload CSV (comma) or TSV (tab) files:</p>
+              <ul class="list-disc list-inside ml-4 space-y-1">
+                <li><strong>project_description</strong> - Project name/description</li>
+                <li><strong>cost_center</strong> - Cost center code</li>
+                <li><strong>sow_number</strong> - Statement of Work number</li>
+                <li><strong>start_date</strong> - Start date (Excel serial number format)</li>
+                <li><strong>end_date</strong> - End date (Excel serial number format)</li>
+                <li><strong>po_number</strong> - Purchase Order number (must be unique)</li>
+                <li><strong>po_date</strong> - PO date (Excel serial number format)</li>
+                <li><strong>po_value</strong> - PO value (numeric)</li>
+                <li><strong>billing_frequency</strong> - Billing frequency (e.g., Monthly, Quarterly)</li>
+                <li><strong>target_gm</strong> - Target gross margin (decimal, e.g., 0.05 for 5%)</li>
+                <li><strong>vendor_name</strong> - Vendor name (optional)</li>
+                <li><strong>remarks</strong> - Additional remarks (optional)</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+            <h4 class="text-sm font-medium text-yellow-800 mb-2">Date Format Note:</h4>
+            <p class="text-sm text-yellow-700">Dates should be in Excel serial number format. For example, 45668 represents a specific date. You can use Excel's DATEVALUE function to convert regular dates.</p>
+          </div>
+          
+          <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+            <h4 class="text-sm font-medium text-green-800 mb-2">Need a Template?</h4>
+            <p class="text-sm text-green-700 mb-2">Download our sample CSV template to see the correct format:</p>
+            <a href="sample_template.csv" download="po_template.csv" 
+               class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
+              <span class="material-symbols-outlined text-sm">download</span>
+              Download Template
+            </a>
+          </div>
+        </div>
+
+        <form id="bulkUploadForm" enctype="multipart/form-data">
+          <div class="mb-4">
+            <label for="csvFile" class="block text-sm font-medium text-gray-700 mb-2">Select CSV/TSV File</label>
+            <input type="file" id="csvFile" name="csvFile" accept=".csv,.tsv,.txt" required 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   onchange="previewCSV(this)">
+          </div>
+          
+          <div id="csvPreview" class="hidden mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="text-sm font-medium text-gray-700">CSV Preview (First 5 rows):</h4>
+              <span id="rowCount" class="text-sm text-gray-500"></span>
+            </div>
+            <div class="bg-gray-50 border border-gray-200 rounded-md p-4 max-h-64 overflow-auto">
+              <table id="previewTable" class="w-full text-xs">
+                <thead id="previewHeaders" class="bg-gray-100"></thead>
+                <tbody id="previewBody"></tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div id="uploadProgress" class="hidden mb-4">
+            <div class="bg-gray-200 rounded-full h-2.5">
+              <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="progressText" class="text-sm text-gray-600 mt-1">Processing...</p>
+          </div>
+          
+          <div id="uploadResults" class="hidden mb-4">
+            <div id="successResults" class="hidden bg-green-50 border border-green-200 rounded-md p-4 mb-2">
+              <h4 class="text-sm font-medium text-green-800 mb-2">Success:</h4>
+              <p id="successMessage" class="text-sm text-green-700"></p>
+            </div>
+            <div id="errorResults" class="hidden bg-red-50 border border-red-200 rounded-md p-4">
+              <h4 class="text-sm font-medium text-red-800 mb-2">Errors:</h4>
+              <div id="errorList" class="text-sm text-red-700"></div>
+            </div>
+          </div>
+          
+          <div class="flex justify-end space-x-3">
+            <button type="button" onclick="testConnection()" 
+                    class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+              Test Connection
+            </button>
+            <button type="button" onclick="closeBulkUploadModal()" 
+                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+              Cancel
+            </button>
+            <button type="submit" id="uploadBtn" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              Upload CSV
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openBulkUploadModal() {
+      document.getElementById('bulkUploadModal').classList.remove('hidden');
+      resetUploadForm();
+    }
+
+    function closeBulkUploadModal() {
+      document.getElementById('bulkUploadModal').classList.add('hidden');
+      resetUploadForm();
+    }
+
+    function resetUploadForm() {
+      document.getElementById('bulkUploadForm').reset();
+      document.getElementById('uploadProgress').classList.add('hidden');
+      document.getElementById('uploadResults').classList.add('hidden');
+      document.getElementById('successResults').classList.add('hidden');
+      document.getElementById('errorResults').classList.add('hidden');
+      document.getElementById('csvPreview').classList.add('hidden');
+      document.getElementById('uploadBtn').disabled = false;
+    }
+
+    function previewCSV(input) {
+      const file = input.files[0];
+      if (!file) {
+        document.getElementById('csvPreview').classList.add('hidden');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const csv = e.target.result;
+        const lines = csv.split(/\r?\n/);
+        // Auto-detect delimiter (tab or comma)
+        const headerLine = lines[0].replace(/^\uFEFF/, '');
+        const commaCount = (headerLine.match(/,/g) || []).length;
+        const tabCount = (headerLine.match(/\t/g) || []).length;
+        const delimiter = tabCount > commaCount ? '\t' : ',';
+        const headers = headerLine.split(delimiter).map(h => h.trim().replace(/"/g, ''));
+        
+        // Show preview
+        const previewDiv = document.getElementById('csvPreview');
+        const headersRow = document.getElementById('previewHeaders');
+        const bodyRows = document.getElementById('previewBody');
+        
+        // Clear previous content
+        headersRow.innerHTML = '';
+        bodyRows.innerHTML = '';
+        
+        // Add headers
+        const headerRow = document.createElement('tr');
+        headers.forEach(header => {
+          const th = document.createElement('th');
+          th.className = 'px-2 py-1 text-left font-medium text-gray-700';
+          th.textContent = header;
+          headerRow.appendChild(th);
+        });
+        headersRow.appendChild(headerRow);
+        
+        // Add first 5 data rows
+        for (let i = 1; i <= Math.min(5, lines.length - 1); i++) {
+          if (lines[i].trim()) {
+            const row = document.createElement('tr');
+            const cells = lines[i].split(delimiter).map(c => c.trim().replace(/"/g, ''));
+            cells.forEach(cell => {
+              const td = document.createElement('td');
+              td.className = 'px-2 py-1 border-b border-gray-200';
+              td.textContent = cell || '-';
+              row.appendChild(td);
+            });
+            bodyRows.appendChild(row);
+          }
+        }
+        
+        // Show row count
+        const totalRows = lines.length - 1; // Subtract header row
+        document.getElementById('rowCount').textContent = `Total rows: ${totalRows}`;
+        
+        // Validate headers
+        const requiredHeaders = [
+          'project_description', 'cost_center', 'sow_number', 'start_date', 
+          'end_date', 'po_number', 'po_date', 'po_value', 'billing_frequency', 'target_gm'
+        ];
+        
+        const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+        if (missingHeaders.length > 0) {
+          document.getElementById('rowCount').innerHTML = 
+            `Total rows: ${totalRows} <span class="text-red-600">(Missing headers: ${missingHeaders.join(', ')})</span>`;
+        }
+        
+        previewDiv.classList.remove('hidden');
+      };
+      
+      reader.readAsText(file);
+    }
+
+    document.getElementById('bulkUploadForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData();
+      const fileInput = document.getElementById('csvFile');
+      
+      if (!fileInput.files[0]) {
+        alert('Please select a CSV file');
+        return;
+      }
+      
+      formData.append('csvFile', fileInput.files[0]);
+      
+      // Show progress
+      document.getElementById('uploadProgress').classList.remove('hidden');
+      document.getElementById('uploadBtn').disabled = true;
+      
+      // Reset results
+      document.getElementById('uploadResults').classList.add('hidden');
+      document.getElementById('successResults').classList.add('hidden');
+      document.getElementById('errorResults').classList.add('hidden');
+      
+      // Simulate progress
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += 10;
+        document.getElementById('progressBar').style.width = progress + '%';
+        if (progress >= 90) {
+          clearInterval(progressInterval);
+        }
+      }, 100);
+      
+      fetch('bulk_upload.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(text => {
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error('Invalid JSON response:', text);
+          throw new Error('Server returned invalid JSON. Response: ' + text.substring(0, 200));
+        }
+      })
+      .then(data => {
+        clearInterval(progressInterval);
+        document.getElementById('progressBar').style.width = '100%';
+        document.getElementById('progressText').textContent = 'Complete!';
+        
+        setTimeout(() => {
+          document.getElementById('uploadProgress').classList.add('hidden');
+          document.getElementById('uploadResults').classList.remove('hidden');
+          
+          if (data.success) {
+            document.getElementById('successResults').classList.remove('hidden');
+            document.getElementById('successMessage').textContent = 
+              `Successfully uploaded ${data.inserted} records. ${data.skipped} records were skipped due to duplicates.`;
+          } else {
+            document.getElementById('errorResults').classList.remove('hidden');
+            const errorList = document.getElementById('errorList');
+            errorList.innerHTML = '';
+            data.errors.forEach(error => {
+              const errorItem = document.createElement('div');
+              errorItem.className = 'mb-1';
+              errorItem.textContent = `Row ${error.row}: ${error.message}`;
+              errorList.appendChild(errorItem);
+            });
+          }
+          
+          document.getElementById('uploadBtn').disabled = false;
+          
+          // Refresh the page after successful upload
+          if (data.success && data.inserted > 0) {
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+          }
+        }, 500);
+      })
+      .catch(error => {
+        clearInterval(progressInterval);
+        document.getElementById('uploadProgress').classList.add('hidden');
+        document.getElementById('uploadResults').classList.remove('hidden');
+        document.getElementById('errorResults').classList.remove('hidden');
+        document.getElementById('errorList').innerHTML = '<div class="mb-1">Upload failed: ' + error.message + '</div>';
+        document.getElementById('uploadBtn').disabled = false;
+      });
+    });
+
+    function testConnection() {
+      fetch('test_upload.php', {
+        method: 'POST'
+      })
+      .then(response => response.text())
+      .then(text => {
+        try {
+          const data = JSON.parse(text);
+          alert('Test successful!\n\nResponse: ' + JSON.stringify(data, null, 2));
+        } catch (e) {
+          alert('Test failed - Invalid JSON response:\n\n' + text.substring(0, 500));
+        }
+      })
+      .catch(error => {
+        alert('Test failed - Network error:\n\n' + error.message);
+      });
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('bulkUploadModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeBulkUploadModal();
+      }
+    });
+  </script>
 </body>
 </html>

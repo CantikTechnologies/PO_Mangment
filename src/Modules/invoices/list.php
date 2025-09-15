@@ -106,10 +106,16 @@ function formatCurrency($amount) {
                         <p class="text-gray-600 mt-2">Manage and track all billing invoices</p>
                     </div>
                     <?php if (hasPermission('add_invoices')): ?>
-                    <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
+                    <div class="flex gap-3">
+                      <button onclick="openInvoiceBulkUpload()" class="flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
+                        <span class="material-symbols-outlined">upload</span>
+                        <span class="truncate">Bulk Upload</span>
+                      </button>
+                      <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
                         <span class="material-symbols-outlined">add</span>
                         <span class="truncate">New Invoice</span>
-                    </a>
+                      </a>
+                    </div>
                     <?php endif; ?>
                 </div>
 
@@ -154,14 +160,16 @@ function formatCurrency($amount) {
                             </div>
                             
                             <div>
-                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500" 
-                                       type="date" name="date_from" placeholder="From Date" 
+                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 placeholder-gray-400 focus:border-red-500 focus:ring-red-500" 
+                                       type="text" name="date_from" placeholder="dd-mm-yyyy" 
+                                       onfocus="this.type='date'" onblur="if(!this.value) this.type='text'" 
                                        value="<?= htmlspecialchars($date_from) ?>"/>
           </div>
                             
           <div>
-                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500" 
-                                       type="date" name="date_to" placeholder="To Date" 
+                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 placeholder-gray-400 focus:border-red-500 focus:ring-red-500" 
+                                       type="text" name="date_to" placeholder="dd-mm-yyyy" 
+                                       onfocus="this.type='date'" onblur="if(!this.value) this.type='text'" 
                                        value="<?= htmlspecialchars($date_to) ?>"/>
           </div>
         </div>
@@ -253,5 +261,95 @@ function formatCurrency($amount) {
       </div>
     </main>
   </div>
+<!-- Invoice Bulk Upload Modal and Script -->
+<div id="invoiceBulkModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-medium text-gray-900">Bulk Upload Invoices</h3>
+      <button onclick="closeInvoiceBulkUpload()" class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form id="invoiceBulkForm" enctype="multipart/form-data">
+      <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+        
+        <h4 class="text-sm font-medium text-blue-800 mb-2">Upload Format Requirements</h4>
+        <div class="text-sm text-blue-700">
+          <p class="mb-1">Required columns (case-sensitive). CSV (comma) or TSV (tab) files are supported:</p>
+          <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong>project_details</strong></li>
+            <li><strong>cost_center</strong></li>
+            <li><strong>customer_po</strong></li>
+            <li><strong>cantik_invoice_no</strong></li>
+            <li><strong>cantik_invoice_date</strong> - Excel serial or a valid date (e.g., 16/Jan/2025, 31-03-2025)</li>
+            <li><strong>cantik_inv_value_taxable</strong> - numeric</li>
+          </ul>
+          <p class="mt-2">Optional columns:</p>
+          <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong>against_vendor_inv_number</strong></li>
+            <li><strong>payment_receipt_date</strong> - Excel serial or valid date</li>
+            <li><strong>payment_advise_no</strong></li>
+            <li><strong>vendor_name</strong></li>
+          </ul>
+        </div>
+      </div>
+      <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+        <h4 class="text-sm font-medium text-green-800 mb-2">Download Template</h4>
+        <a href="sample_template.csv" download="invoice_template.csv" class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
+          <span class="material-symbols-outlined text-sm">download</span>
+          Download Sample CSV
+        </a>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select CSV/TSV File</label>
+        <input type="file" id="invoiceFile" name="csvFile" accept=".csv,.tsv,.txt" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+      </div>
+      <div class="mb-4 flex items-center gap-3">
+        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" id="invoiceDryRun" class="rounded border-gray-300"> Dry run (validate only)
+        </label>
+        <button type="button" id="invoiceDownloadErrors" onclick="downloadInvoiceErrors()" class="hidden px-3 py-2 bg-yellow-600 text-white rounded-md text-sm hover:bg-yellow-700">Download error CSV</button>
+      </div>
+      <div id="invoiceErrors" class="hidden bg-red-50 border border-red-200 rounded-md p-4 mb-4 text-sm text-red-700"></div>
+      <div class="flex justify-end gap-3">
+        <button type="button" onclick="closeInvoiceBulkUpload()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Upload</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  let lastInvoiceErrors = null;
+  function openInvoiceBulkUpload(){ document.getElementById('invoiceBulkModal').classList.remove('hidden'); }
+  function closeInvoiceBulkUpload(){ document.getElementById('invoiceBulkModal').classList.add('hidden'); document.getElementById('invoiceErrors').classList.add('hidden'); }
+  document.getElementById('invoiceBulkForm').addEventListener('submit', async (e)=>{
+    e.preventDefault(); const f=document.getElementById('invoiceFile').files[0]; if(!f){return;}
+    const fd=new FormData(); fd.append('csvFile', f);
+    if (document.getElementById('invoiceDryRun').checked) { fd.append('dry_run','1'); }
+    const r= await fetch('bulk_upload.php',{method:'POST',body:fd}); const t= await r.text(); let data;
+    try{ data=JSON.parse(t);}catch(err){ showInvErr('Server returned invalid JSON: '+t.substring(0,300)); return; }
+    lastInvoiceErrors = data.errors || [];
+    document.getElementById('invoiceDownloadErrors').classList.toggle('hidden', lastInvoiceErrors.length === 0);
+    if(!data.success){ showInvErr(data.errors.map(e=>`Row ${e.row}: ${e.message}`).join('<br>')); } else {
+      if (document.getElementById('invoiceDryRun').checked) {
+        const ok = data.inserted || 0;
+        showInvErr(`Dry run completed. ${ok} rows would be inserted. ${lastInvoiceErrors.length} rows have issues.`);
+        document.getElementById('invoiceErrors').classList.remove('bg-red-50','border-red-200','text-red-700');
+        document.getElementById('invoiceErrors').classList.add('bg-blue-50','border-blue-200','text-blue-700');
+      } else {
+        location.reload();
+      }
+    }
+  });
+  function showInvErr(msg){ const el=document.getElementById('invoiceErrors'); el.innerHTML=msg; el.classList.remove('hidden'); }
+  function downloadInvoiceErrors(){
+    if (!lastInvoiceErrors || lastInvoiceErrors.length===0) return;
+    const header = ['row','message'];
+    const lines = [header.join(',')].concat(lastInvoiceErrors.map(e=>`${e.row},"${(e.message||'').replace(/"/g,'""')}"`));
+    const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='invoice_errors.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+</script>
 </body>
 </html>

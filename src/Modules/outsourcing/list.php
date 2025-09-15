@@ -116,10 +116,16 @@ function formatCurrency($amount) {
                         <p class="text-gray-600 mt-2">Manage and track all outsourcing records</p>
                     </div>
                     <?php if (hasPermission('add_outsourcing')): ?>
-                    <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
+                    <div class="flex gap-3">
+                      <button onclick="openOutsourcingBulkUpload()" class="flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
+                        <span class="material-symbols-outlined">upload</span>
+                        <span class="truncate">Bulk Upload</span>
+                      </button>
+                      <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
                         <span class="material-symbols-outlined">add</span>
                         <span class="truncate">New Outsourcing</span>
-                    </a>
+                      </a>
+                    </div>
                     <?php endif; ?>
                 </div>
 
@@ -298,5 +304,94 @@ function formatCurrency($amount) {
       </div>
     </main>
   </div>
+<!-- Outsourcing Bulk Upload Modal and Script -->
+<div id="outsBulkModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-medium text-gray-900">Bulk Upload Outsourcing</h3>
+      <button onclick="closeOutsourcingBulkUpload()" class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form id="outsBulkForm" enctype="multipart/form-data">
+      <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+        <h4 class="text-sm font-medium text-blue-800 mb-2">Upload Format Requirements</h4>
+        <div class="text-sm text-blue-700">
+          <p class="mb-1">Required columns (case-sensitive). CSV (comma) or TSV (tab) files are supported:</p>
+          <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong>project_details</strong></li>
+            <li><strong>cost_center</strong></li>
+            <li><strong>customer_po</strong></li>
+            <li><strong>vendor_name</strong></li>
+            <li><strong>cantik_po_no</strong></li>
+            <li><strong>cantik_po_date</strong> - Excel serial or valid date</li>
+            <li><strong>cantik_po_value</strong> - numeric</li>
+            <li><strong>vendor_invoice_frequency</strong></li>
+            <li><strong>vendor_inv_number</strong></li>
+            <li><strong>vendor_inv_date</strong> - Excel serial or valid date</li>
+            <li><strong>vendor_inv_value</strong> - numeric</li>
+          </ul>
+          <p class="mt-2">Optional columns: payment_status_from_ntt, payment_value, payment_date, remarks</p>
+        </div>
+      </div>
+      <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+        <h4 class="text-sm font-medium text-green-800 mb-2">Download Template</h4>
+        <a href="sample_template.csv" download="outsourcing_template.csv" class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
+          <span class="material-symbols-outlined text-sm">download</span>
+          Download Sample CSV
+        </a>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select CSV/TSV File</label>
+        <input type="file" id="outsFile" name="csvFile" accept=".csv,.tsv,.txt" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+      </div>
+      <div class="mb-4 flex items-center gap-3">
+        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" id="outsDryRun" class="rounded border-gray-300"> Dry run (validate only)
+        </label>
+        <button type="button" id="outsDownloadErrors" onclick="downloadOutsErrors()" class="hidden px-3 py-2 bg-yellow-600 text-white rounded-md text-sm hover:bg-yellow-700">Download error CSV</button>
+      </div>
+      <div id="outsErrors" class="hidden bg-red-50 border border-red-200 rounded-md p-4 mb-4 text-sm text-red-700"></div>
+      <div class="flex justify-end gap-3">
+        <button type="button" onclick="closeOutsourcingBulkUpload()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Upload</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  let lastOutsErrors = null;
+  function openOutsourcingBulkUpload(){ document.getElementById('outsBulkModal').classList.remove('hidden'); }
+  function closeOutsourcingBulkUpload(){ document.getElementById('outsBulkModal').classList.add('hidden'); document.getElementById('outsErrors').classList.add('hidden'); }
+  document.getElementById('outsBulkForm').addEventListener('submit', async (e)=>{
+    e.preventDefault(); const f=document.getElementById('outsFile').files[0]; if(!f){return;}
+    const fd=new FormData(); fd.append('csvFile', f);
+    if (document.getElementById('outsDryRun').checked) { fd.append('dry_run','1'); }
+    const r= await fetch('bulk_upload.php',{method:'POST',body:fd}); const t= await r.text(); let data;
+    try{ data=JSON.parse(t);}catch(err){ showOutsErr('Server returned invalid JSON: '+t.substring(0,300)); return; }
+    lastOutsErrors = data.errors || [];
+    document.getElementById('outsDownloadErrors').classList.toggle('hidden', lastOutsErrors.length === 0);
+    if(!data.success){ showOutsErr(data.errors.map(e=>`Row ${e.row}: ${e.message}`).join('<br>')); } else {
+      if (document.getElementById('outsDryRun').checked) {
+        const ok = data.inserted || 0;
+        showOutsErr(`Dry run completed. ${ok} rows would be inserted. ${lastOutsErrors.length} rows have issues.`);
+        const el=document.getElementById('outsErrors');
+        el.classList.remove('bg-red-50','border-red-200','text-red-700');
+        el.classList.add('bg-blue-50','border-blue-200','text-blue-700');
+      } else {
+        location.reload();
+      }
+    }
+  });
+  function showOutsErr(msg){ const el=document.getElementById('outsErrors'); el.innerHTML=msg; el.classList.remove('hidden'); }
+  function downloadOutsErrors(){
+    if (!lastOutsErrors || lastOutsErrors.length===0) return;
+    const header = ['row','message'];
+    const lines = [header.join(',')].concat(lastOutsErrors.map(e=>`${e.row},"${(e.message||'').replace(/"/g,'""')}"`));
+    const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='outsourcing_errors.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+</script>
 </body>
 </html>

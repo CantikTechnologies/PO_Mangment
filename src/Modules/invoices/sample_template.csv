@@ -1,0 +1,4 @@
+project_details,cost_center,customer_po,cantik_invoice_no,cantik_invoice_date,cantik_inv_value_taxable,against_vendor_inv_number,payment_receipt_date,payment_advise_no,vendor_name
+"Sample Project - Development Team","Sample PT","4500099999","CTPL/24-25/0001",45679,150000,,,
+"Another Project - QA Team","QA PT","4500099998","CTPL/24-25/0002",45680,200000,,,
+

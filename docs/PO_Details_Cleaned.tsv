@@ -1,0 +1,32 @@
+project_description	cost_center	sow_number	start_date	end_date	po_number	po_date	po_value	billing_frequency	target_gm	vendor_name	remarks	pending_amount	po_status
+Raptakos Resource Deployment - Anuj Kushwaha	Raptakos PT	FC2024-497		45746	4500095281		175500	Monthly	0.05	VRATA TECH SOLUTIONS PRIVATE LIMITED	Jan-39000, Feb & Mar 68250		
+Raptakos Resource Deployment - Anuj Kushwaha	Raptakos PT	FC2025-073		45807	4500098831		136500	Monthly	0.05	VRATA TECH SOLUTIONS PRIVATE LIMITED	Apr & May 38250		
+Panasonic Resource Deploment - Shankar Bhuyan	GGN-NTT-PANASONIC-PT-01	FC2024-391		45984	4500095649		1999992	Monthly	0.1	BCT Consulting Private Limited	Monthly Billing Rate - 166666		
+HMSI Resource Deployment- Dotnet - Alok Kumar	GGN-NTT-HMSI-DOTNET-PT-01	FC2025-080		46111	4500098672		1043120	Monthly	0.05	CANTICLE TECHNOLOGIES PRIVATE LIMITED	Monthly Billing Rate - 92040		
+Quess Corp Resource Deployment - Yallappa Satyappa Halagodi	NTT-Quesscorp-PT-01	FC2024-390		45724	4500097314		625000	Monthly	0.05	TRIBAL SOLUTIONS CONSULTING SERVICES PVT	Monthly Billing Rate - 175000		
+Sun Phrma - Website AMC	Sun Phrama PT	FC2024-465		45960	4500095362		1068054	Monthly	0.05	CARMATEC IT SOLUTIONS PRIVATE LIMITED	Monthly Billing rate - 78967		
+HCIL - MDM - Soti	HCIL PT	FC2024-251	37004	47931	4500092529		390141			Winnovation Education Services Pvt			
+HCIL - MDM - Soti	HCIL PT	FC2024-003	37005	47932	4500097684		578813			Winnovation Education Services Pvt			
+HCIL - MDM - Soti	HCIL PT	FC2025-010	37005	47932	4500097799		257800			Winnovation Education Services Pvt			
+HCIL - ITSM & NMS	HCIL PT	FC2024-243	37157	47931	4500092808		552500			SeaInfonet Pvt Ltd			
+HCIL - ITSM & NMS	HCIL PT	FC2025-005			4500097527		1231905			SeaInfonet Pvt Ltd			
+HCIL - ITSM & NMS	HCIL PT				4500092930		13500			SeaInfonet Pvt Ltd			
+FInder Fee - Pay to vendor	NTT -PT -Finder Fees	FC2024-135	47353	47019	4500091403		229075			AUROPRO SOFT SYSTEMS PVT LTD			
+FInder Fee - Pay to vendor	NTT -PT -Finder Fees	FC2024-136	47353	47749	4500091408		649740			AUROPRO SOFT SYSTEMS PVT LTD			
+	GGN-NTT-BMW-RPA- PT 01				4500087051		525000		0.05	BUSYBOTS PRIVATE LIMITED	Actual PT Margin achieved 3.55% Total PO Value is 966000/- & PT Value 525000/-		
+	GGN-NTT-BMW-RPA- PT 01				4500089409		525000		0.05	BUSYBOTS PRIVATE LIMITED	Total PO Value is 966000/- & PT Value 525000/-		
+	GGN-NTT-HMSI-RPA-PT-01									#N/A			
+	NTT-BMW- BMW-penetration Testing - PT-0									#N/A			
+BMW	NTT -PT -Finder Fees	FC2024-253		45586	4500092198		168000	Monthly	0.05	AUROPRO SOFT SYSTEMS PVT LTD			
+Resource Deployment - Panchalal Yadav	QuessCorp	FC2025-176		45960	4500099372	45831	1364955	Monthly	0.05	Highsky IT Solutions Private Limited			
+ADP Resource Deployment-Nagothi Sumitranjali	Finder Fees – PT	FC2025-090		45868	4500100033		90000		0.05	BCT Consulting Private Limited			
+ADP Resource Deployment-Mounika Nandam	Finder Fees – PT	FC2025-091		45868	4500100034		108000		0.05	BCT Consulting Private Limited			
+HCIL - MDM - Soti	HCIL PT	FC2025-045		45746	4500100035	42209	52500	Once	0.05	Winnovation Education Services Pvt			
+Alkem Laboratories Resource Deployment - Krunal Khode	Alkem Laboratories - PT	FC2025-230		45949	4500100039	42209	1164167	Monthly	0.1	Abhiyanta India Solution Private Limited	Monthly Billing Rate - 175,000		
+Raptakos Resource Deployment - Mayur Ghule	Raptakos PT	FC2025-257		46111	4500100053	42209	1059300	Monthly	0.05	VRATA TECH SOLUTIONS PRIVATE LIMITED	Monthly Billing Rate - 117,700		
+ADP Resource Deployment-Ankush Dilip Sangamwar	Finder Fees – PT	FC2025-269		45837	4500100130	42940	85000	Once	0.05	AUROPRO SOFT SYSTEMS PVT LTD			
+Sun Phrma - Website AMS- Ramu Verma	Sun Phrama PT	FC2025-137		46021	4500100177	43305	1945125	Monthly	0.05	ITSHRI SOLUTION LLP	Monthly Billing Rate- 205,833		
+	GGN-NTT-BMW-OA - PT-01				4500083044		1812600	Monthly	0.05	Cinesonic Audio Visual Pvt Ltd			
+	GGN-NTT-BMW-OA - PT-01				4500094598		673920	Monthly	0.05	Cinesonic Audio Visual Pvt Ltd			
+Saurabh Jamburgekar Sreedhar Katakam	GGN-NTT-KTFL-PT-01	FC2025-180		45807	4500100823		941250	Monthly	0.05	KAPARTHI CONSULTANCY SERVICES	Additional PO required for Saurav for Apr'25 & May' of 30000/-		
+HMSI Resource Deployment- Shubham Mishra	HMSI Bot Support-RPA	FC2024-416		45929	4500094574		1452000	Monthly	0.05	BUSYBOTS PRIVATE LIMITED	Monthly Billing-146000		

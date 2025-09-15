@@ -38,8 +38,9 @@ $activeClass = function(array $needles) use ($request_uri, $current_file, $curre
   <div class="flex flex-1 items-center justify-end gap-4">
     <nav class="hidden md:flex items-center gap-2">
       <?php 
-        // Dashboard should be active only on project root index
-        $isRoot = ($current_file === 'index.php');
+        // Dashboard should be active only for the project's root index.php
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $isRoot = ($scriptName === ($base . '/index.php'));
       ?>
       <a class="rounded-full px-4 py-2 text-sm font-medium <?= $isRoot ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/index.php">Dashboard</a>
       
