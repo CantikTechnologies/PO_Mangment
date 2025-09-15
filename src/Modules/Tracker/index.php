@@ -72,17 +72,23 @@ $completed_trackers = 0;
 $pending_trackers = 0;
 $in_progress_trackers = 0;
 foreach ($trackers as $t) {
-    $status = $t['status'] ?? '';
-    if ($status === 'Complete') $completed_trackers++;
-    elseif ($status === 'Pending') $pending_trackers++;
-    elseif ($status === 'In Progress') $in_progress_trackers++;
+    $status = trim((string)($t['status'] ?? ''));
+    if (in_array($status, ['Complete', 'Completed'], true)) {
+        $completed_trackers++;
+    } elseif ($status === 'Pending') {
+        $pending_trackers++;
+    } elseif (in_array($status, ['In Progress', 'In-Progress'], true)) {
+        $in_progress_trackers++;
+    }
 }
 
 function getStatusColor($status) {
     switch ($status) {
         case 'Complete':
+        case 'Completed':
             return 'bg-green-100 text-green-800';
         case 'In Progress':
+        case 'In-Progress':
             return 'bg-blue-100 text-blue-800';
         case 'Pending':
             return 'bg-yellow-100 text-yellow-800';
