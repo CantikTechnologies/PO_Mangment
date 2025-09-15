@@ -31,10 +31,10 @@ $activeClass = function(array $needles) use ($request_uri): string {
   </div>
   <div class="flex flex-1 items-center justify-end gap-4">
     <nav class="hidden md:flex items-center gap-2">
-      <?php $dashActive = $activeClass(["/index.php", "/"]); ?>
+      <?php $dashActive = $activeClass(["/po-mgmt/index.php", "/index.php"]); ?>
       <a class="rounded-full px-4 py-2 text-sm font-medium <?= $dashActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="/index.php">Dashboard</a>
       
-      <?php $poActive = $activeClass(["/src/po_details/"]); ?>
+      <?php $poActive = $activeClass(["/po-mgmt/src/Modules/po_details/", "/src/Modules/po_details/"]); ?>
       <div class="relative group">
         <a class="rounded-full px-4 py-2 text-sm font-medium <?= $poActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="/src/Modules/po_details/list.php">
           Purchase Orders
@@ -48,7 +48,7 @@ $activeClass = function(array $needles) use ($request_uri): string {
         </div>
       </div>
       
-      <?php $invActive = $activeClass(["/src/invoices/"]); ?>
+      <?php $invActive = $activeClass(["/po-mgmt/src/Modules/invoices/", "/src/Modules/invoices/"]); ?>
       <div class="relative group">
         <a class="rounded-full px-4 py-2 text-sm font-medium <?= $invActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="/src/Modules/invoices/list.php">
           Invoices
@@ -62,7 +62,7 @@ $activeClass = function(array $needles) use ($request_uri): string {
         </div>
       </div>
       
-      <?php $outActive = $activeClass(["/src/outsourcing/"]); ?>
+      <?php $outActive = $activeClass(["/po-mgmt/src/Modules/outsourcing/", "/src/Modules/outsourcing/"]); ?>
       <div class="relative group">
         <a class="rounded-full px-4 py-2 text-sm font-medium <?= $outActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="/src/Modules/outsourcing/list.php">
           Outsourcing
@@ -76,10 +76,10 @@ $activeClass = function(array $needles) use ($request_uri): string {
         </div>
       </div>
       
-      <?php $soActive = $activeClass(["/src/so_form.php"]); ?>
+      <?php $soActive = $activeClass(["/po-mgmt/so_form.php", "/so_form.php"]); ?>
       <a class="rounded-full px-4 py-2 text-sm font-medium <?= $soActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="/so_form.php">Reports</a>
       
-      <?php $trackerActive = $activeClass(["/src/Tracker%20Updates/"]); ?>
+      <?php $trackerActive = $activeClass(["/po-mgmt/src/Modules/Tracker/", "/src/Modules/Tracker/"]); ?>
       <div class="relative group">
           <a class="rounded-full px-4 py-2 text-sm font-medium <?= $trackerActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="/src/Modules/Tracker/index.php">
           Tracker Updates
