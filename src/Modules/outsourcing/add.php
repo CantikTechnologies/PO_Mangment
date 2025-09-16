@@ -272,9 +272,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Payment Value -->
                             <div>
                                 <label for="payment_value" class="block text-sm font-medium text-gray-700 mb-2">Payment Value</label>
-                                <input type="number" id="payment_value" name="payment_value" step="0.01" readonly
+                                <input type="number" id="payment_value" name="payment_value" step="0.01"
                                        value="<?= htmlspecialchars($_POST['payment_value'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <!-- Payment Date -->
@@ -292,6 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="number" id="pending_payment" name="pending_payment" step="0.01" readonly
                                        value="<?= htmlspecialchars($_POST['pending_payment'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                <p class="mt-1 text-xs text-gray-500">Calculated as Net Payable − Payment Value.</p>
                             </div>
 
                             <!-- Remarks -->
@@ -358,5 +359,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         input.addEventListener('paste', (e) => { const text=(e.clipboardData||window.clipboardData).getData('text'); const iso=toIso(text); if(iso){ e.preventDefault(); input.value=iso; } });
     };
     document.querySelectorAll('input[type="date"][data-accept-ddmmyyyy]').forEach(wire);
+})();
+// Live calculations for outsourcing: TDS (2%), Net Payable, Pending Payment
+(function() {
+    const byId = (id) => document.getElementById(id);
+    const invEl = byId('vendor_inv_value');
+    const tdsEl = byId('tds_ded');
+    const netEl = byId('net_payble');
+    const payValEl = byId('payment_value');
+    const pendingEl = byId('pending_payment');
+    const cantikPoValEl = byId('cantik_po_value');
+    const customerPoEl = byId('customer_po');
+    const remainingBalEl = byId('remaining_bal_in_po');
+    let bookedTillDate = 0;
+
+    function recalc() {
+        if (!invEl || !tdsEl || !netEl || !pendingEl) return;
+        const inv = parseFloat(invEl.value || '0') || 0;
+        const tds = +(inv * 0.02).toFixed(2); // 2%
+        const net = +((inv * 1.18) - tds).toFixed(2); // GST 18%
+        const pay = parseFloat((payValEl && payValEl.value) ? payValEl.value : '0') || 0;
+        const pending = Math.max(0, +(net - pay).toFixed(2));
+
+        tdsEl.value = isFinite(tds) ? tds : '';
+        netEl.value = isFinite(net) ? net : '';
+        pendingEl.value = isFinite(pending) ? pending : '';
+
+        // Remaining balance in PO = Cantik PO Value - Vendor invoices booked till date
+        const cantikPoVal = parseFloat(cantikPoValEl && cantikPoValEl.value ? cantikPoValEl.value : '0') || 0;
+        const remaining = Math.max(0, +(cantikPoVal - bookedTillDate).toFixed(2));
+        if (remainingBalEl) remainingBalEl.value = isFinite(remaining) ? remaining : '';
+    }
+
+    if (invEl) ['input','change','blur'].forEach(e=>invEl.addEventListener(e, recalc));
+    if (payValEl) ['input','change','blur'].forEach(e=>payValEl.addEventListener(e, recalc));
+    // Fetch booked till date when customer_po is known
+    async function fetchBookedTillDate() {
+        if (!customerPoEl || !customerPoEl.value) return;
+        try {
+            const res = await fetch(`get_po_vendor_sum.php?po_number=${encodeURIComponent(customerPoEl.value)}`);
+            if (!res.ok) return;
+            const json = await res.json();
+            if (json && json.success) {
+                bookedTillDate = parseFloat(json.data.total_booked || 0) || 0;
+                recalc();
+            }
+        } catch (_) {}
+    }
+    if (customerPoEl) {
+        ['change','blur'].forEach(e=>customerPoEl.addEventListener(e, fetchBookedTillDate));
+        // also trigger once on load
+        fetchBookedTillDate();
+    }
+
+    // Initial calc
+    recalc();
 })();
 </script>
