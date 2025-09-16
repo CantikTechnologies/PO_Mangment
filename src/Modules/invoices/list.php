@@ -194,6 +194,7 @@ function formatCurrency($amount) {
                         <table class="w-full">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Details</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Financial</th>
@@ -202,8 +203,9 @@ function formatCurrency($amount) {
               </tr>
             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <?php while ($invoice = $invoice_results->fetch_assoc()): ?>
+                                <?php $rowNum = 1; while ($invoice = $invoice_results->fetch_assoc()): ?>
                                 <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><?= $rowNum++ ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div>
                                             <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($invoice['cantik_invoice_no']) ?></div>

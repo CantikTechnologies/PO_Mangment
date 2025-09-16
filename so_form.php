@@ -59,6 +59,13 @@ function formatCurrency($amount) {
 function formatPercentage($value) {
     return is_numeric($value) ? number_format((float)$value, 2) . '%' : '-';
 }
+
+function badgePctClass($pct) {
+    $v = is_numeric($pct) ? (float)$pct : 0.0;
+    if ($v >= 20) return 'bg-green-100 text-green-700';
+    if ($v >= 10) return 'bg-amber-100 text-amber-700';
+    return 'bg-red-100 text-red-700';
+}
 ?>
 
 <!DOCTYPE html>
@@ -150,26 +157,27 @@ function formatPercentage($value) {
                         <p class="text-xs text-gray-500 mt-1">Sale Margin Till date = (Billed till date − Vendor Invoicing Till Date) / Billed till date. Variance = Sale Margin − Target GM.</p>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-50">
+                        <table class="w-full text-sm table-fixed">
+                            <thead class="bg-white/70 backdrop-blur supports-backdrop-blur sticky top-0 z-10 border-b">
                                 <tr>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Project name</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Cost centre</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Customer PO no</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Customer PO value</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Billed till date</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Remaining balance in PO</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Vendor name</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-600 tracking-wider">Cantik PO no</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Vendor PO value</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Vendor invoicing till date</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Remaining balance in PO</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Sale margin till date</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Target GM</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-600 tracking-wider">Variance in GM</th>
+                                    <th class="px-3 py-3 w-12 text-left font-semibold text-gray-800 tracking-wide">ID</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-800 tracking-wide">Project Name</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-800 tracking-wide">Cost Centre</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-800 tracking-wide">Customer PO No</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Customer PO Value</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Billed Till Date</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Remaining Balance</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-800 tracking-wide">Vendor Name</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-800 tracking-wide">Cantik PO No</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Vendor PO Value</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Vendor Invoicing</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Remaining Balance</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Sale Margin</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Target GM</th>
+                                    <th class="px-4 py-3 text-right font-semibold text-gray-800 tracking-wide">Variance</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-gray-100">
                                 <?php
 $sql = "
   SELECT
@@ -228,8 +236,10 @@ if ($param_types !== '') {
 if (isset($prep_error)) {
     echo "<tr><td colspan='6' class='text-center py-8 text-red-600'>Query error: " . htmlspecialchars($prep_error) . "</td></tr>";
 } elseif ($res && $res->num_rows > 0) {
+    $rowNum = 1;
     while ($r = $res->fetch_assoc()) {
         echo "<tr class='hover:bg-gray-50'>";
+        echo "<td class='px-3 py-3 text-gray-700'>" . $rowNum++ . "</td>";
         echo "<td class='px-4 py-3'>" . htmlspecialchars($r['project'] ?? '') . "</td>";
         echo "<td class='px-4 py-3'>" . htmlspecialchars($r['cost_center'] ?? '') . "</td>";
         echo "<td class='px-4 py-3'>" . htmlspecialchars($r['customer_po_no'] ?? '') . "</td>";
@@ -245,11 +255,11 @@ if (isset($prep_error)) {
         echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['vendor_po_value'] ?? 0) . "</td>";
         echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['vendor_invoicing_till_date'] ?? 0) . "</td>";
         echo "<td class='px-4 py-3 text-right'>" . formatCurrency($r['remaining_balance_in_po'] ?? 0) . "</td>";
-        echo "<td class='px-4 py-3 text-right'>" . formatPercentage($r['margin_till_date'] ?? 0) . "</td>";
-        echo "<td class='px-4 py-3 text-right'>" . formatPercentage($r['target_gm'] ?? 0) . "</td>";
+        echo "<td class='px-4 py-3 text-right'><span class='inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium " . badgePctClass($r['margin_till_date'] ?? 0) . "'>" . formatPercentage($r['margin_till_date'] ?? 0) . "</span></td>";
+        echo "<td class='px-4 py-3 text-right'><span class='inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700'>" . formatPercentage($r['target_gm'] ?? 0) . "</span></td>";
         $variance = $r['variance_in_gm'] ?? 0;
-        $variance_class = ($variance >= 0) ? 'text-green-600' : 'text-red-600';
-        echo "<td class='px-4 py-3 text-right font-medium $variance_class'>" . formatPercentage($variance) . "</td>";
+        $vClass = ($variance >= 0) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+        echo "<td class='px-4 py-3 text-right'><span class='inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium $vClass'>" . formatPercentage($variance) . "</span></td>";
                                         
         echo "</tr>";
     }

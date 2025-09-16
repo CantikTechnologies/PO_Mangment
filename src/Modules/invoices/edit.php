@@ -31,6 +31,21 @@ if (!$invoice) {
     exit();
 }
 
+// Derive vendor name from outsourcing if missing
+if (empty(trim((string)($invoice['vendor_name'] ?? '')))) {
+    $derivedVendor = '';
+    if ($stmt = $conn->prepare("SELECT vendor_name FROM outsourcing_detail WHERE customer_po = ? AND vendor_name IS NOT NULL AND vendor_name <> '' ORDER BY id DESC LIMIT 1")) {
+        $stmt->bind_param('s', $invoice['customer_po']);
+        $stmt->execute();
+        $rs = $stmt->get_result();
+        if ($row = $rs->fetch_assoc()) { $derivedVendor = trim((string)$row['vendor_name']); }
+        $stmt->close();
+    }
+    if ($derivedVendor !== '') {
+        $invoice['vendor_name'] = $derivedVendor;
+    }
+}
+
 // Convert Excel dates to readable format
 function excelToDate($excel_date) {
     if (empty($excel_date)) return '';
@@ -52,6 +67,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_receipt_date = $_POST['payment_receipt_date'] ?: null;
     $payment_advise_no = trim($_POST['payment_advise_no'] ?? '');
     $vendor_name = trim($_POST['vendor_name'] ?? '');
+    if ($vendor_name === '') {
+        $derivedVendor = '';
+        if ($stmt = $conn->prepare("SELECT vendor_name FROM outsourcing_detail WHERE customer_po = ? AND vendor_name IS NOT NULL AND vendor_name <> '' ORDER BY id DESC LIMIT 1")) {
+            $stmt->bind_param('s', $customer_po);
+            $stmt->execute();
+            $rs = $stmt->get_result();
+            if ($row = $rs->fetch_assoc()) { $derivedVendor = trim((string)$row['vendor_name']); }
+            $stmt->close();
+        }
+        if ($derivedVendor !== '') { $vendor_name = $derivedVendor; }
+    }
 
     // Convert dates to Excel format if provided (cast to integers)
     $cantik_invoice_date_excel = $cantik_invoice_date ? (int)floor((strtotime($cantik_invoice_date) / 86400) + 25569) : null;

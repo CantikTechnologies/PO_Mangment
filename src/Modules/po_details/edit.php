@@ -31,6 +31,30 @@ if (!$po) {
     exit();
 }
 
+// Derive vendor name from outsourcing/billing if missing
+if (empty(trim((string)($po['vendor_name'] ?? '')))) {
+    $derivedVendor = '';
+    // Prefer latest from outsourcing_detail
+    if ($stmt = $conn->prepare("SELECT vendor_name FROM outsourcing_detail WHERE customer_po = ? AND vendor_name IS NOT NULL AND vendor_name <> '' ORDER BY id DESC LIMIT 1")) {
+        $stmt->bind_param('s', $po['po_number']);
+        $stmt->execute();
+        $rs = $stmt->get_result();
+        if ($row = $rs->fetch_assoc()) { $derivedVendor = trim((string)$row['vendor_name']); }
+        $stmt->close();
+    }
+    // Fallback to billing_details
+    if ($derivedVendor === '' && ($stmt = $conn->prepare("SELECT vendor_name FROM billing_details WHERE customer_po = ? AND vendor_name IS NOT NULL AND vendor_name <> '' ORDER BY id DESC LIMIT 1"))) {
+        $stmt->bind_param('s', $po['po_number']);
+        $stmt->execute();
+        $rs = $stmt->get_result();
+        if ($row = $rs->fetch_assoc()) { $derivedVendor = trim((string)$row['vendor_name']); }
+        $stmt->close();
+    }
+    if ($derivedVendor !== '') {
+        $po['vendor_name'] = $derivedVendor;
+    }
+}
+
 // Convert Excel dates to readable format
 function excelToDate($excel_date) {
     if (empty($excel_date)) return '';
@@ -52,6 +76,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = trim($_POST['po_status'] ?? 'Active');
     $remarks = trim($_POST['remarks'] ?? '');
     $vendor = trim($_POST['vendor_name'] ?? '');
+    if ($vendor === '') {
+        // If still empty, attempt to derive using the posted PO number
+        $derivedVendor = '';
+        if ($stmt = $conn->prepare("SELECT vendor_name FROM outsourcing_detail WHERE customer_po = ? AND vendor_name IS NOT NULL AND vendor_name <> '' ORDER BY id DESC LIMIT 1")) {
+            $stmt->bind_param('s', $po_number);
+            $stmt->execute();
+            $rs = $stmt->get_result();
+            if ($row = $rs->fetch_assoc()) { $derivedVendor = trim((string)$row['vendor_name']); }
+            $stmt->close();
+        }
+        if ($derivedVendor === '' && ($stmt = $conn->prepare("SELECT vendor_name FROM billing_details WHERE customer_po = ? AND vendor_name IS NOT NULL AND vendor_name <> '' ORDER BY id DESC LIMIT 1"))) {
+            $stmt->bind_param('s', $po_number);
+            $stmt->execute();
+            $rs = $stmt->get_result();
+            if ($row = $rs->fetch_assoc()) { $derivedVendor = trim((string)$row['vendor_name']); }
+            $stmt->close();
+        }
+        if ($derivedVendor !== '') { $vendor = $derivedVendor; }
+    }
     $customer_name = trim($_POST['customer_name'] ?? '');
     
     // Only validate PO Number as required
