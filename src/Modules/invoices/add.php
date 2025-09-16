@@ -18,20 +18,20 @@ $success = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $project_details = trim($_POST['project_details']);
-    $cost_center = trim($_POST['cost_center']);
-    $customer_po = trim($_POST['customer_po']);
+    $project_details = trim($_POST['project_details'] ?? '');
+    $cost_center = trim($_POST['cost_center'] ?? '');
+    $customer_po = trim($_POST['customer_po'] ?? '');
     $remaining_balance = $_POST['remaining_balance_in_po'] ?: 0;
-    $cantik_invoice_no = trim($_POST['cantik_invoice_no']);
+    $cantik_invoice_no = trim($_POST['cantik_invoice_no'] ?? '');
     $cantik_invoice_date = $_POST['cantik_invoice_date'] ?: null;
     $cantik_inv_value_taxable = $_POST['cantik_inv_value_taxable'] ?: 0;
     // Compute TDS @2% and Receivable = (Taxable * 1.18) - TDS
     $tds = round(((float)$cantik_inv_value_taxable) * 0.02, 2);
     $receivable = round((((float)$cantik_inv_value_taxable) * 1.18) - $tds, 2);
-    $against_vendor_inv_number = trim($_POST['against_vendor_inv_number']);
+    $against_vendor_inv_number = trim($_POST['against_vendor_inv_number'] ?? '');
     $payment_receipt_date = $_POST['payment_receipt_date'] ?: null;
-    $payment_advise_no = trim($_POST['payment_advise_no']);
-    $vendor_name = trim($_POST['vendor_name']);
+    $payment_advise_no = trim($_POST['payment_advise_no'] ?? '');
+    $vendor_name = trim($_POST['vendor_name'] ?? '');
 
     // Convert dates to Excel format if provided
     $cantik_invoice_date_excel = $cantik_invoice_date ? (strtotime($cantik_invoice_date) / 86400) + 25569 : null;
@@ -130,24 +130,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Project Details -->
                             <div class="md:col-span-2">
-                                <label for="project_details" class="block text-sm font-medium text-gray-700 mb-2">Project Details *</label>
-                                <input type="text" id="project_details" name="project_details" required
+                                <label for="project_details" class="block text-sm font-medium text-gray-700 mb-2">Project Details</label>
+                                <input type="text" id="project_details" name="project_details"
                                        value="<?= htmlspecialchars($_POST['project_details'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <!-- Cost Center -->
                             <div>
-                                <label for="cost_center" class="block text-sm font-medium text-gray-700 mb-2">Cost Center *</label>
-                                <input type="text" id="cost_center" name="cost_center" required
+                                <label for="cost_center" class="block text-sm font-medium text-gray-700 mb-2">Cost Center</label>
+                                <input type="text" id="cost_center" name="cost_center"
                                        value="<?= htmlspecialchars($_POST['cost_center'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <!-- Customer PO -->
                             <div>
-                                <label for="customer_po" class="block text-sm font-medium text-gray-700 mb-2">Customer PO *</label>
-                                <input type="text" id="customer_po" name="customer_po" required
+                                <label for="customer_po" class="block text-sm font-medium text-gray-700 mb-2">Customer PO</label>
+                                <input type="text" id="customer_po" name="customer_po"
                                        value="<?= htmlspecialchars($_POST['customer_po'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
@@ -162,8 +162,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <!-- Cantik Invoice Number -->
                             <div>
-                                <label for="cantik_invoice_no" class="block text-sm font-medium text-gray-700 mb-2">Cantik Invoice Number *</label>
-                                <input type="text" id="cantik_invoice_no" name="cantik_invoice_no" required
+                                <label for="cantik_invoice_no" class="block text-sm font-medium text-gray-700 mb-2">Cantik Invoice Number</label>
+                                <input type="text" id="cantik_invoice_no" name="cantik_invoice_no"
                                        value="<?= htmlspecialchars($_POST['cantik_invoice_no'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
@@ -178,8 +178,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <!-- Cantik Invoice Value (Taxable) -->
                             <div>
-                                <label for="cantik_inv_value_taxable" class="block text-sm font-medium text-gray-700 mb-2">Cantik Invoice Value (Taxable) *</label>
-                                <input type="number" id="cantik_inv_value_taxable" name="cantik_inv_value_taxable" step="0.01" required
+                                <label for="cantik_inv_value_taxable" class="block text-sm font-medium text-gray-700 mb-2">Cantik Invoice Value (Taxable)</label>
+                                <input type="number" id="cantik_inv_value_taxable" name="cantik_inv_value_taxable" step="0.01"
                                        value="<?= htmlspecialchars($_POST['cantik_inv_value_taxable'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
@@ -187,17 +187,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- TDS -->
                             <div>
                                 <label for="tds" class="block text-sm font-medium text-gray-700 mb-2">TDS</label>
-                                <input type="number" id="tds" name="tds" step="0.01"
+                                <input type="number" id="tds" name="tds" step="0.01" readonly
                                        value="<?= htmlspecialchars($_POST['tds'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Receivable -->
                             <div>
                                 <label for="receivable" class="block text-sm font-medium text-gray-700 mb-2">Receivable</label>
-                                <input type="number" id="receivable" name="receivable" step="0.01"
+                                <input type="number" id="receivable" name="receivable" step="0.01" readonly
                                        value="<?= htmlspecialchars($_POST['receivable'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Against Vendor Invoice Number -->
@@ -227,9 +227,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Vendor Name -->
                             <div>
                                 <label for="vendor_name" class="block text-sm font-medium text-gray-700 mb-2">Vendor Name</label>
-                                <input type="text" id="vendor_name" name="vendor_name"
+                                <input type="text" id="vendor_name" name="vendor_name" readonly
                                        value="<?= htmlspecialchars($_POST['vendor_name'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
           </div>
           </div>
 
@@ -265,10 +265,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('cost_center').value = po.cost_center ?? '';
                     document.getElementById('customer_po').value = po.po_number ?? '';
                     setVal('vendor_name', po.vendor_name ?? '');
-                    // Suggest invoice value as taxable base
-                    if (document.getElementById('cantik_inv_value_taxable').value === '') {
-                        document.getElementById('cantik_inv_value_taxable').value = po.po_value ?? '';
-                    }
                 } catch (e) {
                     alert('Unable to fetch PO details.');
                 }
