@@ -25,8 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cantik_invoice_no = trim($_POST['cantik_invoice_no'] ?? '');
     $cantik_invoice_date = $_POST['cantik_invoice_date'] ?: null;
     $cantik_inv_value_taxable = $_POST['cantik_inv_value_taxable'] ?: 0;
-    // Compute TDS @2% and Receivable = (Taxable * 1.18) - TDS
-    $tds = round(((float)$cantik_inv_value_taxable) * 0.02, 2);
+    // Compute TDS using user-selected rate (2% default) and Receivable = (Taxable * 1.18) - TDS
+    $tds_rate = isset($_POST['tds_rate']) ? (float)$_POST['tds_rate'] : 2.0; // 2 or 10
+    $tds = round(((float)$cantik_inv_value_taxable) * ($tds_rate / 100.0), 2);
     $receivable = round((((float)$cantik_inv_value_taxable) * 1.18) - $tds, 2);
     $against_vendor_inv_number = trim($_POST['against_vendor_inv_number'] ?? '');
     $payment_receipt_date = $_POST['payment_receipt_date'] ?: null;
@@ -155,9 +156,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Remaining Balance in PO -->
                             <div>
                                 <label for="remaining_balance_in_po" class="block text-sm font-medium text-gray-700 mb-2">Remaining Balance in PO</label>
-                                <input type="number" id="remaining_balance_in_po" name="remaining_balance_in_po" step="0.01"
+                                <input type="number" id="remaining_balance_in_po" name="remaining_balance_in_po" step="0.01" readonly
                                        value="<?= htmlspecialchars($_POST['remaining_balance_in_po'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                <p class="mt-1 text-xs text-gray-500">Auto-updates from PO Value and decreases as taxable increases.</p>
                             </div>
 
                             <!-- Cantik Invoice Number -->
@@ -187,15 +189,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <!-- TDS -->
                             <div>
-                                <label for="tds" class="block text-sm font-medium text-gray-700 mb-2">TDS</label>
-                                <input type="number" id="tds" name="tds" step="0.01" readonly
-                                       value="<?= htmlspecialchars($_POST['tds'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">TDS</label>
+                                <div class="flex items-center gap-3">
+                                  <label for="tds_rate" class="text-sm text-gray-600">Rate</label>
+                                  <select id="tds_rate" name="tds_rate" class="w-24 px-2 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <option value="2" <?= (($_POST['tds_rate'] ?? '2') == '2') ? 'selected' : '' ?>>2%</option>
+                                    <option value="10" <?= (($_POST['tds_rate'] ?? '') == '10') ? 'selected' : '' ?>>10%</option>
+                                  </select>
+                                  <input type="number" id="tds" name="tds" step="0.01" readonly
+                                         value="<?= htmlspecialchars($_POST['tds'] ?? '') ?>"
+                                         class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Select TDS rate; value auto-calculates from Taxable.</p>
                             </div>
 
                             <!-- Receivable -->
                             <div>
-                                <label for="receivable" class="block text-sm font-medium text-gray-700 mb-2">Receivable</label>
+                                <label for="receivable" class="block text-sm font-medium text-gray-700 mb-2">Net Receivable</label>
                                 <input type="number" id="receivable" name="receivable" step="0.01" readonly
                                        value="<?= htmlspecialchars($_POST['receivable'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
@@ -296,6 +306,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             };
             document.querySelectorAll('input[type="date"][data-accept-ddmmyyyy]').forEach(wire);
         })();
+        // Live financial calculations and remaining balance update
+        let basePendingInPo = 0;
+        function recalcInvoiceFinancials() {
+            const taxableEl = document.getElementById('cantik_inv_value_taxable');
+            const tdsEl = document.getElementById('tds');
+            const recvEl = document.getElementById('receivable');
+            const remainEl = document.getElementById('remaining_balance_in_po');
+            const tdsRateEl = document.getElementById('tds_rate');
+            if (!taxableEl || !tdsEl || !recvEl || !remainEl) return;
+            const taxable = parseFloat(taxableEl.value || '0') || 0;
+            const rate = parseFloat((tdsRateEl && tdsRateEl.value) ? tdsRateEl.value : '2') || 2;
+            const tds = +(taxable * (rate/100)).toFixed(2);
+            const receivable = +((taxable * 1.18) - tds).toFixed(2);
+            if (!isNaN(tds)) tdsEl.value = tds;
+            if (!isNaN(receivable)) recvEl.value = receivable;
+            const newRemaining = Math.max(0, +(basePendingInPo - taxable).toFixed(2));
+            if (!isNaN(newRemaining)) remainEl.value = newRemaining;
+        }
+        const taxableInput = document.getElementById('cantik_inv_value_taxable');
+        if (taxableInput) {
+            ['input','change','blur'].forEach(evt => taxableInput.addEventListener(evt, recalcInvoiceFinancials));
+        }
+        const tdsRateInput = document.getElementById('tds_rate');
+        if (tdsRateInput) {
+            ['change','input','blur'].forEach(evt => tdsRateInput.addEventListener(evt, recalcInvoiceFinancials));
+        }
         const fetchBtn = document.getElementById('fetchPoBtn');
         if (fetchBtn) {
             fetchBtn.addEventListener('click', async () => {
@@ -312,6 +348,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('cost_center').value = po.cost_center ?? '';
                     document.getElementById('customer_po').value = po.po_number ?? '';
                     setVal('vendor_name', po.vendor_name ?? '');
+                    // Seed remaining balance with PO Value as requested
+                    basePendingInPo = parseFloat(po.po_value ?? '0') || 0;
+                    const remainEl = document.getElementById('remaining_balance_in_po');
+                    if (remainEl && (remainEl.value === '' || remainEl.value === undefined)) {
+                        remainEl.value = basePendingInPo;
+                    }
+                    // Recalculate with any current taxable value
+                    recalcInvoiceFinancials();
                 } catch (e) {
                     alert('Unable to fetch PO details.');
                 }

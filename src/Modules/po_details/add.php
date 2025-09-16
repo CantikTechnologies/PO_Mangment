@@ -203,19 +203,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="po_status" class="block text-sm font-medium text-gray-700 mb-2">PO Status</label>
                                 <select id="po_status" name="po_status"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
-                                    <option value="Active" <?= ($_POST['po_status'] ?? 'Active') === 'Active' ? 'selected' : '' ?>>Active</option>
-                                    <option value="Inactive" <?= ($_POST['po_status'] ?? '') === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
-                                    <option value="Completed" <?= ($_POST['po_status'] ?? '') === 'Completed' ? 'selected' : '' ?>>Completed</option>
-                                    <option value="Cancelled" <?= ($_POST['po_status'] ?? '') === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                    <option value="Open" <?= ($_POST['po_status'] ?? 'Active') === 'Active' ? 'selected' : '' ?>>Open</option>
+                                    <option value="Closed" <?= ($_POST['po_status'] ?? '') === 'Closed' ? 'selected' : '' ?>>Closed</option>
                                 </select>
                             </div>
 
                             <!-- Vendor Name -->
                             <div>
                                 <label for="vendor_name" class="block text-sm font-medium text-gray-700 mb-2">Vendor Name</label>
-                                <input type="text" id="vendor_name" name="vendor_name"
+                                <input type="text" id="vendor_name" name="vendor_name" readonly
                                        value="<?= htmlspecialchars($_POST['vendor_name'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Customer Name -->

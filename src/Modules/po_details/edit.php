@@ -250,9 +250,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Vendor Name -->
                             <div>
                                 <label for="vendor_name" class="block text-sm font-medium text-gray-700 mb-2">Vendor Name</label>
-                                <input type="text" id="vendor_name" name="vendor_name"
+                                <input type="text" id="vendor_name" name="vendor_name" readonly
                                        value="<?= htmlspecialchars($po['vendor_name']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Customer Name -->
