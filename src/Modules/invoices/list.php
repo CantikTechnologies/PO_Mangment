@@ -74,7 +74,8 @@ $vendors_result = $conn->query($vendors_query);
 function formatDate($excel_date) {
     if (empty($excel_date)) return '-';
     $unix_date = ($excel_date - 25569) * 86400;
-    return date('d-m-Y', $unix_date);
+    $formatted = date('d M Y', $unix_date);
+    return strtolower($formatted); // 16 jan 2025
 }
 
 function formatCurrency($amount) {

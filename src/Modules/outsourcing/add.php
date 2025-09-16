@@ -179,9 +179,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Cantik PO Date -->
                             <div>
                                 <label for="cantik_po_date" class="block text-sm font-medium text-gray-700 mb-2">Cantik PO Date</label>
-                                <input type="date" id="cantik_po_date" name="cantik_po_date"
+                                <input type="date" id="cantik_po_date" name="cantik_po_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= htmlspecialchars($_POST['cantik_po_date'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
                             <!-- Cantik PO Value -->
@@ -225,9 +226,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Vendor Invoice Date -->
                             <div>
                                 <label for="vendor_inv_date" class="block text-sm font-medium text-gray-700 mb-2">Vendor Invoice Date</label>
-                                <input type="date" id="vendor_inv_date" name="vendor_inv_date"
+                                <input type="date" id="vendor_inv_date" name="vendor_inv_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= htmlspecialchars($_POST['vendor_inv_date'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
           </div>
 
                             <!-- Vendor Invoice Value -->
@@ -278,9 +280,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Payment Date -->
                             <div>
                                 <label for="payment_date" class="block text-sm font-medium text-gray-700 mb-2">Payment Date</label>
-                                <input type="date" id="payment_date" name="payment_date"
+                                <input type="date" id="payment_date" name="payment_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= htmlspecialchars($_POST['payment_date'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
                             <!-- Pending Payment -->
@@ -339,3 +342,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </script>
 </body>
 </html>
+<script>
+(function() {
+    const toIso = (str) => {
+        if (!str) return null; const s = String(str).trim();
+        let m = /^(\d{1,2})[-\/](\d{1,2})[-\/]?(\d{4})$/i.exec(s);
+        if (m) { const d=m[1].padStart(2,'0'); const mo=m[2].padStart(2,'0'); const y=m[3]; if(+mo>=1&&+mo<=12&&+d>=1&&+d<=31) return `${y}-${mo}-${d}`; return null; }
+        m = /^(\d{1,2})[-\s]([A-Za-z]{3,})[-\s](\d{4})$/i.exec(s);
+        if (m) { const d=m[1].padStart(2,'0'); const mon=m[2].slice(0,3).toLowerCase(); const y=m[3]; const map={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'}; const mo=map[mon]; if(mo&&+d>=1&&+d<=31) return `${y}-${mo}-${d}`; return null; }
+        return null;
+    };
+    const wire = (input) => {
+        const convert = () => { const v=input.value; const iso=toIso(v); if(iso) input.value=iso; };
+        input.addEventListener('blur', convert);
+        input.addEventListener('paste', (e) => { const text=(e.clipboardData||window.clipboardData).getData('text'); const iso=toIso(text); if(iso){ e.preventDefault(); input.value=iso; } });
+    };
+    document.querySelectorAll('input[type="date"][data-accept-ddmmyyyy]').forEach(wire);
+})();
+</script>

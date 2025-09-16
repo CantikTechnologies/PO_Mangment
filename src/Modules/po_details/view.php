@@ -35,7 +35,8 @@ if (!$po) {
 function excelToDate($excel_date) {
     if (empty($excel_date)) return '';
     $unix_date = ($excel_date - 25569) * 86400;
-    return date('d-m-Y', $unix_date);
+    $formatted = date('d M Y', $unix_date);
+    return strtolower($formatted); // 16 jan 2025
 }
 
 // Get related invoices
@@ -155,6 +156,12 @@ function getBadgeClass($status) {
                                         <label class="block text-sm font-medium text-gray-500 mb-1">Vendor Name</label>
                                         <?php $derived_vendor = $po['vendor_name'] ?: ($po['vendor_from_outsourcing'] ?: $po['vendor_from_billing']); ?>
                                         <p class="text-gray-900"><?= htmlspecialchars($derived_vendor ?: 'No vendor assigned') ?></p>
+                                    </div>
+
+                                    <!-- Customer Name -->
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-500 mb-1">Customer Name</label>
+                                        <p class="text-gray-900"><?= htmlspecialchars($po['customer_name'] ?? '') ?></p>
                                     </div>
 
                                     <!-- Dates -->

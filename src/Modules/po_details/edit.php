@@ -52,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = trim($_POST['po_status'] ?? 'Active');
     $remarks = trim($_POST['remarks'] ?? '');
     $vendor = trim($_POST['vendor_name'] ?? '');
+    $customer_name = trim($_POST['customer_name'] ?? '');
     
     // Only validate PO Number as required
     if (empty($po_number)) {
@@ -65,11 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $end_excel = $end ? (int)floor((strtotime($end) / 86400) + 25569) : null;
         $po_date_excel = $po_date ? (int)floor((strtotime($po_date) / 86400) + 25569) : null;
 
-        $sql = "UPDATE po_details SET project_description = ?, cost_center = ?, sow_number = ?, start_date = ?, end_date = ?, po_number = ?, po_date = ?, po_value = ?, billing_frequency = ?, target_gm = ?, po_status = ?, remarks = ?, vendor_name = ? WHERE id = ?";
+        $sql = "UPDATE po_details SET project_description = ?, cost_center = ?, sow_number = ?, start_date = ?, end_date = ?, po_number = ?, po_date = ?, po_value = ?, billing_frequency = ?, target_gm = ?, po_status = ?, remarks = ?, vendor_name = ?, customer_name = ? WHERE id = ?";
         $stmt = $conn->prepare($sql);
         
         if ($stmt) {
-            $stmt->bind_param("sssiisidsdsssi", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $id);
+            $stmt->bind_param("sssiisidsdsssii", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $customer_name, $id);
             
             if ($stmt->execute()) {
                 $success = "Purchase order updated successfully!";
@@ -172,17 +173,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Start Date -->
                             <div>
                                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                                <input type="date" id="start_date" name="start_date"
+                                <input type="date" id="start_date" name="start_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= excelToDate($po['start_date']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
                             <!-- End Date -->
                             <div>
                                 <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                                <input type="date" id="end_date" name="end_date"
+                                <input type="date" id="end_date" name="end_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= excelToDate($po['end_date']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
                             <!-- PO Number -->
@@ -196,9 +199,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- PO Date -->
                             <div>
                                 <label for="po_date" class="block text-sm font-medium text-gray-700 mb-2">PO Date</label>
-                                <input type="date" id="po_date" name="po_date"
+                                <input type="date" id="po_date" name="po_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= excelToDate($po['po_date']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
                             <!-- PO Value -->
@@ -251,6 +255,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
+                            <!-- Customer Name -->
+                            <div>
+                                <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
+                                <input type="text" id="customer_name" name="customer_name"
+                                       value="<?= htmlspecialchars($po['customer_name'] ?? '') ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
                             <!-- Remarks -->
                             <div class="md:col-span-2">
                                 <label for="remarks" class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
@@ -276,3 +288,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </body>
 </html>
+<script>
+(function() {
+    const toIso = (str) => {
+        if (!str) return null; const s=String(str).trim();
+        let m=/^(\d{1,2})[-\/](\d{1,2})[-\/]?(\d{4})$/i.exec(s);
+        if(m){const d=m[1].padStart(2,'0'); const mo=m[2].padStart(2,'0'); const y=m[3]; if(+mo>=1&&+mo<=12&&+d>=1&&+d<=31) return `${y}-${mo}-${d}`; return null;}
+        m=/^(\d{1,2})[-\s]([A-Za-z]{3,})[-\s](\d{4})$/i.exec(s);
+        if(m){const d=m[1].padStart(2,'0'); const mon=m[2].slice(0,3).toLowerCase(); const y=m[3]; const map={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'}; const mo=map[mon]; if(mo&&+d>=1&&+d<=31) return `${y}-${mo}-${d}`; return null;}
+        return null;
+    };
+    const wire=(input)=>{
+        const convert=()=>{const v=input.value; const iso=toIso(v); if(iso) input.value=iso;};
+        input.addEventListener('blur', convert);
+        input.addEventListener('paste', (e)=>{const text=(e.clipboardData||window.clipboardData).getData('text'); const iso=toIso(text); if(iso){e.preventDefault(); input.value=iso;}});
+    };
+    document.querySelectorAll('input[type="date"][data-accept-ddmmyyyy]').forEach(wire);
+})();
+</script>

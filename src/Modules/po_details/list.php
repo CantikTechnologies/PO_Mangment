@@ -84,7 +84,8 @@ function formatDate($excel_date) {
     if ($excel_date === null || $excel_date === '' || !is_numeric($excel_date)) return '-';
     $unix_date = ((int)$excel_date - 25569) * 86400;
     // Use GMT to avoid timezone-related off-by-one day issues
-    return gmdate('d-m-Y', $unix_date);
+    $formatted = gmdate('d M Y', $unix_date); // e.g., 16 Jan 2025
+    return strtolower($formatted); // 16 jan 2025
 }
 
 function formatCurrency($amount) {
@@ -221,6 +222,9 @@ function formatCurrency($amount) {
                                                 $derived_vendor = $po['vendor_name'] ?: ($po['vendor_from_outsourcing'] ?: $po['vendor_from_billing']);
                                             ?>
                                             <div class="text-sm text-gray-500"><?= htmlspecialchars($derived_vendor ?: 'No vendor') ?></div>
+                                            <?php if (!empty($po['customer_name'])): ?>
+                                            <div class="text-sm text-gray-500">Customer: <?= htmlspecialchars($po['customer_name']) ?></div>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">

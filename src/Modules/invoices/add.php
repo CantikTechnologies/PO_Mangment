@@ -131,25 +131,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Project Details -->
                             <div class="md:col-span-2">
                                 <label for="project_details" class="block text-sm font-medium text-gray-700 mb-2">Project Details</label>
-                                <input type="text" id="project_details" name="project_details"
+                                <input type="text" id="project_details" name="project_details" readonly
                                        value="<?= htmlspecialchars($_POST['project_details'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Cost Center -->
                             <div>
                                 <label for="cost_center" class="block text-sm font-medium text-gray-700 mb-2">Cost Center</label>
-                                <input type="text" id="cost_center" name="cost_center"
+                                <input type="text" id="cost_center" name="cost_center" readonly
                                        value="<?= htmlspecialchars($_POST['cost_center'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Customer PO -->
                             <div>
                                 <label for="customer_po" class="block text-sm font-medium text-gray-700 mb-2">Customer PO</label>
-                                <input type="text" id="customer_po" name="customer_po"
+                                <input type="text" id="customer_po" name="customer_po" readonly
                                        value="<?= htmlspecialchars($_POST['customer_po'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Remaining Balance in PO -->
@@ -171,9 +171,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Cantik Invoice Date -->
                             <div>
                                 <label for="cantik_invoice_date" class="block text-sm font-medium text-gray-700 mb-2">Cantik Invoice Date</label>
-                                <input type="date" id="cantik_invoice_date" name="cantik_invoice_date"
+                                <input type="date" id="cantik_invoice_date" name="cantik_invoice_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= htmlspecialchars($_POST['cantik_invoice_date'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
                             <!-- Cantik Invoice Value (Taxable) -->
@@ -211,9 +212,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Payment Receipt Date -->
                             <div>
                                 <label for="payment_receipt_date" class="block text-sm font-medium text-gray-700 mb-2">Payment Receipt Date</label>
-                                <input type="date" id="payment_receipt_date" name="payment_receipt_date"
+                                <input type="date" id="payment_receipt_date" name="payment_receipt_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= htmlspecialchars($_POST['payment_receipt_date'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
           </div>
 
                             <!-- Payment Advise Number -->
@@ -249,6 +251,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
   </div>
   <script>
+        // Allow dd-mm-yyyy or d-MMM-yyyy paste/typing for inputs with data-accept-ddmmyyyy
+        (function() {
+            const toIso = (str) => {
+                if (!str) return null;
+                const s = String(str).trim();
+                // dd-mm-yyyy or dd/mm/yyyy
+                let m = /^(\d{1,2})[-\/](\d{1,2})[-\/]?(\d{4})$/i.exec(s);
+                if (m) {
+                    const d = m[1].padStart(2,'0');
+                    const mo = m[2].padStart(2,'0');
+                    const y = m[3];
+                    if (+mo >= 1 && +mo <= 12 && +d >= 1 && +d <= 31) return `${y}-${mo}-${d}`;
+                    return null;
+                }
+                // d-MMM-yyyy
+                m = /^(\d{1,2})[-\s]([A-Za-z]{3,})[-\s](\d{4})$/i.exec(s);
+                if (m) {
+                    const d = m[1].padStart(2,'0');
+                    const monTxt = m[2].slice(0,3).toLowerCase();
+                    const y = m[3];
+                    const map = {jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
+                    const mo = map[monTxt];
+                    if (mo && +d >= 1 && +d <= 31) return `${y}-${mo}-${d}`;
+                    return null;
+                }
+                return null;
+            };
+            const wire = (input) => {
+                const convert = () => {
+                    const v = input.value;
+                    const iso = toIso(v);
+                    if (iso) input.value = iso;
+                };
+                input.addEventListener('blur', convert);
+                input.addEventListener('paste', (e) => {
+                    const text = (e.clipboardData || window.clipboardData).getData('text');
+                    const iso = toIso(text);
+                    if (iso) {
+                        e.preventDefault();
+                        input.value = iso;
+                    }
+                });
+            };
+            document.querySelectorAll('input[type="date"][data-accept-ddmmyyyy]').forEach(wire);
+        })();
         const fetchBtn = document.getElementById('fetchPoBtn');
         if (fetchBtn) {
             fetchBtn.addEventListener('click', async () => {
