@@ -39,50 +39,58 @@ function excelToDate($excel_date) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $project = trim($_POST['project_description']);
-    $cost_center = trim($_POST['cost_center']);
-    $sow = trim($_POST['sow_number']);
+    $project = trim($_POST['project_description'] ?? '');
+    $cost_center = trim($_POST['cost_center'] ?? '');
+    $sow = trim($_POST['sow_number'] ?? '');
     $start = $_POST['start_date'] ?: null;
     $end = $_POST['end_date'] ?: null;
-    $po_number = trim($_POST['po_number']);
+    $po_number = trim($_POST['po_number'] ?? '');
     $po_date = $_POST['po_date'] ?: null;
     $po_value = $_POST['po_value'] ?: 0;
-    $billing = trim($_POST['billing_frequency']);
-    $target_gm = $_POST['target_gm'] ? ($_POST['target_gm'] / 100) : null; // Convert percentage to decimal
-    $status = trim($_POST['po_status']);
-    $remarks = trim($_POST['remarks']);
-    $vendor = trim($_POST['vendor_name']);
-
-    // Convert dates to Excel format if provided
-    $start_excel = $start ? (int)floor((strtotime($start) / 86400) + 25569) : null;
-    $end_excel = $end ? (int)floor((strtotime($end) / 86400) + 25569) : null;
-    $po_date_excel = $po_date ? (int)floor((strtotime($po_date) / 86400) + 25569) : null;
-
-    $sql = "UPDATE po_details SET project_description = ?, cost_center = ?, sow_number = ?, start_date = ?, end_date = ?, po_number = ?, po_date = ?, po_value = ?, billing_frequency = ?, target_gm = ?, po_status = ?, remarks = ?, vendor_name = ? WHERE id = ?";
-    $stmt = $conn->prepare($sql);
+    $billing = trim($_POST['billing_frequency'] ?? '');
+    $target_gm = !empty($_POST['target_gm']) ? ($_POST['target_gm'] / 100) : 0; // Convert percentage to decimal, default to 0 if empty
+    $status = trim($_POST['po_status'] ?? 'Active');
+    $remarks = trim($_POST['remarks'] ?? '');
+    $vendor = trim($_POST['vendor_name'] ?? '');
     
-    if ($stmt) {
-        $stmt->bind_param("sssiisidsdsssi", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $id);
+    // Only validate PO Number as required
+    if (empty($po_number)) {
+        $error = "PO Number is required.";
+    }
+
+    // Only proceed with database update if no validation errors
+    if (empty($error)) {
+        // Convert dates to Excel format if provided, allow NULL if empty
+        $start_excel = $start ? (int)floor((strtotime($start) / 86400) + 25569) : null;
+        $end_excel = $end ? (int)floor((strtotime($end) / 86400) + 25569) : null;
+        $po_date_excel = $po_date ? (int)floor((strtotime($po_date) / 86400) + 25569) : null;
+
+        $sql = "UPDATE po_details SET project_description = ?, cost_center = ?, sow_number = ?, start_date = ?, end_date = ?, po_number = ?, po_date = ?, po_value = ?, billing_frequency = ?, target_gm = ?, po_status = ?, remarks = ?, vendor_name = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
         
-        if ($stmt->execute()) {
-            $success = "Purchase order updated successfully!";
-            $auth->logAction('update_po', 'po_details', $id);
-            // Refresh PO data
-            $sql = "SELECT * FROM po_details WHERE id = ?";
-            $stmt2 = $conn->prepare($sql);
-            if ($stmt2) {
-                $stmt2->bind_param("i", $id);
-                $stmt2->execute();
-                $result = $stmt2->get_result();
-                $po = $result->fetch_assoc();
-                $stmt2->close();
+        if ($stmt) {
+            $stmt->bind_param("sssiisidsdsssi", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $id);
+            
+            if ($stmt->execute()) {
+                $success = "Purchase order updated successfully!";
+                $auth->logAction('update_po', 'po_details', $id);
+                // Refresh PO data
+                $sql = "SELECT * FROM po_details WHERE id = ?";
+                $stmt2 = $conn->prepare($sql);
+                if ($stmt2) {
+                    $stmt2->bind_param("i", $id);
+                    $stmt2->execute();
+                    $result = $stmt2->get_result();
+                    $po = $result->fetch_assoc();
+                    $stmt2->close();
+                }
+            } else {
+                $error = "Error: " . $stmt->error;
             }
+            if ($stmt) { $stmt->close(); }
         } else {
-            $error = "Error: " . $stmt->error;
+            $error = "Error preparing statement: " . $conn->error;
         }
-        if ($stmt) { $stmt->close(); }
-    } else {
-        $error = "Error preparing statement: " . $conn->error;
     }
 }
 ?>
@@ -139,24 +147,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Project Description -->
                             <div class="md:col-span-2">
-                                <label for="project_description" class="block text-sm font-medium text-gray-700 mb-2">Project Description *</label>
-                                <input type="text" id="project_description" name="project_description" required
+                                <label for="project_description" class="block text-sm font-medium text-gray-700 mb-2">Project Description</label>
+                                <input type="text" id="project_description" name="project_description"
                                        value="<?= htmlspecialchars($po['project_description']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <!-- Cost Center -->
                             <div>
-                                <label for="cost_center" class="block text-sm font-medium text-gray-700 mb-2">Cost Center *</label>
-                                <input type="text" id="cost_center" name="cost_center" required
+                                <label for="cost_center" class="block text-sm font-medium text-gray-700 mb-2">Cost Center</label>
+                                <input type="text" id="cost_center" name="cost_center"
                                        value="<?= htmlspecialchars($po['cost_center']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <!-- SOW Number -->
                             <div>
-                                <label for="sow_number" class="block text-sm font-medium text-gray-700 mb-2">SOW Number *</label>
-                                <input type="text" id="sow_number" name="sow_number" required
+                                <label for="sow_number" class="block text-sm font-medium text-gray-700 mb-2">SOW Number</label>
+                                <input type="text" id="sow_number" name="sow_number"
                                        value="<?= htmlspecialchars($po['sow_number']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
@@ -195,16 +203,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <!-- PO Value -->
                             <div>
-                                <label for="po_value" class="block text-sm font-medium text-gray-700 mb-2">PO Value *</label>
-                                <input type="number" id="po_value" name="po_value" step="0.01" required
+                                <label for="po_value" class="block text-sm font-medium text-gray-700 mb-2">PO Value</label>
+                                <input type="number" id="po_value" name="po_value" step="0.01"
                                        value="<?= htmlspecialchars($po['po_value']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <!-- Billing Frequency -->
                             <div>
-                                <label for="billing_frequency" class="block text-sm font-medium text-gray-700 mb-2">Billing Frequency *</label>
-                                <select id="billing_frequency" name="billing_frequency" required
+                                <label for="billing_frequency" class="block text-sm font-medium text-gray-700 mb-2">Billing Frequency</label>
+                                <select id="billing_frequency" name="billing_frequency"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                                     <option value="">Select frequency</option>
                                     <option value="Monthly" <?= $po['billing_frequency'] === 'Monthly' ? 'selected' : '' ?>>Monthly</option>

@@ -32,9 +32,17 @@ if ($cost_center_filter !== '') {
 
 if ($search !== '') {
     $like = '%' . $search . '%';
-    $where_sql .= ($where_sql ? ' AND ' : ' WHERE ') . '(ps.cost_center LIKE ? OR ps.po_number LIKE ? OR ps.vendor_name LIKE ? OR ps.project_description LIKE ?)';
-    $params = array_merge($params, [$like, $like, $like, $like]);
-    $param_types .= 'ssss';
+    // Include derived vendor name in search using subqueries
+    $where_sql .= ($where_sql ? ' AND ' : ' WHERE ') . '(
+        ps.cost_center LIKE ? OR 
+        ps.po_number LIKE ? OR 
+        ps.vendor_name LIKE ? OR 
+        (SELECT od.vendor_name FROM outsourcing_detail od WHERE od.customer_po = ps.po_number ORDER BY od.id DESC LIMIT 1) LIKE ? OR 
+        (SELECT bd.vendor_name FROM billing_details bd WHERE bd.customer_po = ps.po_number ORDER BY bd.id DESC LIMIT 1) LIKE ? OR 
+        ps.project_description LIKE ?
+    )';
+    $params = array_merge($params, [$like, $like, $like, $like, $like, $like]);
+    $param_types .= 'ssssss';
 }
 
 // Get filter options
@@ -171,7 +179,10 @@ $sql = "
     ps.po_value AS customer_po_value,
     COALESCE(bsum.total_billed, 0) AS billed_till_date,
     GREATEST(ps.po_value - COALESCE(bsum.total_billed, 0), 0) AS remaining_balance_po,
-    ps.vendor_name,
+    COALESCE(ps.vendor_name,
+      (SELECT od.vendor_name FROM outsourcing_detail od WHERE od.customer_po = ps.po_number ORDER BY od.id DESC LIMIT 1),
+      (SELECT bd.vendor_name FROM billing_details bd WHERE bd.customer_po = ps.po_number ORDER BY bd.id DESC LIMIT 1)
+    ) AS vendor_name,
     osum.latest_vendor_po_no AS cantik_po_no,
     COALESCE(osum.total_vendor_po_value, 0) AS vendor_po_value,
     COALESCE(osum.total_vendor_invoicing, 0) AS vendor_invoicing_till_date,

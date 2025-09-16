@@ -41,15 +41,23 @@ if (!empty($status_filter)) {
 }
 
 if (!empty($vendor_filter)) {
-    $where_conditions[] = "vendor_name = ?";
+    // Match vendor against stored vendor_name or derived from outsourcing/billing
+    $where_conditions[] = "(vendor_name = ? OR (SELECT od.vendor_name FROM outsourcing_detail od WHERE od.customer_po = po_details.po_number ORDER BY od.id DESC LIMIT 1) = ? OR (SELECT bd.vendor_name FROM billing_details bd WHERE bd.customer_po = po_details.po_number ORDER BY bd.id DESC LIMIT 1) = ?)";
     $params[] = $vendor_filter;
-    $param_types .= 's';
+    $params[] = $vendor_filter;
+    $params[] = $vendor_filter;
+    $param_types .= 'sss';
 }
 
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
-// Get PO details with proper field names from database
-$sql = "SELECT * FROM po_details $where_clause ORDER BY created_at DESC";
+// Get PO details plus derived vendor from outsourcing or billing
+$sql = "SELECT po_details.*, 
+        (SELECT od.vendor_name FROM outsourcing_detail od WHERE od.customer_po = po_details.po_number ORDER BY od.id DESC LIMIT 1) AS vendor_from_outsourcing,
+        (SELECT bd.vendor_name FROM billing_details bd WHERE bd.customer_po = po_details.po_number ORDER BY bd.id DESC LIMIT 1) AS vendor_from_billing
+        FROM po_details 
+        $where_clause 
+        ORDER BY created_at DESC";
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
                 $stmt->bind_param($param_types, ...$params);
@@ -64,7 +72,12 @@ $projects_result = $conn->query($projects_query);
 $statuses_query = "SELECT DISTINCT po_status FROM po_details ORDER BY po_status";
 $statuses_result = $conn->query($statuses_query);
 
-$vendors_query = "SELECT DISTINCT vendor_name FROM po_details WHERE vendor_name IS NOT NULL ORDER BY vendor_name";
+$vendors_query = "SELECT DISTINCT COALESCE(po.vendor_name,
+                  (SELECT od.vendor_name FROM outsourcing_detail od WHERE od.customer_po = po.po_number ORDER BY od.id DESC LIMIT 1),
+                  (SELECT bd.vendor_name FROM billing_details bd WHERE bd.customer_po = po.po_number ORDER BY bd.id DESC LIMIT 1)) AS vendor_name
+                  FROM po_details po
+                  HAVING vendor_name IS NOT NULL AND vendor_name <> ''
+                  ORDER BY vendor_name";
 $vendors_result = $conn->query($vendors_query);
 
 function formatDate($excel_date) {
@@ -204,7 +217,10 @@ function formatCurrency($amount) {
                                         <div>
                                             <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($po['po_number']) ?></div>
                                             <div class="text-sm text-gray-500">SOW: <?= htmlspecialchars($po['sow_number']) ?></div>
-                                            <div class="text-sm text-gray-500"><?= htmlspecialchars($po['vendor_name'] ?: 'No vendor') ?></div>
+                                            <?php 
+                                                $derived_vendor = $po['vendor_name'] ?: ($po['vendor_from_outsourcing'] ?: $po['vendor_from_billing']);
+                                            ?>
+                                            <div class="text-sm text-gray-500"><?= htmlspecialchars($derived_vendor ?: 'No vendor') ?></div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">

@@ -15,7 +15,10 @@ if (!$id) {
 }
 
 // Get PO data
-$sql = "SELECT * FROM po_details WHERE id = ?";
+$sql = "SELECT pd.*, 
+        (SELECT od.vendor_name FROM outsourcing_detail od WHERE od.customer_po = pd.po_number ORDER BY od.id DESC LIMIT 1) AS vendor_from_outsourcing,
+        (SELECT bd.vendor_name FROM billing_details bd WHERE bd.customer_po = pd.po_number ORDER BY bd.id DESC LIMIT 1) AS vendor_from_billing
+        FROM po_details pd WHERE pd.id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id);
 $stmt->execute();
@@ -150,7 +153,8 @@ function getBadgeClass($status) {
                                     <!-- Vendor Name -->
                                     <div class="md:col-span-2">
                                         <label class="block text-sm font-medium text-gray-500 mb-1">Vendor Name</label>
-                                        <p class="text-gray-900"><?= htmlspecialchars($po['vendor_name'] ?: 'No vendor assigned') ?></p>
+                                        <?php $derived_vendor = $po['vendor_name'] ?: ($po['vendor_from_outsourcing'] ?: $po['vendor_from_billing']); ?>
+                                        <p class="text-gray-900"><?= htmlspecialchars($derived_vendor ?: 'No vendor assigned') ?></p>
                                     </div>
 
                                     <!-- Dates -->
