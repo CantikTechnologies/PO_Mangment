@@ -6,6 +6,15 @@
 
 // Simple path detection for hosting
 function getSimpleBasePath() {
+    $server_name = $_SERVER['SERVER_NAME'] ?? '';
+    
+    // Check if we're on production server
+    if (strpos($server_name, 'cantiktech.com') !== false || strpos($server_name, 'revenue-track') !== false) {
+        // Production server - no relative base path needed
+        return '';
+    }
+    
+    // For localhost - use relative paths
     $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
     $script_dir = dirname($script_name);
     $depth = substr_count($script_dir, '/');
@@ -30,6 +39,15 @@ define('PATHS_LOADED', true);
 
 // Simple helper functions
 function getLoginUrl() {
+    $server_name = $_SERVER['SERVER_NAME'] ?? '';
+    
+    // Check if we're on production server
+    if (strpos($server_name, 'cantiktech.com') !== false || strpos($server_name, 'revenue-track') !== false) {
+        // Production server - use absolute URL path
+        return '/login.php';
+    }
+    
+    // For localhost - use relative paths
     $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
     $script_dir = dirname($script_name);
     $depth = substr_count($script_dir, '/');
@@ -43,6 +61,15 @@ function getLoginUrl() {
 
 function getSharedIncludePath($file) {
     $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+    $server_name = $_SERVER['SERVER_NAME'] ?? '';
+    
+    // Check if we're on production server
+    if (strpos($server_name, 'cantiktech.com') !== false || strpos($server_name, 'revenue-track') !== false) {
+        // Production server - use absolute path from document root
+        return $_SERVER['DOCUMENT_ROOT'] . '/src/shared/' . $file;
+    }
+    
+    // For localhost - use relative paths
     $script_dir = dirname($script_name);
     $depth = substr_count($script_dir, '/');
     
@@ -55,6 +82,15 @@ function getSharedIncludePath($file) {
 
 function getConfigIncludePath($file) {
     $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+    $server_name = $_SERVER['SERVER_NAME'] ?? '';
+    
+    // Check if we're on production server
+    if (strpos($server_name, 'cantiktech.com') !== false || strpos($server_name, 'revenue-track') !== false) {
+        // Production server - use absolute path from document root
+        return $_SERVER['DOCUMENT_ROOT'] . '/config/' . $file;
+    }
+    
+    // For localhost - use relative paths
     $script_dir = dirname($script_name);
     $depth = substr_count($script_dir, '/');
     

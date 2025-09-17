@@ -1,10 +1,33 @@
 <?php
-// Determine active route and dynamic base so links work in /PO-Management (local) and / (prod)
+// Determine active route and dynamic base so links work in both local and production environments
 $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
 $request_path = parse_url($request_uri, PHP_URL_PATH) ?: '/';
-$script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '/');
-$parts = array_values(array_filter(explode('/', $script)));
-$base = isset($parts[0]) ? '/' . $parts[0] : '';
+
+// Enhanced base path detection for production servers
+function getNavBasePath() {
+    $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+    $document_root = $_SERVER['DOCUMENT_ROOT'] ?? '';
+    $server_name = $_SERVER['SERVER_NAME'] ?? '';
+    
+    // Check if we're on production server (revenue-track.cantiktech.com)
+    if (strpos($server_name, 'cantiktech.com') !== false || strpos($server_name, 'revenue-track') !== false) {
+        // Production server - no base path needed
+        return '';
+    }
+    
+    // For localhost development with subdirectories
+    $script = str_replace('\\', '/', $script_name);
+    $parts = array_values(array_filter(explode('/', $script)));
+    
+    // If we're in a subdirectory like /po-mgmt or /PO-Management
+    if (count($parts) > 0 && !in_array($parts[0], ['src', 'config', 'assets', 'index.php'])) {
+        return '/' . $parts[0];
+    }
+    
+    return '';
+}
+
+$base = getNavBasePath();
 
 $activeClass = function(array $needles) use ($request_uri): string {
   foreach ($needles as $needle) {
@@ -32,7 +55,16 @@ $activeClass = function(array $needles) use ($request_uri): string {
   </div>
   <div class="flex flex-1 items-center justify-end gap-4">
     <nav class="hidden md:flex items-center gap-2">
-      <?php $dashActive = ($request_path === ($base . '/index.php') || $request_path === $base . '/' || $request_path === $base); ?>
+      <?php 
+        // Enhanced dashboard active detection
+        $dashActive = (
+            $request_path === ($base . '/index.php') || 
+            $request_path === $base . '/' || 
+            $request_path === $base ||
+            ($request_path === '/index.php' && empty($base)) ||
+            ($request_path === '/' && empty($base))
+        ); 
+      ?>
       <a class="rounded-full px-4 py-2 text-sm font-medium <?= $dashActive ? 'text-rose-600 bg-rose-50' : 'text-gray-700 hover:bg-gray-100' ?>" href="<?= $base ?>/index.php">Dashboard</a>
       
       <?php $poActive = $activeClass(["/src/Modules/po_details/"]); ?>
