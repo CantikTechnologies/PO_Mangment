@@ -21,7 +21,28 @@ if (!isset($_FILES['csvFile']) || $_FILES['csvFile']['error']!==UPLOAD_ERR_OK){
 }
 $lines=file($_FILES['csvFile']['tmp_name'], FILE_IGNORE_NEW_LINES); if($lines===false||!count($lines)){ echo json_encode(['success'=>false,'errors'=>[['row'=>0,'message'=>'Empty file']]]); exit; }
 $first=str_replace("\xEF\xBB\xBF",'',$lines[0]); $delimiter= substr_count($first, "\t")>substr_count($first, ',')?"\t":',';
-$headers=str_getcsv($first,$delimiter); $headers=array_map('trim',$headers);
+$headersRaw=str_getcsv($first,$delimiter); $headers=array_map('trim',$headersRaw);
+
+// Canonicalize headers with aliases
+function canon($s){ $s=strtolower(trim((string)$s)); $s=preg_replace('/[^a-z0-9]+/','',$s); return $s; }
+$alias=[
+  'projectdetails'=>'project_details','project'=>'project_details','projectname'=>'project_details',
+  'costcentre'=>'cost_center','costcenter'=>'cost_center',
+  'customerpo'=>'customer_po','customerpono'=>'customer_po',
+  'vendorname'=>'vendor_name','vendor'=>'vendor_name',
+  'cantikpono'=>'cantik_po_no','pono'=>'cantik_po_no',
+  'cantikpodate'=>'cantik_po_date','podate'=>'cantik_po_date',
+  'cantikpovalue'=>'cantik_po_value','povalue'=>'cantik_po_value',
+  'vendorinvoicefrequency'=>'vendor_invoice_frequency','invoicefrequency'=>'vendor_invoice_frequency',
+  'vendorinvnumber'=>'vendor_inv_number','vendorinvoiceno'=>'vendor_inv_number','vendorinvoicenumber'=>'vendor_inv_number',
+  'vendorinvdate'=>'vendor_inv_date','vendorinvoicedate'=>'vendor_inv_date',
+  'vendorinvvalue'=>'vendor_inv_value','vendorinvoicevalue'=>'vendor_inv_value','invoicevalue'=>'vendor_inv_value',
+  'paymentstatusfromntt'=>'payment_status_from_ntt','paymentstatus'=>'payment_status_from_ntt',
+  'paymentvalue'=>'payment_value',
+  'paymentdate'=>'payment_date',
+  'remarks'=>'remarks'
+];
+$headers=[]; foreach($headersRaw as $h){ $k=canon($h); $headers[]=$alias[$k] ?? $h; }
 
 $required=['project_details','cost_center','customer_po','vendor_name','cantik_po_no','cantik_po_date','cantik_po_value','vendor_invoice_frequency','vendor_inv_number','vendor_inv_date','vendor_inv_value'];
 $optional=['payment_status_from_ntt','payment_value','payment_date','remarks'];

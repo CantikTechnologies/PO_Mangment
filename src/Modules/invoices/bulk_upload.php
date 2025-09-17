@@ -35,8 +35,24 @@ if ($lines === false || count($lines) === 0) {
 }
 $first = str_replace("\xEF\xBB\xBF", '', $lines[0]);
 $delimiter = substr_count($first, "\t") > substr_count($first, ',') ? "\t" : ',';
-$headers = str_getcsv($first, $delimiter);
-$headers = array_map('trim', $headers);
+$headersRaw = str_getcsv($first, $delimiter);
+$headersRaw = array_map('trim', $headersRaw);
+
+// Canonicalize headers with aliases to avoid missing header errors
+function canon($s){ $s=strtolower(trim((string)$s)); $s=preg_replace('/[^a-z0-9]+/','',$s); return $s; }
+$alias=[
+  'projectdetails'=>'project_details','projectname'=>'project_details','project'=>'project_details',
+  'costcentre'=>'cost_center','costcenter'=>'cost_center',
+  'customerpo'=>'customer_po','customerpono'=>'customer_po',
+  'cantikinvoiceno'=>'cantik_invoice_no','invoiceno'=>'cantik_invoice_no','invoice'=>'cantik_invoice_no',
+  'cantikinvoicedate'=>'cantik_invoice_date','invoicedate'=>'cantik_invoice_date',
+  'cantikinvoicetaxablevalue'=>'cantik_inv_value_taxable','taxablevalue'=>'cantik_inv_value_taxable','amount'=>'cantik_inv_value_taxable',
+  'againstvendorinvoicenumber'=>'against_vendor_inv_number','vendorinvoiceno'=>'against_vendor_inv_number',
+  'paymentreceiptdate'=>'payment_receipt_date','paymentdate'=>'payment_receipt_date',
+  'paymentadviseno'=>'payment_advise_no','paymentadvisenumber'=>'payment_advise_no',
+  'vendorname'=>'vendor_name','vendor'=>'vendor_name'
+];
+$headers=[]; foreach($headersRaw as $h){ $k=canon($h); $headers[] = $alias[$k] ?? $h; }
 
 $required = ['project_details','cost_center','customer_po','cantik_invoice_no','cantik_invoice_date','cantik_inv_value_taxable'];
 $optional = ['against_vendor_inv_number','payment_receipt_date','payment_advise_no','vendor_name'];

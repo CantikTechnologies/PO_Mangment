@@ -1,7 +1,7 @@
 <?php
-// Enable error reporting for debugging
+// Enable error reporting but do not display to keep JSON output clean
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 // Set content type to JSON first
 header('Content-Type: application/json');
@@ -37,19 +37,14 @@ $file = $_FILES['csvFile'];
 
 // Validate file type
 $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-if ($fileExtension !== 'csv') {
-    echo json_encode(['success' => false, 'errors' => [['row' => 0, 'message' => 'Only CSV files are allowed']]]);
+if (!in_array($fileExtension, ['csv','tsv','txt'], true)) {
+    echo json_encode(['success' => false, 'errors' => [['row' => 0, 'message' => 'Only CSV/TSV files are allowed']]]);
     exit();
 }
 
-// Define required and optional fields
+// Define required and optional fields (canonical names)
 $requiredFields = [
-    'project_description',
-    'cost_center', 
-    'sow_number',
-    'po_number',
-    'po_date',
-    'po_value'
+    // No hard-required fields; rows with missing PO number will get a temporary ID
 ];
 
 $optionalFields = [
@@ -61,34 +56,109 @@ $optionalFields = [
 
 $allFields = array_merge($requiredFields, $optionalFields);
 
+// Helper to canonicalize header keys: lowercase, remove spaces/underscores/non-alnum
+function canon($s) {
+    $s = strtolower(trim((string)$s));
+    // common visual variants
+    $s = str_replace(['–','—','‐','‑'], '-', $s);
+    // remove non-alphanumeric
+    $s = preg_replace('/[^a-z0-9]+/', '', $s);
+    return $s;
+}
+
+// Build alias map (canonical key => canonical field name)
+$aliasMap = [
+    'projectname' => 'project_description', 'projectdescription' => 'project_description',
+    'costcentre' => 'cost_center', 'costcenter' => 'cost_center',
+    'sownumber' => 'sow_number', 'sow' => 'sow_number',
+    'ponumber' => 'po_number', 'pono' => 'po_number', 'pon' => 'po_number', 'ponum' => 'po_number',
+    'customerpono' => 'po_number', 'customerponumber' => 'po_number', 'custponumber' => 'po_number',
+    'podate' => 'po_date', 'purchaseorderdate' => 'po_date', 'purchasedate' => 'po_date',
+    'povalue' => 'po_value', 'purchaseordervalue' => 'po_value', 'orderamount' => 'po_value',
+    'amount' => 'po_value', 'value' => 'po_value', 'totalvalue' => 'po_value',
+    'billingfrequency' => 'billing_frequency', 'billingfreq' => 'billing_frequency',
+    'targetgm' => 'target_gm', 'targetmargin' => 'target_gm',
+    'vendorname' => 'vendor_name', 'vendor' => 'vendor_name',
+    'remark' => 'remarks',
+    'pendingamount' => 'pending_amount', 'pending' => 'pending_amount', 'pendingamountinpo' => 'pending_amount',
+    'postatus' => 'po_status', 'status' => 'po_status',
+];
+
+function isEmptyLike($value) {
+    if ($value === null) return true;
+    $t = trim((string)$value);
+    if ($t === '') return true;
+    $placeholders = ['-', ' - ', '--', '—', '–', '(0)', '0', 'N/A', 'n/a', 'NA', 'na', 'N.A.', 'n.a.', 'Nil', 'nil', 'NIL'];
+    return in_array($t, $placeholders, true);
+}
+
+// Clean numeric amount like "₹ 1,23,456.78" or "1,234" to float string
+function cleanAmount($value) {
+    if ($value === null) return '';
+    $str = trim((string)$value);
+    if ($str === '' || $str === '-' || strtoupper($str) === 'N/A') return '';
+    // Remove currency symbols, commas, spaces, parentheses
+    $str = preg_replace('/[₹$,\s]/u', '', $str);
+    // Handle Indian numbering commas already removed; handle parentheses for negatives
+    $isNegative = false;
+    if (preg_match('/^\((.*)\)$/', $str, $m)) { $isNegative = true; $str = $m[1]; }
+    // Keep only digits and dot
+    $str = preg_replace('/[^0-9.\-]/', '', $str);
+    if ($str === '' || !is_numeric($str)) return '';
+    $num = (float)$str;
+    if ($isNegative) $num = -$num;
+    return (string)$num;
+}
+
+// Clean GM which can be decimal (0.05), percent string (5%), or whole number 5..100
+function cleanGmToDecimal($value) {
+    if ($value === null) return '';
+    $str = trim((string)$value);
+    if ($str === '' || $str === '-') return '';
+    if (substr($str, -1) === '%') {
+        $num = rtrim($str, '%');
+        if (is_numeric($num)) return (string)max(0.0, min(((float)$num)/100, 1.0));
+        return '';
+    }
+    if (!is_numeric($str)) return '';
+    $num = (float)$str;
+    // If user provided 5..100 we treat as percent; if 0..1 keep as decimal
+    if ($num > 1) $num = $num / 100;
+    if ($num < 0) $num = 0; if ($num > 1) $num = 1;
+    return (string)$num;
+}
+
 // Convert a provided value to Excel serial date (days since 1899-12-30) or return null if invalid
 function parseDateToSerial($value) {
-    if ($value === null) return null;
-    // Treat common placeholders as empty
-    $placeholders = ['-', ' - ', '(0)', '0', 'N/A', 'n/a'];
-    if (in_array(trim((string)$value), $placeholders, true)) {
-        return null;
-    }
+    if (isEmptyLike($value)) return null;
     if (is_numeric($value)) {
         return (int)$value;
     }
-    $trimmed = trim((string)$value);
-    if ($trimmed === '') return null;
-
-    // Normalize separators
-    $normalized = str_replace(['\\', '.'], ['/', '/'], $trimmed);
-    // Try with DateTime in UTC
-    try {
-        $dt = new DateTimeImmutable($normalized, new DateTimeZone('UTC'));
-        $ts = $dt->getTimestamp();
-        // Excel serial: days since 1899-12-30
-        return (int)floor($ts / 86400) + 25569;
-    } catch (Throwable $e) {
-        // Fallback: strtotime
-        $ts = strtotime($normalized);
-        if ($ts === false) return null;
-        return (int)floor($ts / 86400) + 25569;
+    $s = trim((string)$value);
+    // dd/mm/yyyy or dd-mm-yyyy (or with single-digit day/month)
+    $s2 = str_replace(['.', ' '], ['', ''], $s);
+    if (preg_match('/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/', $s2, $m)) {
+        $d = (int)$m[1]; $mo = (int)$m[2]; $y = (int)$m[3];
+        if ($y < 100) { $y += ($y >= 70 ? 1900 : 2000); }
+        if ($mo>=1 && $mo<=12 && $d>=1 && $d<=31) {
+            $ts = gmmktime(0,0,0,$mo,$d,$y);
+            return (int)floor($ts/86400)+25569;
+        }
     }
+    // d-MMM-yyyy with -, /, or space separators
+    if (preg_match('/^(\d{1,2})[\-\/\s]([A-Za-z]{3,})[\-\/\s](\d{4})$/', $s, $m)) {
+        $d = (int)$m[1]; $mon = strtolower(substr($m[2],0,3)); $y = (int)$m[3];
+        $map = ['jan'=>1,'feb'=>2,'mar'=>3,'apr'=>4,'may'=>5,'jun'=>6,'jul'=>7,'aug'=>8,'sep'=>9,'oct'=>10,'nov'=>11,'dec'=>12];
+        if (isset($map[$mon]) && $d>=1 && $d<=31) {
+            $ts = gmmktime(0,0,0,$map[$mon],$d,$y);
+            return (int)floor($ts/86400)+25569;
+        }
+    }
+    // Fallback using strtotime after normalizing slashes
+    $normalized = str_replace(['\\', '.'], ['/', '/'], $s);
+    $ts = strtotime($normalized);
+    if ($ts === false) return null;
+    return (int)floor($ts / 86400) + 25569;
 }
 
 // Function to convert Excel serial date to MySQL date
@@ -121,31 +191,33 @@ function validateRow($row, $rowNumber) {
         }
     }
     
-    if (isset($row['po_value']) && !empty($row['po_value'])) {
-        if (!is_numeric($row['po_value']) || $row['po_value'] < 0) {
+    if (isset($row['po_value']) && !isEmptyLike($row['po_value'])) {
+        $clean = cleanAmount($row['po_value']);
+        if ($clean === '' || !is_numeric($clean) || (float)$clean < 0) {
             $errors[] = "PO value must be a positive number";
         }
     }
     
-    if (isset($row['target_gm']) && !empty($row['target_gm'])) {
-        if (!is_numeric($row['target_gm']) || $row['target_gm'] < 0 || $row['target_gm'] > 1) {
+    if (isset($row['target_gm']) && !isEmptyLike($row['target_gm'])) {
+        $gm = cleanGmToDecimal($row['target_gm']);
+        if ($gm === '' || !is_numeric($gm) || (float)$gm < 0 || (float)$gm > 1) {
             $errors[] = "Target GM must be a decimal between 0 and 1 (e.g., 0.05 for 5%)";
         }
     }
     
-    if (isset($row['start_date']) && trim((string)$row['start_date']) !== '') {
+    if (isset($row['start_date']) && !isEmptyLike($row['start_date'])) {
         if (parseDateToSerial($row['start_date']) === null) {
             $errors[] = "Start date must be Excel serial or a valid date (e.g., 16/Jan/2025, 31-03-2025)";
         }
     }
     
-    if (isset($row['end_date']) && trim((string)$row['end_date']) !== '') {
+    if (isset($row['end_date']) && !isEmptyLike($row['end_date'])) {
         if (parseDateToSerial($row['end_date']) === null) {
             $errors[] = "End date must be Excel serial or a valid date (e.g., 16/Jan/2025, 31-03-2025)";
         }
     }
     
-    if (isset($row['po_date']) && trim((string)$row['po_date']) !== '') {
+    if (isset($row['po_date']) && !isEmptyLike($row['po_date'])) {
         if (parseDateToSerial($row['po_date']) === null) {
             $errors[] = "PO date must be Excel serial or a valid date (e.g., 16/Jan/2025, 31-03-2025)";
         }
@@ -172,8 +244,9 @@ function validateRow($row, $rowNumber) {
     }
     
     // Optional: pending_amount numeric >= 0
-    if (isset($row['pending_amount']) && trim($row['pending_amount']) !== '') {
-        if (!is_numeric($row['pending_amount']) || (float)$row['pending_amount'] < 0) {
+    if (isset($row['pending_amount']) && !isEmptyLike($row['pending_amount'])) {
+        $cleanPending = cleanAmount($row['pending_amount']);
+        if ($cleanPending === '' || !is_numeric($cleanPending) || (float)$cleanPending < 0) {
             $errors[] = "Pending amount must be a non-negative number";
         }
     }
@@ -220,27 +293,22 @@ try {
     $delimiter = $tabCount > $commaCount ? "\t" : ',';
 
     // Parse headers
-    $headers = str_getcsv($firstLine, $delimiter);
-    if (!$headers || count($headers) === 0) {
+    $headersRaw = str_getcsv($firstLine, $delimiter);
+    if (!$headersRaw || count($headersRaw) === 0) {
         throw new Exception('Could not read headers from uploaded file');
     }
 
-    // Clean headers (trim whitespace)
-    $headers = array_map(function($header) {
-        return trim($header);
-    }, $headers);
-    
-    // Validate headers
-    $missingHeaders = [];
-    foreach ($requiredFields as $requiredField) {
-        if (!in_array($requiredField, $headers)) {
-            $missingHeaders[] = $requiredField;
-        }
+    // Map headers to canonical field names using alias map
+    $headers = [];
+    foreach ($headersRaw as $h) {
+        $trim = trim($h);
+        $key = canon($trim);
+        if (in_array($trim, $allFields, true)) { $headers[] = $trim; continue; }
+        if (isset($aliasMap[$key])) { $headers[] = $aliasMap[$key]; continue; }
+        $headers[] = $trim; // keep as-is; may be extra header
     }
     
-    if (!empty($missingHeaders)) {
-        throw new Exception('Missing required headers: ' . implode(', ', $missingHeaders));
-    }
+    // No mandatory headers enforced server-side
     
     // Check for extra headers
     $extraHeaders = array_diff($headers, $allFields);
@@ -291,26 +359,33 @@ try {
             continue;
         }
         
-        // Check for duplicate PO number
-        $poNumber = trim($rowData['po_number']);
-        $checkStmt = $conn->prepare("SELECT id FROM po_details WHERE po_number = ?");
-        $checkStmt->bind_param("s", $poNumber);
-        $checkStmt->execute();
-        $result = $checkStmt->get_result();
-        
-        if ($result->num_rows > 0) {
-            $skipped++;
-            $errors[] = ['row' => $rowNumber, 'message' => "PO number '$poNumber' already exists"];
-            continue;
+        // Determine PO number; generate temporary if missing
+        $originalPo = isset($rowData['po_number']) ? trim($rowData['po_number']) : '';
+        $generatedTemp = false;
+        if ($originalPo === '') {
+            $poNumber = 'TEMP-PO-' . date('Ymd') . '-' . $rowNumber . '-' . substr(uniqid('', true), -4);
+            $generatedTemp = true;
+        } else {
+            $poNumber = $originalPo;
+            // Check for duplicate only when provided
+            $checkStmt = $conn->prepare("SELECT id FROM po_details WHERE po_number = ?");
+            $checkStmt->bind_param("s", $poNumber);
+            $checkStmt->execute();
+            $result = $checkStmt->get_result();
+            if ($result->num_rows > 0) {
+                $skipped++;
+                $errors[] = ['row' => $rowNumber, 'message' => "PO number '$poNumber' already exists"];
+                continue;
+            }
         }
         
         // Prepare data for insertion
-        $projectDescription = trim($rowData['project_description']);
-        $costCenter = trim($rowData['cost_center']);
-        $sowNumber = trim($rowData['sow_number']);
-        $startDate = parseDateToSerial($rowData['start_date']);
-        $endDate = parseDateToSerial($rowData['end_date']);
-        $poDate = parseDateToSerial($rowData['po_date']);
+        $projectDescription = isset($rowData['project_description']) ? trim($rowData['project_description']) : '';
+        $costCenter = isset($rowData['cost_center']) ? trim($rowData['cost_center']) : '';
+        $sowNumber = isset($rowData['sow_number']) ? trim($rowData['sow_number']) : '';
+        $startDate = parseDateToSerial($rowData['start_date'] ?? null);
+        $endDate = parseDateToSerial($rowData['end_date'] ?? null);
+        $poDate = parseDateToSerial($rowData['po_date'] ?? null);
         // Fallbacks: if start missing, use po_date; if end missing, use start
         if ($startDate === null && $poDate !== null) {
             $startDate = $poDate;
@@ -319,25 +394,20 @@ try {
             $endDate = $startDate;
         }
         // Final validation
-        if ($poDate === null) {
-            $errors[] = ['row' => $rowNumber, 'message' => 'PO date is missing or invalid'];
-            continue;
-        }
-        if ($startDate === null) {
-            $errors[] = ['row' => $rowNumber, 'message' => 'Start date is missing or invalid'];
-            continue;
-        }
-        if ($endDate === null) {
-            $errors[] = ['row' => $rowNumber, 'message' => 'End date is missing or invalid'];
-            continue;
-        }
-        $poValue = (float)$rowData['po_value'];
-        $billingFrequency = trim($rowData['billing_frequency']);
-        $targetGm = (float)$rowData['target_gm'];
+        // Dates are optional; only error if explicitly provided but invalid (handled above)
+        $poValueStr = cleanAmount($rowData['po_value'] ?? '');
+        $poValue = ($poValueStr === '') ? 0.0 : (float)$poValueStr;
+        $billingFrequency = isset($rowData['billing_frequency']) ? trim($rowData['billing_frequency']) : '';
+        $gmStr = cleanGmToDecimal($rowData['target_gm'] ?? '');
+        $targetGm = ($gmStr === '') ? 0.0 : (float)$gmStr;
         $vendorName = isset($rowData['vendor_name']) ? trim($rowData['vendor_name']) : null;
         $remarks = isset($rowData['remarks']) ? trim($rowData['remarks']) : null;
-        $pendingAmount = isset($rowData['pending_amount']) && trim($rowData['pending_amount']) !== ''
-            ? (float)$rowData['pending_amount'] : 0.00;
+        if ($generatedTemp) {
+            $note = 'Auto-generated PO number due to missing value in upload';
+            $remarks = $remarks ? ($remarks . ' | ' . $note) : $note;
+        }
+        $pendingAmountStr = cleanAmount($rowData['pending_amount'] ?? '');
+        $pendingAmount = ($pendingAmountStr === '') ? 0.00 : (float)$pendingAmountStr;
         $poStatus = isset($rowData['po_status']) && trim($rowData['po_status']) !== ''
             ? ucfirst(strtolower(trim($rowData['po_status']))) : 'Active';
         

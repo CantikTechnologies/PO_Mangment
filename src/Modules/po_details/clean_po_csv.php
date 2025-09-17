@@ -155,6 +155,14 @@ while (($row = fgetcsv($fh)) !== false) {
   $data['start_date'] = toExcelSerial($get('start date'));
   $data['end_date'] = toExcelSerial($get('end date'));
   $data['po_number'] = cleanText($get('po number'));
+  if ($data['po_number'] === '') {
+    // Generate a temporary PO number if missing
+    $data['po_number'] = 'TEMP-PO-' . date('Ymd') . '-' . $rowNum;
+    // Append note in remarks
+    $existingRemarks = cleanText($get('remarks'));
+    $note = 'Auto-generated PO number due to missing value in source';
+    $data['remarks'] = $existingRemarks ? ($existingRemarks . ' | ' . $note) : $note;
+  }
   $data['po_date'] = toExcelSerial($get('po date'));
   $data['po_value'] = cleanMoney($get('po value'));
   $data['billing_frequency'] = cleanText($get('billing frequency'));

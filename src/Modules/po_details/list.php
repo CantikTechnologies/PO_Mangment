@@ -470,16 +470,12 @@ function formatCurrency($amount) {
         const totalRows = lines.length - 1; // Subtract header row
         document.getElementById('rowCount').textContent = `Total rows: ${totalRows}`;
         
-        // Validate headers
-        const requiredHeaders = [
-          'project_description', 'cost_center', 'sow_number', 'start_date', 
-          'end_date', 'po_number', 'po_date', 'po_value', 'billing_frequency', 'target_gm'
-        ];
-        
-        const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+        // Validate headers (minimal requirement to match server-side)
+        const requiredHeaders = ['po_number'];
+        const missingHeaders = requiredHeaders.filter(header => !headers.map(h => h.toLowerCase().trim()).includes(header));
         if (missingHeaders.length > 0) {
           document.getElementById('rowCount').innerHTML = 
-            `Total rows: ${totalRows} <span class="text-red-600">(Missing headers: ${missingHeaders.join(', ')})</span>`;
+            `Total rows: ${totalRows} <span class="text-red-600">(Missing required header: ${missingHeaders.join(', ')})</span>`;
         }
         
         previewDiv.classList.remove('hidden');
