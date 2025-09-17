@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 12, 2025 at 11:37 AM
+-- Generation Time: Sep 17, 2025 at 06:35 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -106,7 +106,120 @@ INSERT INTO `audit_log` (`id`, `user_id`, `action`, `table_name`, `record_id`, `
 (59, 1, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 06:55:19'),
 (60, 5, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 06:55:24'),
 (61, 5, 'create_outsourcing', 'outsourcing_detail', 7, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 08:40:51'),
-(62, 5, 'create_outsourcing', 'outsourcing_detail', 8, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 08:43:01');
+(62, 5, 'create_outsourcing', 'outsourcing_detail', 8, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 08:43:01'),
+(63, 5, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 09:53:48'),
+(64, 1, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 09:53:56'),
+(65, 1, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 09:54:05'),
+(66, 5, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 09:54:14'),
+(67, 5, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 10:07:47'),
+(68, 1, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 10:07:54'),
+(69, 1, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 10:46:33'),
+(70, 1, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 10:46:44'),
+(71, 1, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 10:46:49'),
+(72, 5, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 10:46:54'),
+(73, 5, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 10:49:33'),
+(74, 1, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-12 10:49:41'),
+(75, 1, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 04:29:00'),
+(76, 1, 'delete_finance_task', 'finance_tasks', 8, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 04:36:19'),
+(77, 1, 'delete_finance_task', 'finance_tasks', 7, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 04:36:25'),
+(78, 1, 'delete_finance_task', 'finance_tasks', 5, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 04:36:32'),
+(79, 1, 'delete_finance_task', 'finance_tasks', 1, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 04:36:39'),
+(80, 1, 'delete_finance_task', 'finance_tasks', 2, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 04:36:45'),
+(81, 1, 'delete_finance_task', 'finance_tasks', 3, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 04:36:52'),
+(82, 1, 'delete_finance_task', 'finance_tasks', 4, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 04:36:57'),
+(83, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(84, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(85, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(86, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(87, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(88, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(89, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(90, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(91, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(92, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(93, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(94, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(95, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(96, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(97, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(98, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(99, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(100, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(101, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(102, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(103, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(104, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(105, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(106, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(107, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(108, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(109, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(110, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(111, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 05:43:43'),
+(112, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 07:27:14'),
+(113, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 07:27:14'),
+(114, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 07:27:14'),
+(115, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 07:27:14'),
+(116, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 07:27:14'),
+(117, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 07:27:14'),
+(118, 1, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 09:41:08'),
+(119, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 10:37:21'),
+(120, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 10:37:21'),
+(121, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 10:37:21'),
+(122, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 10:37:21'),
+(123, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 10:37:21'),
+(124, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-15 10:37:21'),
+(125, 1, 'create_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 11:18:33'),
+(126, 1, 'create_invoice', 'billing_details', 18, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 11:19:38'),
+(127, 1, 'update_invoice', 'billing_details', 18, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 11:19:58'),
+(128, 1, 'create_outsourcing', 'outsourcing_detail', 9, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 11:22:26'),
+(129, 1, 'update_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 11:46:56'),
+(130, 1, 'create_invoice', 'billing_details', 19, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-15 12:06:11'),
+(131, 1, 'create_po', 'po_details', 50, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 04:39:55'),
+(132, 1, 'update_po', 'po_details', 50, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 04:46:54'),
+(133, 1, 'update_po', 'po_details', 50, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 04:47:11'),
+(134, 1, 'update_po', 'po_details', 50, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 04:52:11'),
+(135, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-16 05:51:59'),
+(136, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-16 05:51:59'),
+(137, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-16 05:51:59'),
+(138, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-16 05:51:59'),
+(139, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-16 05:51:59'),
+(140, 1, 'create_po', 'po_details', NULL, NULL, NULL, NULL, NULL, '2025-09-16 05:51:59'),
+(141, 1, 'create_po', 'po_details', 57, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 05:54:08'),
+(142, 1, 'create_invoice', 'billing_details', 20, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 05:54:41'),
+(143, 1, 'update_invoice', 'billing_details', 20, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 05:55:41'),
+(144, 1, 'create_outsourcing', 'outsourcing_detail', 10, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 05:56:44'),
+(145, 1, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 05:59:25'),
+(146, 1, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 05:59:38'),
+(147, 1, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 05:59:54'),
+(148, 5, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 06:00:01'),
+(149, 5, 'logout', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 06:00:25'),
+(150, 1, 'login', NULL, NULL, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 06:00:31'),
+(151, 1, 'update_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 07:02:20'),
+(152, 1, 'update_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 07:06:05'),
+(153, 1, 'update_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 07:06:39'),
+(154, 1, 'update_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 07:07:01'),
+(155, 1, 'update_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 07:10:06'),
+(156, 1, 'create_po', 'po_details', 58, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 07:10:33'),
+(157, 1, 'update_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 07:15:50'),
+(158, 1, 'update_po', 'po_details', 49, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 08:25:43'),
+(159, 1, 'login', NULL, NULL, NULL, NULL, '192.168.2.134', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-09-16 08:48:02'),
+(160, 1, 'create_po', 'po_details', 59, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:15:55'),
+(161, 1, 'create_po', 'po_details', 60, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:19:51'),
+(162, 1, 'create_invoice', 'billing_details', 21, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:21:05'),
+(163, 1, 'create_po', 'po_details', 61, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:45:13'),
+(164, 1, 'update_po', 'po_details', 61, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:45:31'),
+(165, 1, 'create_po', 'po_details', 62, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:46:32'),
+(166, 1, 'update_po', 'po_details', 62, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:47:16'),
+(167, 1, 'update_po', 'po_details', 62, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:47:39'),
+(168, 1, 'create_po', 'po_details', 63, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 09:49:14'),
+(169, 1, 'create_outsourcing', 'outsourcing_detail', 11, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 10:26:14'),
+(170, 1, 'create_outsourcing', 'outsourcing_detail', 13, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 10:35:28'),
+(171, 1, 'create_outsourcing', 'outsourcing_detail', 14, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 10:39:29'),
+(172, 1, 'create_po', 'po_details', 64, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 11:04:29'),
+(173, 1, 'create_invoice', 'billing_details', 22, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 11:05:20'),
+(174, 1, 'create_outsourcing', 'outsourcing_detail', 15, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 11:06:15'),
+(175, 1, 'create_invoice', 'billing_details', 23, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-16 12:20:54');
 
 -- --------------------------------------------------------
 
@@ -121,7 +234,7 @@ CREATE TABLE `billing_details` (
   `customer_po` varchar(50) NOT NULL,
   `remaining_balance_in_po` decimal(15,2) DEFAULT 0.00,
   `cantik_invoice_no` varchar(100) NOT NULL,
-  `cantik_invoice_date` int(11) NOT NULL,
+  `cantik_invoice_date` int(11) DEFAULT NULL,
   `cantik_inv_value_taxable` decimal(15,2) NOT NULL,
   `against_vendor_inv_number` varchar(100) DEFAULT NULL,
   `payment_receipt_date` int(11) DEFAULT NULL,
@@ -138,9 +251,8 @@ CREATE TABLE `billing_details` (
 --
 
 INSERT INTO `billing_details` (`id`, `project_details`, `cost_center`, `customer_po`, `remaining_balance_in_po`, `cantik_invoice_no`, `cantik_invoice_date`, `cantik_inv_value_taxable`, `against_vendor_inv_number`, `payment_receipt_date`, `payment_advise_no`, `vendor_name`, `created_at`, `updated_at`) VALUES
-(11, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 0.00, 'CTPL/24-25/1312', 2020, 35225.00, 'MAH/464/24-25', 2020, '', 'VRATA TECH SOLUTIONS PRIVATE LIMITED', '2025-09-03 05:27:44', '2025-09-12 05:01:31'),
-(12, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 0.00, 'CTPL/24-25/1521', 2025, 68250.00, 'MAH/558/24-25', 2025, NULL, 'VRATA TECH SOLUTIONS PRIVATE LIMITED', '2025-09-03 05:27:44', '2025-09-03 05:27:44'),
-(13, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 0.00, 'CTPL/25-26/128', 2025, 68250.00, 'MAH/650/24-25', 2025, NULL, 'VRATA TECH SOLUTIONS PRIVATE LIMITED', '2025-09-03 05:27:44', '2025-09-03 05:27:44');
+(22, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 140325.00, 'CTPL/24-25/1312', 45902, 35225.00, 'MAH/464/24-25', 45907, '1400005222', '', '2025-09-16 11:05:20', '2025-09-16 11:05:20'),
+(23, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 175550.00, '', NULL, 0.00, '', NULL, '', '', '2025-09-16 12:20:54', '2025-09-16 12:20:54');
 
 -- --------------------------------------------------------
 
@@ -174,19 +286,6 @@ CREATE TABLE `finance_tasks` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `finance_tasks`
---
-
-INSERT INTO `finance_tasks` (`id`, `action_req_by`, `request_date`, `cost_center`, `action_req`, `action_owner`, `status`, `completion_date`, `remark`, `created_at`, `updated_at`) VALUES
-(1, 'Naveen', '2025-06-25', 'Raptokos - PT', 'Vratatech - Raptokos PT One month payment to be released immediately', 'Sanjay', 'Pending', NULL, NULL, '2025-08-22 10:55:02', '2025-08-22 10:55:02'),
-(2, 'Naveen', '2025-06-25', 'Raptokos - PT', 'Renewal to be followed with Priya', 'Sneha', 'Pending', NULL, NULL, '2025-08-22 10:55:02', '2025-08-22 10:55:02'),
-(3, 'Naveen', '2025-06-25', 'BMW-OA', 'Renewal to be followed with Priya', 'Sneha', 'Pending', NULL, NULL, '2025-08-22 10:55:02', '2025-08-22 10:55:02'),
-(4, 'Maneesh', '2025-06-25', 'Finder Fees - PT', 'Xpheno GST payment to be released', 'Sanjay', 'Pending', NULL, NULL, '2025-08-22 10:55:02', '2025-08-22 10:55:02'),
-(5, 'Maneesh', '2025-06-25', 'Finder Fees - PT', 'PO # 4500092198 - Check billing status', 'Sanjay', 'Pending', '2025-06-26', '', '2025-08-22 10:55:02', '2025-09-11 05:50:22'),
-(7, 'Maneesh', '2025-06-26', 'HCIL PT', '25-26/10 - WinoVision Invoice - Get the CN Against the invoice', 'Sneha', 'Pending', NULL, NULL, '2025-08-22 10:55:02', '2025-08-22 10:55:02'),
-(8, 'Pardeep', '2025-09-12', 'Raptakos PT', 'action required by me', 'Pardeep', 'Pending', '2025-09-30', 'this task is create by me', '2025-09-12 06:45:49', '2025-09-12 06:45:49');
-
 -- --------------------------------------------------------
 
 --
@@ -200,12 +299,12 @@ CREATE TABLE `outsourcing_detail` (
   `customer_po` varchar(50) NOT NULL,
   `vendor_name` varchar(200) NOT NULL,
   `cantik_po_no` varchar(100) NOT NULL,
-  `cantik_po_date` int(11) NOT NULL,
+  `cantik_po_date` int(11) DEFAULT NULL,
   `cantik_po_value` decimal(15,2) NOT NULL,
   `remaining_bal_in_po` decimal(15,2) DEFAULT 0.00,
   `vendor_invoice_frequency` varchar(50) NOT NULL,
   `vendor_inv_number` varchar(100) NOT NULL,
-  `vendor_inv_date` int(11) NOT NULL,
+  `vendor_inv_date` int(11) DEFAULT NULL,
   `vendor_inv_value` decimal(15,2) NOT NULL,
   `tds_ded` decimal(18,2) GENERATED ALWAYS AS (round(`vendor_inv_value` * 0.02,2)) STORED,
   `net_payble` decimal(18,2) GENERATED ALWAYS AS (round(`vendor_inv_value` * 1.18 - `vendor_inv_value` * 0.02,2)) STORED,
@@ -223,9 +322,7 @@ CREATE TABLE `outsourcing_detail` (
 --
 
 INSERT INTO `outsourcing_detail` (`id`, `project_details`, `cost_center`, `customer_po`, `vendor_name`, `cantik_po_no`, `cantik_po_date`, `cantik_po_value`, `remaining_bal_in_po`, `vendor_invoice_frequency`, `vendor_inv_number`, `vendor_inv_date`, `vendor_inv_value`, `payment_status_from_ntt`, `payment_value`, `payment_date`, `remarks`, `created_at`, `updated_at`) VALUES
-(3, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 'VRATA TECH SOLUTIONS PRIVATE LIMITED', 'CTPL/PO/24-25/396', 45682, 167143.00, 0.00, 'Monthly', 'MAH/650/24-25', 45745, 33548.00, 'Paid', 75400.00, 2023, '', '2025-09-02 18:09:32', '2025-09-12 05:03:18'),
-(7, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 'VRATA TECH SOLUTIONS PRIVATE LIMITED', 'CTPL/PO/24-25/396', 45683, 167143.00, 0.00, 'Monthly', 'MAH/558/24-25', 45715, 65000.00, 'Paid', 0.00, 45765, '', '2025-09-12 08:40:51', '2025-09-12 08:40:51'),
-(8, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 'VRATA TECH SOLUTIONS PRIVATE LIMITED', 'CTPL/PO/24-25/396', 45683, 167143.00, 0.00, 'Monthly', 'MAH/650/24-25', 45746, 65000.00, 'Paid', 0.00, NULL, '', '2025-09-12 08:43:01', '2025-09-12 08:43:01');
+(15, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 'VRATA TECH SOLUTIONS PRIVATE LIMITED', 'CTPL/PO/24-25/396', 45901, 167143.00, 167143.00, 'Monthly', 'MAH/470/24-25', 45908, 33548.00, 'Paid', 38915.00, 45909, '', '2025-09-16 11:06:15', '2025-09-16 11:06:15');
 
 -- --------------------------------------------------------
 
@@ -291,10 +388,10 @@ CREATE TABLE `po_details` (
   `project_description` varchar(500) NOT NULL,
   `cost_center` varchar(100) NOT NULL,
   `sow_number` varchar(100) NOT NULL,
-  `start_date` int(11) NOT NULL,
-  `end_date` int(11) NOT NULL,
+  `start_date` int(11) DEFAULT NULL,
+  `end_date` int(11) DEFAULT NULL,
   `po_number` varchar(50) NOT NULL,
-  `po_date` int(11) NOT NULL,
+  `po_date` int(11) DEFAULT NULL,
   `po_value` decimal(15,2) NOT NULL,
   `billing_frequency` varchar(50) NOT NULL,
   `target_gm` decimal(5,4) NOT NULL,
@@ -302,6 +399,7 @@ CREATE TABLE `po_details` (
   `po_status` varchar(50) DEFAULT 'Active',
   `remarks` text DEFAULT NULL,
   `vendor_name` varchar(200) DEFAULT NULL,
+  `customer_name` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -310,8 +408,8 @@ CREATE TABLE `po_details` (
 -- Dumping data for table `po_details`
 --
 
-INSERT INTO `po_details` (`id`, `project_description`, `cost_center`, `sow_number`, `start_date`, `end_date`, `po_number`, `po_date`, `po_value`, `billing_frequency`, `target_gm`, `pending_amount`, `po_status`, `remarks`, `vendor_name`, `created_at`, `updated_at`) VALUES
-(1, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', 'FC2024-497', 45668, 45742, '4500095281', 45679, 175500.00, 'Monthly', 0.0500, 0.00, 'Active', '', '', '2025-09-02 18:09:32', '2025-09-12 05:32:28');
+INSERT INTO `po_details` (`id`, `project_description`, `cost_center`, `sow_number`, `start_date`, `end_date`, `po_number`, `po_date`, `po_value`, `billing_frequency`, `target_gm`, `pending_amount`, `po_status`, `remarks`, `vendor_name`, `customer_name`, `created_at`, `updated_at`) VALUES
+(64, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', 'FC2024-497', 45656, 45807, '4500095281', 45689, 175550.00, 'Monthly', 0.0500, 0.00, 'Open', '', '', 'Pardeep Kumar', '2025-09-16 11:04:29', '2025-09-16 11:04:29');
 
 -- --------------------------------------------------------
 
@@ -451,8 +549,8 @@ CREATE TABLE `users_login_signup` (
 --
 
 INSERT INTO `users_login_signup` (`id`, `username`, `email`, `password`, `role`, `first_name`, `last_name`, `phone`, `department`, `is_active`, `last_login`, `updated_at`, `created_at`) VALUES
-(1, 'admin', 'admin@123.com', '$2y$10$HaEMAktwEzYpBjMrwF/tg.XNu3o6dHHSd9LuRN7TalUDen.6Gi2mK', 'admin', 'Admin', 'User', NULL, 'IT', 1, '2025-09-12 06:54:15', '2025-09-12 06:54:15', '2025-08-19 11:40:55'),
-(5, 'pardeepkumar23112000@gmail.com', 'pardeepkumar23112000@gmail.com', '$2y$10$QoWrjtLIN64ZhtEmJ/SqpesrqgaGl4y1iynjg6okg2Yg6Nv7WdZj6', 'employee', 'PARDEEP', 'KUMAR', '09971078958', 'IT', 1, '2025-09-12 06:55:24', '2025-09-12 06:55:24', '2025-09-12 06:20:43');
+(1, 'admin', 'admin@123.com', '$2y$10$HaEMAktwEzYpBjMrwF/tg.XNu3o6dHHSd9LuRN7TalUDen.6Gi2mK', 'admin', 'Admin', 'User', NULL, 'IT', 1, '2025-09-16 08:48:02', '2025-09-16 08:48:02', '2025-08-19 11:40:55'),
+(5, 'pardeepkumar23112000@gmail.com', 'pardeepkumar23112000@gmail.com', '$2y$10$QoWrjtLIN64ZhtEmJ/SqpesrqgaGl4y1iynjg6okg2Yg6Nv7WdZj6', 'employee', 'PARDEEP', 'KUMAR', '09971078958', 'IT', 1, '2025-09-16 06:00:01', '2025-09-16 06:00:01', '2025-09-12 06:20:43');
 
 -- --------------------------------------------------------
 
@@ -492,7 +590,7 @@ INSERT INTO `user_profiles` (`id`, `user_id`, `profile_picture`, `bio`, `address
 --
 DROP TABLE IF EXISTS `billing_summary`;
 
-CREATE VIEW `billing_summary` AS SELECT `bd`.`customer_po` AS `customer_po`, `bd`.`cost_center` AS `cost_center`, sum(`bd`.`cantik_inv_value_taxable`) AS `cantik_inv_value_taxable` FROM `billing_details` AS `bd` GROUP BY `bd`.`customer_po`, `bd`.`cost_center`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `billing_summary`  AS SELECT `bd`.`customer_po` AS `customer_po`, `bd`.`cost_center` AS `cost_center`, sum(`bd`.`cantik_inv_value_taxable`) AS `cantik_inv_value_taxable` FROM `billing_details` AS `bd` GROUP BY `bd`.`customer_po`, `bd`.`cost_center` ;
 
 -- --------------------------------------------------------
 
@@ -501,7 +599,7 @@ CREATE VIEW `billing_summary` AS SELECT `bd`.`customer_po` AS `customer_po`, `bd
 --
 DROP TABLE IF EXISTS `outsourcing_invoicing_latest`;
 
-CREATE VIEW `outsourcing_invoicing_latest` AS SELECT `lp`.`customer_po` AS `customer_po`, `lp`.`latest_cantik_po_no` AS `latest_cantik_po_no`, coalesce(sum(`od`.`vendor_inv_value`),0) AS `vendor_invoicing_till_date` FROM (`outsourcing_latest_po` `lp` left join `outsourcing_detail` `od` on(`od`.`customer_po` = `lp`.`customer_po` and `od`.`cantik_po_no` = `lp`.`latest_cantik_po_no`)) GROUP BY `lp`.`customer_po`, `lp`.`latest_cantik_po_no`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `outsourcing_invoicing_latest`  AS SELECT `lp`.`customer_po` AS `customer_po`, `lp`.`latest_cantik_po_no` AS `latest_cantik_po_no`, coalesce(sum(`od`.`vendor_inv_value`),0) AS `vendor_invoicing_till_date` FROM (`outsourcing_latest_po` `lp` left join `outsourcing_detail` `od` on(`od`.`customer_po` = `lp`.`customer_po` and `od`.`cantik_po_no` = `lp`.`latest_cantik_po_no`)) GROUP BY `lp`.`customer_po`, `lp`.`latest_cantik_po_no` ;
 
 -- --------------------------------------------------------
 
@@ -510,7 +608,7 @@ CREATE VIEW `outsourcing_invoicing_latest` AS SELECT `lp`.`customer_po` AS `cust
 --
 DROP TABLE IF EXISTS `outsourcing_latest_po`;
 
-CREATE VIEW `outsourcing_latest_po` AS SELECT `od`.`customer_po` AS `customer_po`, max(`od`.`cantik_po_no`) AS `latest_cantik_po_no`, max(`od`.`cantik_po_value`) AS `latest_cantik_po_value` FROM `outsourcing_detail` AS `od` GROUP BY `od`.`customer_po`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `outsourcing_latest_po`  AS SELECT `od`.`customer_po` AS `customer_po`, max(`od`.`cantik_po_no`) AS `latest_cantik_po_no`, max(`od`.`cantik_po_value`) AS `latest_cantik_po_value` FROM `outsourcing_detail` AS `od` GROUP BY `od`.`customer_po` ;
 
 -- --------------------------------------------------------
 
@@ -519,7 +617,7 @@ CREATE VIEW `outsourcing_latest_po` AS SELECT `od`.`customer_po` AS `customer_po
 --
 DROP TABLE IF EXISTS `outsourcing_summary`;
 
-CREATE VIEW `outsourcing_summary` AS SELECT `lp`.`customer_po` AS `customer_po`, `lp`.`latest_cantik_po_no` AS `cantik_po_no`, `lp`.`latest_cantik_po_value` AS `cantik_po_value`, `il`.`vendor_invoicing_till_date` AS `vendor_inv_value` FROM (`outsourcing_latest_po` `lp` left join `outsourcing_invoicing_latest` `il` on(`il`.`customer_po` = `lp`.`customer_po` and `il`.`latest_cantik_po_no` = `lp`.`latest_cantik_po_no`));
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `outsourcing_summary`  AS SELECT `lp`.`customer_po` AS `customer_po`, `lp`.`latest_cantik_po_no` AS `cantik_po_no`, `lp`.`latest_cantik_po_value` AS `cantik_po_value`, `il`.`vendor_invoicing_till_date` AS `vendor_inv_value` FROM (`outsourcing_latest_po` `lp` left join `outsourcing_invoicing_latest` `il` on(`il`.`customer_po` = `lp`.`customer_po` and `il`.`latest_cantik_po_no` = `lp`.`latest_cantik_po_no`)) ;
 
 -- --------------------------------------------------------
 
@@ -528,7 +626,7 @@ CREATE VIEW `outsourcing_summary` AS SELECT `lp`.`customer_po` AS `customer_po`,
 --
 DROP TABLE IF EXISTS `posummary`;
 
-CREATE VIEW `posummary` AS SELECT `po`.`id` AS `po_id`, `po`.`project_description` AS `project_description`, `po`.`cost_center` AS `cost_center`, `po`.`po_number` AS `po_number`, `po`.`po_value` AS `po_value`, `po`.`vendor_name` AS `vendor_name`, `po`.`target_gm` AS `target_gm` FROM `po_details` AS `po`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `posummary`  AS SELECT `po`.`id` AS `po_id`, `po`.`project_description` AS `project_description`, `po`.`cost_center` AS `cost_center`, `po`.`po_number` AS `po_number`, `po`.`po_value` AS `po_value`, `po`.`vendor_name` AS `vendor_name`, `po`.`target_gm` AS `target_gm` FROM `po_details` AS `po` ;
 
 -- --------------------------------------------------------
 
@@ -537,7 +635,7 @@ CREATE VIEW `posummary` AS SELECT `po`.`id` AS `po_id`, `po`.`project_descriptio
 --
 DROP TABLE IF EXISTS `po_summary`;
 
-CREATE VIEW `po_summary` AS SELECT `pd`.`id` AS `id`, `pd`.`project_description` AS `project_description`, `pd`.`cost_center` AS `cost_center`, `pd`.`sow_number` AS `sow_number`, `pd`.`start_date` AS `start_date`, `pd`.`end_date` AS `end_date`, `pd`.`po_number` AS `po_number`, `pd`.`po_date` AS `po_date`, `pd`.`po_value` AS `po_value`, `pd`.`billing_frequency` AS `billing_frequency`, `pd`.`target_gm` AS `target_gm`, `pd`.`pending_amount` AS `pending_amount`, `pd`.`po_status` AS `po_status`, `pd`.`remarks` AS `remarks`, `pd`.`vendor_name` AS `vendor_name`, round(`pd`.`po_value` * `pd`.`target_gm`,2) AS `target_gm_value`, date_format('1899-12-30' + interval `pd`.`start_date` day,'%d-%m-%Y') AS `start_date_formatted`, date_format('1899-12-30' + interval `pd`.`end_date` day,'%d-%m-%Y') AS `end_date_formatted`, date_format('1899-12-30' + interval `pd`.`po_date` day,'%d-%m-%Y') AS `po_date_formatted` FROM `po_details` AS `pd`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `po_summary`  AS SELECT `pd`.`id` AS `id`, `pd`.`project_description` AS `project_description`, `pd`.`cost_center` AS `cost_center`, `pd`.`sow_number` AS `sow_number`, `pd`.`start_date` AS `start_date`, `pd`.`end_date` AS `end_date`, `pd`.`po_number` AS `po_number`, `pd`.`po_date` AS `po_date`, `pd`.`po_value` AS `po_value`, `pd`.`billing_frequency` AS `billing_frequency`, `pd`.`target_gm` AS `target_gm`, `pd`.`pending_amount` AS `pending_amount`, `pd`.`po_status` AS `po_status`, `pd`.`remarks` AS `remarks`, `pd`.`vendor_name` AS `vendor_name`, round(`pd`.`po_value` * `pd`.`target_gm`,2) AS `target_gm_value`, date_format('1899-12-30' + interval `pd`.`start_date` day,'%d-%m-%Y') AS `start_date_formatted`, date_format('1899-12-30' + interval `pd`.`end_date` day,'%d-%m-%Y') AS `end_date_formatted`, date_format('1899-12-30' + interval `pd`.`po_date` day,'%d-%m-%Y') AS `po_date_formatted` FROM `po_details` AS `pd` ;
 
 -- --------------------------------------------------------
 
@@ -546,7 +644,7 @@ CREATE VIEW `po_summary` AS SELECT `pd`.`id` AS `id`, `pd`.`project_description`
 --
 DROP TABLE IF EXISTS `so_form_summary`;
 
-CREATE VIEW `so_form_summary` AS SELECT `ps`.`project_description` AS `project`, `ps`.`cost_center` AS `cost_center`, `ps`.`po_number` AS `customer_po_no`, `ps`.`po_value` AS `customer_po_value`, coalesce(`bsum`.`cantik_inv_value_taxable`,0) AS `billed_till_date`, greatest(`ps`.`po_value` - coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) AS `remaining_balance_po`, `ps`.`vendor_name` AS `vendor_name`, `os`.`cantik_po_no` AS `cantik_po_no`, coalesce(`os`.`cantik_po_value`,0) AS `vendor_po_value`, coalesce(`os`.`vendor_inv_value`,0) AS `vendor_invoicing_till_date`, greatest(coalesce(`os`.`cantik_po_value`,0) - coalesce(`os`.`vendor_inv_value`,0),0) AS `remaining_balance_in_po`, coalesce(round((coalesce(`bsum`.`cantik_inv_value_taxable`,0) - coalesce(`os`.`vendor_inv_value`,0)) / nullif(coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) * 100,2),0) AS `margin_till_date`, round(`ps`.`target_gm` * 100,2) AS `target_gm`, coalesce(round((coalesce(`bsum`.`cantik_inv_value_taxable`,0) - coalesce(`os`.`vendor_inv_value`,0)) / nullif(coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) * 100 - `ps`.`target_gm` * 100,2),0) AS `variance_in_gm` FROM ((`posummary` `ps` left join `billing_summary` `bsum` on(`bsum`.`customer_po` = `ps`.`po_number`)) left join `outsourcing_summary` `os` on(`os`.`customer_po` = `ps`.`po_number`)) ORDER BY `ps`.`cost_center` ASC, `ps`.`po_number` ASC;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `so_form_summary`  AS SELECT `ps`.`project_description` AS `project`, `ps`.`cost_center` AS `cost_center`, `ps`.`po_number` AS `customer_po_no`, `ps`.`po_value` AS `customer_po_value`, coalesce(`bsum`.`cantik_inv_value_taxable`,0) AS `billed_till_date`, greatest(`ps`.`po_value` - coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) AS `remaining_balance_po`, `ps`.`vendor_name` AS `vendor_name`, `os`.`cantik_po_no` AS `cantik_po_no`, coalesce(`os`.`cantik_po_value`,0) AS `vendor_po_value`, coalesce(`os`.`vendor_inv_value`,0) AS `vendor_invoicing_till_date`, greatest(coalesce(`os`.`cantik_po_value`,0) - coalesce(`os`.`vendor_inv_value`,0),0) AS `remaining_balance_in_po`, coalesce(round((coalesce(`bsum`.`cantik_inv_value_taxable`,0) - coalesce(`os`.`vendor_inv_value`,0)) / nullif(coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) * 100,2),0) AS `margin_till_date`, round(`ps`.`target_gm` * 100,2) AS `target_gm`, coalesce(round((coalesce(`bsum`.`cantik_inv_value_taxable`,0) - coalesce(`os`.`vendor_inv_value`,0)) / nullif(coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) * 100 - `ps`.`target_gm` * 100,2),0) AS `variance_in_gm` FROM ((`posummary` `ps` left join `billing_summary` `bsum` on(`bsum`.`customer_po` = `ps`.`po_number`)) left join `outsourcing_summary` `os` on(`os`.`customer_po` = `ps`.`po_number`)) ORDER BY `ps`.`cost_center` ASC, `ps`.`po_number` ASC ;
 
 --
 -- Indexes for dumped tables
@@ -639,13 +737,13 @@ ALTER TABLE `user_profiles`
 -- AUTO_INCREMENT for table `audit_log`
 --
 ALTER TABLE `audit_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=176;
 
 --
 -- AUTO_INCREMENT for table `billing_details`
 --
 ALTER TABLE `billing_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `finance_tasks`
@@ -657,13 +755,13 @@ ALTER TABLE `finance_tasks`
 -- AUTO_INCREMENT for table `outsourcing_detail`
 --
 ALTER TABLE `outsourcing_detail`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `po_details`
 --
 ALTER TABLE `po_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- AUTO_INCREMENT for table `role_permissions`
