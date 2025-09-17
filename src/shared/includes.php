@@ -11,14 +11,23 @@ if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
 
 // Include simple paths (optional)
 if (!defined('PATHS_LOADED')) {
-    include_once __DIR__ . '/../../config/paths.php';
+    $paths_candidates = [
+        __DIR__ . '/../../config/paths.php',
+        __DIR__ . '/../../../config/paths.php',
+        dirname(__DIR__, 2) . '/config/paths.php',
+    ];
+    $loaded = false;
+    foreach ($paths_candidates as $pc) {
+        if (file_exists($pc)) { include_once $pc; $loaded = true; break; }
+    }
+    if (!$loaded) { define('PATHS_LOADED', true); }
 }
 
 // Include database
 if (!isset($conn)) {
     $db_paths = [
-        __DIR__ . '/config/db.php',
-        __DIR__ . '/config/db.php',
+        __DIR__ . '/../../config/db.php',
+        __DIR__ . '/../../../config/db.php',
         dirname(__DIR__, 2) . '/config/db.php',
     ];
     $db_loaded = false;
@@ -43,8 +52,8 @@ if (!isset($conn)) {
 // Include auth
 if (!isset($auth)) {
     $auth_paths = [
-        __DIR__ . '/config/auth.php',
-        __DIR__ . '/config/auth.php',
+        __DIR__ . '/../../config/auth.php',
+        __DIR__ . '/../../../config/auth.php',
         dirname(__DIR__, 2) . '/config/auth.php',
     ];
     $auth_loaded = false;
