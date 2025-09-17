@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include_once '../../../config/db.php'; // provides $conn (mysqli)
+include '../../shared/includes.php';
 
 if (!$conn) {
   echo json_encode(['success' => false, 'error' => 'DB connection not available']);

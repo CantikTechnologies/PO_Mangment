@@ -1,11 +1,12 @@
 <?php
-session_start();
+// Use universal includes
+include '../../shared/includes.php';
+
+// Check authentication
 if (!isset($_SESSION['username'])) {
-  header('Location: ../../../login.php');
+  header('Location: ' . getLoginUrl());
   exit();
 }
-include '../../../config/db.php';
-include '../../../config/auth.php';
 requirePermission('view_outsourcing');
 
 // Search and filter parameters
@@ -106,7 +107,7 @@ function formatCurrency($amount) {
 </head>
 <body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
     <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
-        <?php include '../../shared/nav.php'; ?>
+        <?php include getSharedIncludePath('nav.php'); ?>
         
         <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
             <div class="max-w-7xl mx-auto">

@@ -1,4 +1,9 @@
 <?php
+// Include path configuration
+if (!defined('PATHS_LOADED')) {
+    include_once __DIR__ . '/paths.php';
+}
+
 $host = "localhost";
 $user = "root";   // change if needed
 $pass = "";       // change if needed

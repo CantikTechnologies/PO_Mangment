@@ -1,11 +1,12 @@
 <?php
-session_start();
+// Use universal includes
+include '../../shared/includes.php';
+
+// Check authentication
 if (!isset($_SESSION['username'])) {
-  header('Location: ../../../login.php');
+  header('Location: ' . getLoginUrl());
   exit();
 }
-include '../../../config/db.php';
-include '../../../config/auth.php';
 requirePermission('delete_outsourcing');
 
 $id = intval($_GET['id'] ?? 0);

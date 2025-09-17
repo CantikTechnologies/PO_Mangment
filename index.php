@@ -1,11 +1,12 @@
 <?php
-session_start();
+// Use universal includes
+include 'src/shared/includes.php';
+
+// Check authentication
 if (!isset($_SESSION['username'])) {
   header('Location: login.php');
   exit();
 }
-include 'config/db.php';
-include 'config/auth.php';
 requirePermission('view_dashboard');
 
 // Get current user

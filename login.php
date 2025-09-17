@@ -1,6 +1,6 @@
 <?php
-session_start();
-require_once 'config/db.php';
+// Use universal includes
+include 'src/shared/includes.php';
 
 $error = "";
 
@@ -37,7 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
                 $update_stmt->execute();
                 
                 // Log login action
-                include_once 'config/auth.php';
                 $auth->logAction('login');
                 
                 header("Location: index.php");
