@@ -53,7 +53,7 @@ class Auth {
     /**
      * Require specific permission or redirect
      */
-    public function requirePermission($permission, $redirect_url = '../1Login_signuppage/login.php') {
+    public function requirePermission($permission, $redirect_url = '../../../login.php') {
         if (!$this->hasPermission($permission)) {
             $_SESSION['error'] = "You don't have permission to access this page.";
             header("Location: $redirect_url");
@@ -64,7 +64,7 @@ class Auth {
     /**
      * Require admin role or redirect
      */
-    public function requireAdmin($redirect_url = '../1Login_signuppage/login.php') {
+    public function requireAdmin($redirect_url = '../../../login.php') {
         if (!$this->isAdmin()) {
             $_SESSION['error'] = "Admin access required.";
             header("Location: $redirect_url");
@@ -155,7 +155,8 @@ class Auth {
         $old_json = $old_values ? json_encode($old_values) : null;
         $new_json = $new_values ? json_encode($new_values) : null;
         
-        $stmt->bind_param("issiisss", $user_id, $action, $table_name, $record_id, $old_json, $new_json, $ip_address, $user_agent);
+        // user_id (i), action (s), table_name (s), record_id (i), old_values (s), new_values (s), ip_address (s), user_agent (s)
+        $stmt->bind_param("ississss", $user_id, $action, $table_name, $record_id, $old_json, $new_json, $ip_address, $user_agent);
         $stmt->execute();
     }
     
