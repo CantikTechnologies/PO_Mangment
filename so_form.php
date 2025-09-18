@@ -192,28 +192,28 @@ $sql = "
       (SELECT od.vendor_name FROM outsourcing_detail od WHERE od.customer_po = ps.po_number ORDER BY od.id DESC LIMIT 1),
       (SELECT bd.vendor_name FROM billing_details bd WHERE bd.customer_po = ps.po_number ORDER BY bd.id DESC LIMIT 1)
     ) AS vendor_name,
-    osum.latest_vendor_po_no AS cantik_po_no,
-    COALESCE(osum.total_vendor_po_value, 0) AS vendor_po_value,
-    COALESCE(osum.total_vendor_invoicing, 0) AS vendor_invoicing_till_date,
-    GREATEST(COALESCE(osum.total_vendor_po_value, 0) - COALESCE(osum.total_vendor_invoicing, 0), 0) AS remaining_balance_in_po,
-    COALESCE(ROUND(((COALESCE(bsum.total_billed, 0) - COALESCE(osum.total_vendor_invoicing, 0))
+    osum.latest_cantik_po_no AS cantik_po_no,
+    COALESCE(osum.vendor_po_value, 0) AS vendor_po_value,
+    COALESCE(osum.vendor_invoicing_till_date, 0) AS vendor_invoicing_till_date,
+    GREATEST(COALESCE(osum.vendor_po_value, 0) - COALESCE(osum.vendor_invoicing_till_date, 0), 0) AS remaining_balance_in_po,
+    COALESCE(ROUND(((COALESCE(bsum.total_billed, 0) - COALESCE(osum.vendor_invoicing_till_date, 0))
                    / NULLIF(COALESCE(bsum.total_billed, 0), 0)) * 100, 2), 0) AS margin_till_date,
     ROUND(ps.target_gm * 100, 2) AS target_gm,
-    COALESCE(ROUND((((COALESCE(bsum.total_billed, 0) - COALESCE(osum.total_vendor_invoicing, 0))
+    COALESCE(ROUND((((COALESCE(bsum.total_billed, 0) - COALESCE(osum.vendor_invoicing_till_date, 0))
                     / NULLIF(COALESCE(bsum.total_billed, 0), 0)) * 100) - (ps.target_gm * 100), 2), 0) AS variance_in_gm
   FROM posummary ps
   LEFT JOIN (
     SELECT customer_po AS po_number,
            SUM(cantik_inv_value_taxable) AS total_billed
-    FROM billing_summary
+    FROM billing_details
     GROUP BY customer_po
   ) bsum ON bsum.po_number = ps.po_number
   LEFT JOIN (
     SELECT customer_po,
-           MAX(cantik_po_no) AS latest_vendor_po_no,
-           MAX(cantik_po_value) AS total_vendor_po_value,
-           SUM(vendor_inv_value) AS total_vendor_invoicing
-    FROM outsourcing_summary
+           MAX(cantik_po_no) AS latest_cantik_po_no,
+           MAX(cantik_po_value) AS vendor_po_value,
+           SUM(vendor_inv_value) AS vendor_invoicing_till_date
+    FROM outsourcing_detail
     GROUP BY customer_po
   ) osum ON osum.customer_po = ps.po_number
   $where_sql
