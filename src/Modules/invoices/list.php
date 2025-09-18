@@ -95,10 +95,10 @@ $stmt->execute();
 $invoice_results = $stmt->get_result();
 
 // Get filter options
-$projects_query = "SELECT DISTINCT project_details FROM billing_details ORDER BY project_details";
+$projects_query = "SELECT DISTINCT project_details FROM billing_details WHERE project_details IS NOT NULL AND project_details <> '' ORDER BY project_details";
 $projects_result = $conn->query($projects_query);
 
-$vendors_query = "SELECT DISTINCT vendor_name FROM billing_details WHERE vendor_name IS NOT NULL ORDER BY vendor_name";
+$vendors_query = "SELECT DISTINCT vendor_name FROM billing_details WHERE vendor_name IS NOT NULL AND vendor_name <> '' ORDER BY vendor_name";
 $vendors_result = $conn->query($vendors_query);
 
 function formatDate($excel_date) {
@@ -192,14 +192,14 @@ function formatCurrency($amount) {
                             
                             <div>
                                 <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 placeholder-gray-400 focus:border-red-500 focus:ring-red-500" 
-                                       type="text" name="date_from" placeholder="dd-mm-yyyy" 
+                                       type="text" name="date_from" placeholder="From Date" 
                                        onfocus="this.type='date'" onblur="if(!this.value) this.type='text'" 
                                        value="<?= htmlspecialchars($date_from) ?>"/>
           </div>
                             
           <div>
                                 <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 placeholder-gray-400 focus:border-red-500 focus:ring-red-500" 
-                                       type="text" name="date_to" placeholder="dd-mm-yyyy" 
+                                       type="text" name="date_to" placeholder="To Date" 
                                        onfocus="this.type='date'" onblur="if(!this.value) this.type='text'" 
                                        value="<?= htmlspecialchars($date_to) ?>"/>
           </div>

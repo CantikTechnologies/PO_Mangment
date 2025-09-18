@@ -243,7 +243,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- PO Date -->
                             <div>
                                 <label for="po_date" class="block text-sm font-medium text-gray-700 mb-2">PO Date</label>
-                                <input type="date" id="po_date" name="po_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
+                                <input type="text" id="po_date" name="po_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
+                                       onfocus="this.type='date'" onblur="if(!this.value) this.type='text'"
                                        value="<?= excelToDate($po['po_date']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                                 <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>

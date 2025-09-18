@@ -67,10 +67,10 @@ if (!empty($params)) {
 $po_results = $stmt->get_result();
 
 // Get filter options
-$projects_query = "SELECT DISTINCT project_description FROM po_details ORDER BY project_description";
+$projects_query = "SELECT DISTINCT project_description FROM po_details WHERE project_description IS NOT NULL AND project_description <> '' ORDER BY project_description";
 $projects_result = $conn->query($projects_query);
 
-$statuses_query = "SELECT DISTINCT po_status FROM po_details ORDER BY po_status";
+$statuses_query = "SELECT DISTINCT po_status FROM po_details WHERE po_status IS NOT NULL AND po_status <> '' ORDER BY po_status";
 $statuses_result = $conn->query($statuses_query);
 
 $vendors_query = "SELECT DISTINCT COALESCE(po.vendor_name,
@@ -140,14 +140,14 @@ function formatCurrency($amount) {
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div class="relative">
                                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 pl-10 pr-4 py-2 text-sm focus:bg-white focus:border-red-500 focus:ring-red-500" 
+                                <input class="w-full rounded-lg border-gray-200 bg-gray-50 pl-10 pr-4 py-2 text-sm placeholder-gray-400 focus:bg-white focus:border-red-500 focus:ring-red-500" 
                                        placeholder="Search PO number, project, or vendor" type="search" name="q" 
                                        value="<?= htmlspecialchars($search) ?>"/>
                             </div>
                             
                             <div class="relative">
-                                <select name="project" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
-                                    <option value="">All Projects</option>
+                                <select name="project" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 focus:border-red-500 focus:ring-red-500">
+                                    <option value="" <?= $project_filter === '' ? 'selected' : '' ?>>All Projects</option>
                                     <?php while ($project = $projects_result->fetch_assoc()): ?>
                                     <option value="<?= htmlspecialchars($project['project_description']) ?>" 
                                             <?= $project_filter == $project['project_description'] ? 'selected' : '' ?>>
@@ -159,7 +159,7 @@ function formatCurrency($amount) {
                             </div>
                             
                             <div class="relative">
-                                <select name="status" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
+                                <select name="status" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 focus:border-red-500 focus:ring-red-500">
                                     <option value="">All Statuses</option>
                                     <?php while ($status = $statuses_result->fetch_assoc()): ?>
                                     <option value="<?= htmlspecialchars($status['po_status']) ?>" 
@@ -172,7 +172,7 @@ function formatCurrency($amount) {
                             </div>
                             
                             <div class="relative">
-                                <select name="vendor" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
+                                <select name="vendor" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 focus:border-red-500 focus:ring-red-500">
                                     <option value="">All Vendors</option>
                                     <?php while ($vendor = $vendors_result->fetch_assoc()): ?>
                                     <option value="<?= htmlspecialchars($vendor['vendor_name']) ?>" 
