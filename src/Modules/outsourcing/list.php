@@ -16,6 +16,10 @@ $vendor_filter = isset($_GET['vendor']) ? trim($_GET['vendor']) : '';
 $status_filter = isset($_GET['status']) ? trim($_GET['status']) : '';
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
+// Pagination params
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$per_page_raw = isset($_GET['per_page']) ? $_GET['per_page'] : 'all';
+$per_page = strtolower($per_page_raw) === 'all' ? 'all' : max(1, (int)$per_page_raw);
 
 // Build WHERE clause
                 $where_conditions = [];
@@ -63,11 +67,35 @@ if (!empty($date_to)) {
 
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
-// Get outsourcing details with proper field names from database
-$sql = "SELECT * FROM outsourcing_detail $where_clause ORDER BY created_at DESC";
-$stmt = $conn->prepare($sql);
+// Total count for pagination
+$count_sql = "SELECT COUNT(*) AS total FROM outsourcing_detail $where_clause";
+$count_stmt = $conn->prepare($count_sql);
 if (!empty($params)) {
-    $stmt->bind_param($param_types, ...$params);
+    $count_stmt->bind_param($param_types, ...$params);
+}
+$count_stmt->execute();
+$count_res = $count_stmt->get_result();
+$total_rows = (int)($count_res->fetch_assoc()['total'] ?? 0);
+$count_stmt->close();
+
+// Get outsourcing details with optional pagination
+if ($per_page === 'all') {
+    $sql = "SELECT * FROM outsourcing_detail $where_clause ORDER BY created_at DESC";
+    $stmt = $conn->prepare($sql);
+    if (!empty($params)) {
+        $stmt->bind_param($param_types, ...$params);
+    }
+} else {
+    $offset = ($page - 1) * $per_page;
+    $sql = "SELECT * FROM outsourcing_detail $where_clause ORDER BY created_at DESC LIMIT ?, ?";
+    $stmt = $conn->prepare($sql);
+    // Bind dynamic params + limit/offset
+    if (!empty($params)) {
+        $bind_types = $param_types . 'ii';
+        $stmt->bind_param($bind_types, ...array_merge($params, [$offset, $per_page]));
+    } else {
+        $stmt->bind_param('ii', $offset, $per_page);
+    }
 }
 $stmt->execute();
 $outsourcing_results = $stmt->get_result();
@@ -198,6 +226,15 @@ function formatCurrency($amount) {
                                        value="<?= htmlspecialchars($date_to) ?>"/>
                             </div>
                         </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mt-4">
+                          <div>
+                            <select name="per_page" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
+                              <?php $pps = ['50','100','250','all']; foreach ($pps as $pp): ?>
+                                <option value="<?= $pp ?>" <?= (string)$per_page_raw === (string)$pp ? 'selected' : '' ?>>Show <?= strtoupper($pp) === 'ALL' ? 'All' : $pp ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </div>
+                        </div>
                         <div class="flex gap-4 mt-4">
                             <button type="submit" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
                                 Apply Filters
@@ -305,6 +342,28 @@ function formatCurrency($amount) {
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
+
+                <!-- Pagination footer -->
+                <div class="flex items-center justify-between mt-4 text-sm text-gray-600">
+                  <div>
+                    <?php
+                      $from = ($per_page === 'all') ? 1 : (($page - 1) * (int)$per_page + 1);
+                      $to = ($per_page === 'all') ? $total_rows : min($page * (int)$per_page, $total_rows);
+                    ?>
+                    Showing <?= $total_rows ? $from : 0 ?>–<?= $to ?> of <?= $total_rows ?>
+                  </div>
+                  <?php if ($per_page !== 'all' && $total_rows > $per_page): ?>
+                  <div class="flex gap-2">
+                    <?php $baseQuery = $_GET; unset($baseQuery['page']); $qs = http_build_query($baseQuery); ?>
+                    <?php if ($page > 1): ?>
+                      <a class="px-3 py-1 border rounded" href="?<?= $qs ?>&page=<?= $page-1 ?>">Prev</a>
+                    <?php endif; ?>
+                    <?php $maxPage = (int)ceil($total_rows / (int)$per_page); if ($page < $maxPage): ?>
+                      <a class="px-3 py-1 border rounded" href="?<?= $qs ?>&page=<?= $page+1 ?>">Next</a>
+                    <?php endif; ?>
+                  </div>
+                  <?php endif; ?>
+                </div>
       </div>
     </main>
   </div>
@@ -353,6 +412,9 @@ function formatCurrency($amount) {
         <label class="inline-flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" id="outsDryRun" class="rounded border-gray-300"> Dry run (validate only)
         </label>
+        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" id="outsForce" class="rounded border-gray-300"> Force insert (bypass PO FK)
+        </label>
         <button type="button" id="outsDownloadErrors" onclick="downloadOutsErrors()" class="hidden px-3 py-2 bg-yellow-600 text-white rounded-md text-sm hover:bg-yellow-700">Download error CSV</button>
       </div>
       <div id="outsErrors" class="hidden bg-red-50 border border-red-200 rounded-md p-4 mb-4 text-sm text-red-700"></div>
@@ -371,6 +433,7 @@ function formatCurrency($amount) {
     e.preventDefault(); const f=document.getElementById('outsFile').files[0]; if(!f){return;}
     const fd=new FormData(); fd.append('csvFile', f);
     if (document.getElementById('outsDryRun').checked) { fd.append('dry_run','1'); }
+    if (document.getElementById('outsForce').checked) { fd.append('force','1'); }
     const r= await fetch('bulk_upload.php',{method:'POST',body:fd}); const t= await r.text(); let data;
     try{ data=JSON.parse(t);}catch(err){ showOutsErr('Server returned invalid JSON: '+t.substring(0,300)); return; }
     lastOutsErrors = data.errors || [];

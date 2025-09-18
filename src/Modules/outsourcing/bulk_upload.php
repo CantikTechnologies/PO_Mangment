@@ -67,30 +67,32 @@ $headersRaw=str_getcsv($first,$delimiter); $headers=array_map('trim',$headersRaw
 // Canonicalize headers with aliases
 function canon($s){ $s=strtolower(trim((string)$s)); $s=preg_replace('/[^a-z0-9]+/','',$s); return $s; }
 $alias=[
-  'projectdetails'=>'project_details','project'=>'project_details','projectname'=>'project_details',
-  'costcentre'=>'cost_center','costcenter'=>'cost_center',
-  'customerpo'=>'customer_po','customerpono'=>'customer_po',
-  'vendorname'=>'vendor_name','vendor'=>'vendor_name',
-  'cantikpono'=>'cantik_po_no','pono'=>'cantik_po_no',
-  'cantikpodate'=>'cantik_po_date','podate'=>'cantik_po_date',
-  'cantikpovalue'=>'cantik_po_value','povalue'=>'cantik_po_value',
-  'vendorinvoicefrequency'=>'vendor_invoice_frequency','invoicefrequency'=>'vendor_invoice_frequency',
-  'vendorinvnumber'=>'vendor_inv_number','vendorinvoiceno'=>'vendor_inv_number','vendorinvoicenumber'=>'vendor_inv_number',
-  'vendorinvdate'=>'vendor_inv_date','vendorinvoicedate'=>'vendor_inv_date',
-  'vendorinvvalue'=>'vendor_inv_value','vendorinvoicevalue'=>'vendor_inv_value','invoicevalue'=>'vendor_inv_value',
-  'paymentstatusfromntt'=>'payment_status_from_ntt','paymentstatus'=>'payment_status_from_ntt',
-  'paymentvalue'=>'payment_value',
-  'paymentdate'=>'payment_date',
-  'remarks'=>'remarks'
+  'projectdetails'=>'project_details','project'=>'project_details','projectname'=>'project_details','proj'=>'project_details',
+  'costcentre'=>'cost_center','costcenter'=>'cost_center','costcentrecode'=>'cost_center','costcentercode'=>'cost_center',
+  'customerpo'=>'customer_po','customerpono'=>'customer_po','po'=>'customer_po','customerponumber'=>'customer_po',
+  'vendorname'=>'vendor_name','vendor'=>'vendor_name','supplier'=>'vendor_name',
+  'cantikpono'=>'cantik_po_no','pono'=>'cantik_po_no','po_no'=>'cantik_po_no','ponumber'=>'cantik_po_no','po#'=>'cantik_po_no',
+  'cantikpodate'=>'cantik_po_date','podate'=>'cantik_po_date','po_date'=>'cantik_po_date','poissuedate'=>'cantik_po_date',
+  'cantikpovalue'=>'cantik_po_value','povalue'=>'cantik_po_value','po_value'=>'cantik_po_value','amount'=>'cantik_po_value','value'=>'cantik_po_value','totalvalue'=>'cantik_po_value',
+  'vendorinvoicefrequency'=>'vendor_invoice_frequency','invoicefrequency'=>'vendor_invoice_frequency','frequency'=>'vendor_invoice_frequency',
+  'vendorinvnumber'=>'vendor_inv_number','vendorinvoiceno'=>'vendor_inv_number','vendorinvoicenumber'=>'vendor_inv_number','vendorinvoice#'=>'vendor_inv_number','vendorinvno'=>'vendor_inv_number',
+  'vendorinvdate'=>'vendor_inv_date','vendorinvoicedate'=>'vendor_inv_date','vendorinv_dt'=>'vendor_inv_date',
+  'vendorinvvalue'=>'vendor_inv_value','vendorinvoicevalue'=>'vendor_inv_value','invoicevalue'=>'vendor_inv_value','invvalue'=>'vendor_inv_value','invoice_amount'=>'vendor_inv_value',
+  'paymentstatusfromntt'=>'payment_status_from_ntt','paymentstatus'=>'payment_status_from_ntt','status'=>'payment_status_from_ntt',
+  'paymentvalue'=>'payment_value','payment_amount'=>'payment_value','paidamount'=>'payment_value',
+  'paymentdate'=>'payment_date','payment_dt'=>'payment_date','paiddate'=>'payment_date',
+  'remarks'=>'remarks','note'=>'remarks','notes'=>'remarks'
 ];
 $headers=[]; foreach($headersRaw as $h){ $k=canon($h); $headers[]=$alias[$k] ?? $h; }
 
-$required=['project_details','cost_center','customer_po','vendor_name','cantik_po_no','cantik_po_date','cantik_po_value','vendor_invoice_frequency','vendor_inv_number','vendor_inv_date','vendor_inv_value'];
-$optional=['payment_status_from_ntt','payment_value','payment_date','remarks'];
+$required=['project_details','cost_center','customer_po','vendor_name','cantik_po_no'];
+$optional=['cantik_po_date','cantik_po_value','vendor_invoice_frequency','vendor_inv_number','vendor_inv_date','vendor_inv_value','payment_status_from_ntt','payment_value','payment_date','remarks'];
 foreach($required as $h){ if(!in_array($h,$headers)){ echo json_encode(['success'=>false,'errors'=>[['row'=>0,'message'=>'Missing header: '.$h]]]); exit; } }
 
 $inserted=0;$errors=[];$rowNumber=1; $conn->begin_transaction();
 $dryRun = isset($_POST['dry_run']) && $_POST['dry_run']=='1';
+$force = isset($_POST['force']) && $_POST['force']=='1';
+if (!$dryRun && $force) { $conn->query('SET FOREIGN_KEY_CHECKS=0'); }
 for($i=1;$i<count($lines);$i++){
   $rowNumber++; $line=trim($lines[$i]??''); if($line==='') continue; 
   $cols=str_getcsv($line,$delimiter); 
@@ -98,14 +100,60 @@ for($i=1;$i<count($lines);$i++){
   if(count($cols)<count($headers)) $cols=array_pad($cols,count($headers),'');
   elseif(count($cols)>count($headers)) $cols=array_slice($cols,0,count($headers));
   $d=array_combine($headers,$cols);
-  // Clean and validate numeric values
-  $cleanPoValue = cleanAmount($d['cantik_po_value'] ?? '');
-  $cleanInvValue = cleanAmount($d['vendor_inv_value'] ?? '');
-  if($cleanPoValue === '' || !is_numeric($cleanPoValue)){ $errors[]=['row'=>$rowNumber,'message'=>'cantik_po_value must be numeric']; continue; }
-  if($cleanInvValue === '' || !is_numeric($cleanInvValue)){ $errors[]=['row'=>$rowNumber,'message'=>'vendor_inv_value must be numeric']; continue; }
-  $poDate=parseDateToSerial($d['cantik_po_date']); if($poDate===null){ $errors[]=['row'=>$rowNumber,'message'=>'Invalid cantik_po_date']; continue; }
-  $invDate=parseDateToSerial($d['vendor_inv_date']); if($invDate===null){ $errors[]=['row'=>$rowNumber,'message'=>'Invalid vendor_inv_date']; continue; }
-  $payDate=isset($d['payment_date'])?parseDateToSerial($d['payment_date']):null;
+  // Clean and validate values (optional fields allowed)
+  $cleanPoValueRaw = cleanAmount($d['cantik_po_value'] ?? '');
+  $cleanInvValueRaw = cleanAmount($d['vendor_inv_value'] ?? '');
+  $cleanPayValueRaw = cleanAmount($d['payment_value'] ?? '');
+
+  $cleanPoValue = ($cleanPoValueRaw === '' ? null : (is_numeric($cleanPoValueRaw) ? (float)$cleanPoValueRaw : null));
+  $cleanInvValue = ($cleanInvValueRaw === '' ? null : (is_numeric($cleanInvValueRaw) ? (float)$cleanInvValueRaw : null));
+  $cleanPayValue = ($cleanPayValueRaw === '' ? null : (is_numeric($cleanPayValueRaw) ? (float)$cleanPayValueRaw : null));
+
+  if (!$force) {
+    if ($cleanPoValueRaw !== '' && $cleanPoValue === null) { $errors[]=['row'=>$rowNumber,'message'=>'cantik_po_value must be numeric']; continue; }
+    if ($cleanInvValueRaw !== '' && $cleanInvValue === null) { $errors[]=['row'=>$rowNumber,'message'=>'vendor_inv_value must be numeric']; continue; }
+    if ($cleanPayValueRaw !== '' && $cleanPayValue === null) { $errors[]=['row'=>$rowNumber,'message'=>'payment_value must be numeric']; continue; }
+  } else {
+    if ($cleanPoValue === null) { $cleanPoValue = 0.0; }
+    if ($cleanInvValue === null) { $cleanInvValue = 0.0; }
+    if ($cleanPayValue === null) { $cleanPayValue = 0.0; }
+  }
+
+  $poDate = isset($d['cantik_po_date']) ? parseDateToSerial($d['cantik_po_date']) : null;
+  $invDate = isset($d['vendor_inv_date']) ? parseDateToSerial($d['vendor_inv_date']) : null;
+  $payDate = isset($d['payment_date']) ? parseDateToSerial($d['payment_date']) : null;
+
+  // If provided but unparseable, raise specific errors
+  if ((isset($d['cantik_po_date']) && trim((string)$d['cantik_po_date']) !== '') && $poDate===null) { if(!$force){ $errors[]=['row'=>$rowNumber,'message'=>'Invalid cantik_po_date']; continue; } }
+  if ((isset($d['vendor_inv_date']) && trim((string)$d['vendor_inv_date']) !== '') && $invDate===null) { if(!$force){ $errors[]=['row'=>$rowNumber,'message'=>'Invalid vendor_inv_date']; continue; } }
+
+  // Enforce schema-required base fields present
+  $projectDetailsIn = trim((string)($d['project_details'] ?? ''));
+  $costCenterIn = trim((string)($d['cost_center'] ?? ''));
+  $customerPoIn = trim((string)($d['customer_po'] ?? ''));
+  $vendorNameIn = trim((string)($d['vendor_name'] ?? ''));
+  $cantikPoNoIn = trim((string)($d['cantik_po_no'] ?? ''));
+  if ($projectDetailsIn === '' || $costCenterIn === '' || $customerPoIn === '' || $vendorNameIn === '' || $cantikPoNoIn === '') {
+    if (!$force) {
+      $errors[]=['row'=>$rowNumber,'message'=>'Missing required fields (project_details, cost_center, customer_po, vendor_name, cantik_po_no)'];
+      continue;
+    } else {
+      if ($projectDetailsIn === '') $projectDetailsIn = 'UNKNOWN';
+      if ($costCenterIn === '') $costCenterIn = 'UNKNOWN';
+      if ($customerPoIn === '') $customerPoIn = 'TEMP-PO-'.date('Ymd')."-$rowNumber";
+      if ($vendorNameIn === '') $vendorNameIn = 'UNKNOWN';
+      if ($cantikPoNoIn === '') $cantikPoNoIn = 'UNKNOWN';
+    }
+  }
+
+  // FK check: customer_po must exist in po_details (skip if forcing)
+  if (!$force) {
+    $fk = $conn->prepare("SELECT 1 FROM po_details WHERE po_number = ? LIMIT 1");
+    $fk->bind_param('s', $customerPoIn);
+    $fk->execute(); $fkres = $fk->get_result();
+    if ($fkres->num_rows === 0) { $errors[]=['row'=>$rowNumber,'message'=>'customer_po not found in PO master (po_details)']; $fk->close(); continue; }
+    $fk->close();
+  }
 
   if ($dryRun) { $inserted++; continue; }
   $stmt=$conn->prepare("INSERT INTO outsourcing_detail (
@@ -114,31 +162,40 @@ for($i=1;$i<count($lines);$i++){
   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
   $zero=0.00; 
   // Prepare variables for bind_param (must be variables, not expressions)
-  $projectDetails = $d['project_details'];
-  $costCenter = $d['cost_center'];
-  $customerPo = $d['customer_po'];
-  $vendorName = $d['vendor_name'];
-  $cantikPoNo = $d['cantik_po_no'];
-  $cantikPoDate = $poDate; // int serial
-  $cantikPoValue = (float)$cleanPoValue;
-  $remainingBal = $zero;
-  $vendorInvoiceFreq = $d['vendor_invoice_frequency'];
-  $vendorInvNumber = $d['vendor_inv_number'];
-  $vendorInvDate = $invDate; // int serial
-  $vendorInvValue = (float)$cleanInvValue;
+  $projectDetails = $projectDetailsIn;
+  $costCenter = $costCenterIn;
+  $customerPo = $customerPoIn;
+  $vendorName = $vendorNameIn;
+  $cantikPoNo = $cantikPoNoIn;
+  $cantikPoDate = $poDate; // int serial or null
+  $cantikPoValue = ($cleanPoValue === null ? 0.0 : $cleanPoValue); // NOT NULL in schema
+  $remainingBal = $cantikPoValue; // initialize remaining with PO value
+  $vendorInvoiceFreq = trim((string)($d['vendor_invoice_frequency'] ?? ''));
+  $vendorInvNumber = trim((string)($d['vendor_inv_number'] ?? ''));
+  if ($force) {
+    if ($vendorInvoiceFreq === '') $vendorInvoiceFreq = 'NA';
+    if ($vendorInvNumber === '') $vendorInvNumber = 'NA';
+  }
+  $vendorInvDate = $invDate; // int serial or null
+  $vendorInvValue = ($cleanInvValue === null ? 0.0 : $cleanInvValue); // NOT NULL in schema
   $paymentStatus = isset($d['payment_status_from_ntt']) && trim($d['payment_status_from_ntt']) !== '' ? $d['payment_status_from_ntt'] : null;
-  $paymentValue = isset($d['payment_value']) && trim($d['payment_value']) !== '' ? $d['payment_value'] : null;
+  $paymentValue = ($cleanPayValue === null ? 0.0 : $cleanPayValue);
   $paymentDate = $payDate; // int serial or null
   $remarks = isset($d['remarks']) && trim($d['remarks']) !== '' ? $d['remarks'] : null;
   
-  $stmt->bind_param('sssssidsssssdids',
+  $stmt->bind_param('sssssiddssidsdis',
     $projectDetails, $costCenter, $customerPo, $vendorName, $cantikPoNo, $cantikPoDate, $cantikPoValue, $remainingBal,
     $vendorInvoiceFreq, $vendorInvNumber, $vendorInvDate, $vendorInvValue, $paymentStatus,
     $paymentValue, $paymentDate, $remarks
   );
   if($stmt->execute()){ $inserted++; } else { $errors[]=['row'=>$rowNumber,'message'=>'DB: '.$stmt->error]; }
 }
-if ($dryRun) { $conn->rollback(); } else { if($inserted>0){ $conn->commit(); } else { $conn->rollback(); } }
+if ($dryRun) { 
+  $conn->rollback(); 
+} else { 
+  if($inserted>0){ $conn->commit(); } else { $conn->rollback(); }
+}
+if (!$dryRun && $force) { $conn->query('SET FOREIGN_KEY_CHECKS=1'); }
 echo json_encode(['success'=>$dryRun ? true : ($inserted>0),'inserted'=>$inserted,'skipped'=>0,'errors'=>$errors,'dry_run'=>$dryRun]);
 ?>
 
