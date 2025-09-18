@@ -100,7 +100,7 @@ for($i=1;$i<count($lines);$i++){
   if(count($cols)<count($headers)) $cols=array_pad($cols,count($headers),'');
   elseif(count($cols)>count($headers)) $cols=array_slice($cols,0,count($headers));
   $d=array_combine($headers,$cols);
-  // Clean and validate values (optional fields allowed)
+  // Clean and validate values (optional fields allowed)     
   $cleanPoValueRaw = cleanAmount($d['cantik_po_value'] ?? '');
   $cleanInvValueRaw = cleanAmount($d['vendor_inv_value'] ?? '');
   $cleanPayValueRaw = cleanAmount($d['payment_value'] ?? '');
