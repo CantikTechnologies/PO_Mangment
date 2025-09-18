@@ -54,9 +54,16 @@ $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_c
 
 // Get PO details plus derived vendor from outsourcing or billing
 $sql = "SELECT po_details.*, 
+        bsum.billed_till_date,
+        GREATEST(po_details.po_value - COALESCE(bsum.billed_till_date, 0), 0) AS pending_calc,
         (SELECT od.vendor_name FROM outsourcing_detail od WHERE od.customer_po = po_details.po_number ORDER BY od.id DESC LIMIT 1) AS vendor_from_outsourcing,
-        (SELECT bd.vendor_name FROM billing_details bd WHERE bd.customer_po = po_details.po_number ORDER BY bd.id DESC LIMIT 1) AS vendor_from_billing
+        (SELECT bd2.vendor_name FROM billing_details bd2 WHERE bd2.customer_po = po_details.po_number ORDER BY bd2.id DESC LIMIT 1) AS vendor_from_billing
         FROM po_details 
+        LEFT JOIN (
+          SELECT customer_po, SUM(cantik_inv_value_taxable) AS billed_till_date
+          FROM billing_details
+          GROUP BY customer_po
+        ) bsum ON bsum.customer_po = po_details.po_number
         $where_clause 
         ORDER BY created_at DESC";
 $stmt = $conn->prepare($sql);
@@ -241,7 +248,8 @@ function formatCurrency($amount) {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900"><?= formatCurrency($po['po_value']) ?></div>
-                                        <div class="text-sm text-gray-500">Pending: <?= formatCurrency($po['pending_amount']) ?></div>
+                                        <div class="text-sm text-gray-500">Billed: <?= formatCurrency($po['billed_till_date'] ?? 0) ?></div>
+                                        <div class="text-sm text-gray-500">Pending: <?= formatCurrency($po['pending_calc'] ?? 0) ?></div>
                                         <div class="text-sm text-gray-500">GM: <?= is_numeric($po['target_gm']) ? (($po['target_gm'] < 1) ? number_format($po['target_gm'] * 100, 1) : number_format($po['target_gm'], 1)) : '0' ?>%</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">

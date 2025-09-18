@@ -296,13 +296,7 @@ function formatCurrency($amount) {
                                         <?php 
                                           $net = is_numeric($record['net_payble'] ?? null) ? (float)$record['net_payble'] : 0.0;
                                           $paid = is_numeric($record['payment_value'] ?? null) ? (float)$record['payment_value'] : 0.0;
-                                          $status = strtolower(trim((string)($record['payment_status_from_ntt'] ?? '')));
-                                          if ($paid <= 0.0) {
-                                              $pending = ($status === 'paid') ? 0.0 : $net;
-                                          } else {
-                                              $pending = max($net - $paid, 0.0);
-                                              if ($status === 'paid') { $pending = 0.0; }
-                                          }
+                                          $pending = is_numeric($record['pending_payment'] ?? null) ? (float)$record['pending_payment'] : max($net - $paid, 0.0);
                                           $pendingClass = $pending > 0.0 ? 'text-red-600' : 'text-green-600';
                                         ?>
                                         <div class="text-sm text-gray-500">Payment: <?= formatCurrency($paid) ?></div>

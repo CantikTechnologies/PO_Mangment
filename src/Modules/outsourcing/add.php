@@ -31,8 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vendor_inv_number = trim($_POST['vendor_inv_number'] ?? '');
     $vendor_inv_date = $_POST['vendor_inv_date'] ?: null;
     $vendor_inv_value = $_POST['vendor_inv_value'] ?: 0;
-    // Compute TDS @2% on vendor invoice and Net Payable = (Value * 1.18) - TDS
-    $tds_ded = round(((float)$vendor_inv_value) * 0.02, 2);
+    $tds_rate = isset($_POST['tds_rate']) && is_numeric($_POST['tds_rate']) ? (float)$_POST['tds_rate'] : 2.0; // percent
+    if ($tds_rate < 0) { $tds_rate = 0.0; }
+    // Compute TDS @selected% on vendor invoice and Net Payable = (Value * 1.18) - TDS
+    $tds_ded = round(((float)$vendor_inv_value) * ($tds_rate/100.0), 2);
     $net_payble = round((((float)$vendor_inv_value) * 1.18) - $tds_ded, 2);
     $payment_status_from_ntt = trim($_POST['payment_status_from_ntt'] ?? '');
     $payment_value = $_POST['payment_value'] ?: 0;
@@ -241,6 +243,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
+                            <!-- TDS Rate -->
+                            <div>
+                                <label for="tds_rate" class="block text-sm font-medium text-gray-700 mb-2">TDS Rate</label>
+                                <select id="tds_rate" name="tds_rate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <?php $rateSel = isset($_POST['tds_rate']) ? (string)$_POST['tds_rate'] : '2'; ?>
+                                    <option value="2" <?= $rateSel==='2' ? 'selected' : '' ?>>2%</option>
+                                    <option value="10" <?= $rateSel==='10' ? 'selected' : '' ?>>10%</option>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Select TDS rate; value auto-calculates from Taxable.</p>
+                            </div>
                             <!-- TDS Deducted -->
                             <div>
                                 <label for="tds_ded" class="block text-sm font-medium text-gray-700 mb-2">TDS Deducted</label>
@@ -367,6 +379,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const invEl = byId('vendor_inv_value');
     const tdsEl = byId('tds_ded');
     const netEl = byId('net_payble');
+    const rateEl = byId('tds_rate');
     const payValEl = byId('payment_value');
     const pendingEl = byId('pending_payment');
     const cantikPoValEl = byId('cantik_po_value');
@@ -377,7 +390,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     function recalc() {
         if (!invEl || !tdsEl || !netEl || !pendingEl) return;
         const inv = parseFloat(invEl.value || '0') || 0;
-        const tds = +(inv * 0.02).toFixed(2); // 2%
+        const rate = parseFloat(rateEl && rateEl.value ? rateEl.value : '2') || 2;
+        const tds = +(inv * (rate/100)).toFixed(2);
         const net = +((inv * 1.18) - tds).toFixed(2); // GST 18%
         const pay = parseFloat((payValEl && payValEl.value) ? payValEl.value : '0') || 0;
         const pending = Math.max(0, +(net - pay).toFixed(2));
@@ -393,6 +407,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (invEl) ['input','change','blur'].forEach(e=>invEl.addEventListener(e, recalc));
+    if (rateEl) ['change'].forEach(e=>rateEl.addEventListener(e, recalc));
     if (payValEl) ['input','change','blur'].forEach(e=>payValEl.addEventListener(e, recalc));
     // Fetch booked till date when customer_po is known
     async function fetchBookedTillDate() {
