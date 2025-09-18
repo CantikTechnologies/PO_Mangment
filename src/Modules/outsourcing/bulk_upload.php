@@ -11,9 +11,50 @@ if (!hasPermission('add_outsourcing')) {
 
 function parseDateToSerial($v){
   if ($v===null) return null; $t=trim((string)$v); if($t==='') return null;
-  $ph=['-',' - ','(0)','0','N/A','n/a']; if(in_array($t,$ph,true)) return null;
+  $ph=['-',' - ','--','—','–','(0)','0','N/A','n/a','NA','na','N.A.','n.a.','Nil','nil','NIL']; 
+  if(in_array($t,$ph,true)) return null;
   if (is_numeric($t)) return (int)$t;
+  
+  // Support dd/mm/yyyy or dd-mm-yyyy (2 or 4 digit years)
+  $s2 = str_replace(['.', ' '], ['', ''], $t);
+  if (preg_match('/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/', $s2, $m)) {
+    $d=(int)$m[1]; $mo=(int)$m[2]; $y=(int)$m[3];
+    if ($y < 100) { $y += ($y >= 70 ? 1900 : 2000); }
+    if ($mo>=1 && $mo<=12 && $d>=1 && $d<=31) {
+      $ts = gmmktime(0,0,0,$mo,$d,$y);
+      return (int)floor($ts/86400) + 25569;
+    }
+  }
+  
+  // Support d-MMM-yyyy with -, /, or space separators
+  if (preg_match('/^(\d{1,2})[\-\/\s]([A-Za-z]{3,})[\-\/\s](\d{4})$/', $t, $m)) {
+    $d=(int)$m[1]; $mon=strtolower(substr($m[2],0,3)); $y=(int)$m[3];
+    $map=['jan'=>1,'feb'=>2,'mar'=>3,'apr'=>4,'may'=>5,'jun'=>6,'jul'=>7,'aug'=>8,'sep'=>9,'oct'=>10,'nov'=>11,'dec'=>12];
+    if (isset($map[$mon]) && $d>=1 && $d<=31) {
+      $ts = gmmktime(0,0,0,$map[$mon],$d,$y);
+      return (int)floor($ts/86400) + 25569;
+    }
+  }
+  
+  // Fallback
   $t=str_replace(['\\','.'],['/','/'],$t); $ts=strtotime($t); if($ts===false) return null; return (int)floor($ts/86400)+25569;
+}
+
+function cleanAmount($value) {
+  if ($value === null) return '';
+  $str = trim((string)$value);
+  if ($str === '' || $str === '-' || strtoupper($str) === 'N/A') return '';
+  // Remove currency symbols, commas, spaces, parentheses
+  $str = preg_replace('/[₹$,\s]/u', '', $str);
+  // Handle parentheses for negatives
+  $isNegative = false;
+  if (preg_match('/^\((.*)\)$/', $str, $m)) { $isNegative = true; $str = $m[1]; }
+  // Keep only digits and dot
+  $str = preg_replace('/[^0-9.\-]/', '', $str);
+  if ($str === '' || !is_numeric($str)) return '';
+  $num = (float)$str;
+  if ($isNegative) $num = -$num;
+  return (string)$num;
 }
 
 if (!isset($_FILES['csvFile']) || $_FILES['csvFile']['error']!==UPLOAD_ERR_OK){
@@ -51,11 +92,17 @@ foreach($required as $h){ if(!in_array($h,$headers)){ echo json_encode(['success
 $inserted=0;$errors=[];$rowNumber=1; $conn->begin_transaction();
 $dryRun = isset($_POST['dry_run']) && $_POST['dry_run']=='1';
 for($i=1;$i<count($lines);$i++){
-  $rowNumber++; $line=trim($lines[$i]??''); if($line==='') continue; $cols=str_getcsv($line,$delimiter); if(count($cols)<count($headers)) $cols=array_pad($cols,count($headers),'');
+  $rowNumber++; $line=trim($lines[$i]??''); if($line==='') continue; 
+  $cols=str_getcsv($line,$delimiter); 
+  // Ensure arrays have same length before combining
+  if(count($cols)<count($headers)) $cols=array_pad($cols,count($headers),'');
+  elseif(count($cols)>count($headers)) $cols=array_slice($cols,0,count($headers));
   $d=array_combine($headers,$cols);
-  // validate numeric
-  if(!is_numeric($d['cantik_po_value'])){ $errors[]=['row'=>$rowNumber,'message'=>'cantik_po_value must be numeric']; continue; }
-  if(!is_numeric($d['vendor_inv_value'])){ $errors[]=['row'=>$rowNumber,'message'=>'vendor_inv_value must be numeric']; continue; }
+  // Clean and validate numeric values
+  $cleanPoValue = cleanAmount($d['cantik_po_value'] ?? '');
+  $cleanInvValue = cleanAmount($d['vendor_inv_value'] ?? '');
+  if($cleanPoValue === '' || !is_numeric($cleanPoValue)){ $errors[]=['row'=>$rowNumber,'message'=>'cantik_po_value must be numeric']; continue; }
+  if($cleanInvValue === '' || !is_numeric($cleanInvValue)){ $errors[]=['row'=>$rowNumber,'message'=>'vendor_inv_value must be numeric']; continue; }
   $poDate=parseDateToSerial($d['cantik_po_date']); if($poDate===null){ $errors[]=['row'=>$rowNumber,'message'=>'Invalid cantik_po_date']; continue; }
   $invDate=parseDateToSerial($d['vendor_inv_date']); if($invDate===null){ $errors[]=['row'=>$rowNumber,'message'=>'Invalid vendor_inv_date']; continue; }
   $payDate=isset($d['payment_date'])?parseDateToSerial($d['payment_date']):null;
@@ -65,10 +112,29 @@ for($i=1;$i<count($lines);$i++){
     project_details,cost_center,customer_po,vendor_name,cantik_po_no,cantik_po_date,cantik_po_value,remaining_bal_in_po,
     vendor_invoice_frequency,vendor_inv_number,vendor_inv_date,vendor_inv_value,payment_status_from_ntt,payment_value,payment_date,remarks
   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-  $zero=0.00; $stmt->bind_param('sssssidsssssdids',
-    $d['project_details'],$d['cost_center'],$d['customer_po'],$d['vendor_name'],$d['cantik_po_no'],$poDate,$d['cantik_po_value'],$zero,
-    $d['vendor_invoice_frequency'],$d['vendor_inv_number'],$invDate,$d['vendor_inv_value'],$d['payment_status_from_ntt']?:null,
-    $d['payment_value']?:null,$payDate,$d['remarks']?:null
+  $zero=0.00; 
+  // Prepare variables for bind_param (must be variables, not expressions)
+  $projectDetails = $d['project_details'];
+  $costCenter = $d['cost_center'];
+  $customerPo = $d['customer_po'];
+  $vendorName = $d['vendor_name'];
+  $cantikPoNo = $d['cantik_po_no'];
+  $cantikPoDate = $poDate; // int serial
+  $cantikPoValue = (float)$cleanPoValue;
+  $remainingBal = $zero;
+  $vendorInvoiceFreq = $d['vendor_invoice_frequency'];
+  $vendorInvNumber = $d['vendor_inv_number'];
+  $vendorInvDate = $invDate; // int serial
+  $vendorInvValue = (float)$cleanInvValue;
+  $paymentStatus = isset($d['payment_status_from_ntt']) && trim($d['payment_status_from_ntt']) !== '' ? $d['payment_status_from_ntt'] : null;
+  $paymentValue = isset($d['payment_value']) && trim($d['payment_value']) !== '' ? $d['payment_value'] : null;
+  $paymentDate = $payDate; // int serial or null
+  $remarks = isset($d['remarks']) && trim($d['remarks']) !== '' ? $d['remarks'] : null;
+  
+  $stmt->bind_param('sssssidsssssdids',
+    $projectDetails, $costCenter, $customerPo, $vendorName, $cantikPoNo, $cantikPoDate, $cantikPoValue, $remainingBal,
+    $vendorInvoiceFreq, $vendorInvNumber, $vendorInvDate, $vendorInvValue, $paymentStatus,
+    $paymentValue, $paymentDate, $remarks
   );
   if($stmt->execute()){ $inserted++; } else { $errors[]=['row'=>$rowNumber,'message'=>'DB: '.$stmt->error]; }
 }
