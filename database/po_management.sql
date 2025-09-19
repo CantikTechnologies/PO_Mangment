@@ -59,17 +59,17 @@ CREATE TABLE `billing_details` (
   `vendor_name` varchar(200) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `tds` decimal(18,2) GENERATED ALWAYS AS (round(`cantik_inv_value_taxable` * 0.02,2)) STORED,
-  `receivable` decimal(18,2) GENERATED ALWAYS AS (round(`cantik_inv_value_taxable` * 1.18 - `cantik_inv_value_taxable` * 0.02,2)) STORED
+  `tds` decimal(18,2) DEFAULT 0.00,
+  `receivable` decimal(18,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `billing_details`
 --
 
-INSERT INTO `billing_details` (`id`, `project_details`, `cost_center`, `customer_po`, `remaining_balance_in_po`, `cantik_invoice_no`, `cantik_invoice_date`, `cantik_inv_value_taxable`, `against_vendor_inv_number`, `payment_receipt_date`, `payment_advise_no`, `vendor_name`, `created_at`, `updated_at`) VALUES
-(22, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 140325.00, 'CTPL/24-25/1312', 45902, 35225.00, 'MAH/464/24-25', 45907, '1400005222', '', '2025-09-16 11:05:20', '2025-09-16 11:05:20'),
-(23, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 175550.00, '', NULL, 0.00, '', NULL, '', '', '2025-09-16 12:20:54', '2025-09-16 12:20:54');
+INSERT INTO `billing_details` (`id`, `project_details`, `cost_center`, `customer_po`, `remaining_balance_in_po`, `cantik_invoice_no`, `cantik_invoice_date`, `cantik_inv_value_taxable`, `against_vendor_inv_number`, `payment_receipt_date`, `payment_advise_no`, `vendor_name`, `tds`, `receivable`, `created_at`, `updated_at`) VALUES
+(22, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 140325.00, 'CTPL/24-25/1312', 45902, 35225.00, 'MAH/464/24-25', 45907, '1400005222', '', 704.50, 40861.50, '2025-09-16 11:05:20', '2025-09-16 11:05:20'),
+(23, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 175550.00, '', NULL, 0.00, '', NULL, '', '', 0.00, 0.00, '2025-09-16 12:20:54', '2025-09-16 12:20:54');
 
 -- --------------------------------------------------------
 
@@ -123,12 +123,12 @@ CREATE TABLE `outsourcing_detail` (
   `vendor_inv_number` varchar(100) NOT NULL,
   `vendor_inv_date` int(11) DEFAULT NULL,
   `vendor_inv_value` decimal(15,2) NOT NULL,
-  `tds_ded` decimal(18,2) GENERATED ALWAYS AS (round(`vendor_inv_value` * 0.02,2)) STORED,
-  `net_payble` decimal(18,2) GENERATED ALWAYS AS (round(`vendor_inv_value` * 1.18 - `vendor_inv_value` * 0.02,2)) STORED,
+  `tds_ded` decimal(18,2) DEFAULT 0.00,
+  `net_payble` decimal(18,2) DEFAULT 0.00,
   `payment_status_from_ntt` varchar(100) DEFAULT NULL,
   `payment_value` decimal(15,2) DEFAULT 0.00,
   `payment_date` int(11) DEFAULT NULL,
-  `pending_payment` decimal(18,2) GENERATED ALWAYS AS (`net_payble` - ifnull(`payment_value`,0)) STORED,
+  `pending_payment` decimal(18,2) DEFAULT 0.00,
   `remarks` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -138,8 +138,8 @@ CREATE TABLE `outsourcing_detail` (
 -- Dumping data for table `outsourcing_detail`
 --
 
-INSERT INTO `outsourcing_detail` (`id`, `project_details`, `cost_center`, `customer_po`, `vendor_name`, `cantik_po_no`, `cantik_po_date`, `cantik_po_value`, `remaining_bal_in_po`, `vendor_invoice_frequency`, `vendor_inv_number`, `vendor_inv_date`, `vendor_inv_value`, `payment_status_from_ntt`, `payment_value`, `payment_date`, `remarks`, `created_at`, `updated_at`) VALUES
-(15, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 'VRATA TECH SOLUTIONS PRIVATE LIMITED', 'CTPL/PO/24-25/396', 45901, 167143.00, 167143.00, 'Monthly', 'MAH/470/24-25', 45908, 33548.00, 'Paid', 38915.00, 45909, '', '2025-09-16 11:06:15', '2025-09-16 11:06:15');
+INSERT INTO `outsourcing_detail` (`id`, `project_details`, `cost_center`, `customer_po`, `vendor_name`, `cantik_po_no`, `cantik_po_date`, `cantik_po_value`, `remaining_bal_in_po`, `vendor_invoice_frequency`, `vendor_inv_number`, `vendor_inv_date`, `vendor_inv_value`, `tds_ded`, `net_payble`, `payment_status_from_ntt`, `payment_value`, `payment_date`, `pending_payment`, `remarks`, `created_at`, `updated_at`) VALUES
+(15, 'Raptakos Resource Deployment - Anuj Kushwaha', 'Raptakos PT', '4500095281', 'VRATA TECH SOLUTIONS PRIVATE LIMITED', 'CTPL/PO/24-25/396', 45901, 167143.00, 167143.00, 'Monthly', 'MAH/470/24-25', 45908, 33548.00, 670.96, 38915.68, 'Paid', 38915.00, 45909, 0.68, '', '2025-09-16 11:06:15', '2025-09-16 11:06:15');
 
 -- --------------------------------------------------------
 
@@ -407,7 +407,7 @@ INSERT INTO `user_profiles` (`id`, `user_id`, `profile_picture`, `bio`, `address
 --
 DROP TABLE IF EXISTS `billing_summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `billing_summary`  AS SELECT `bd`.`customer_po` AS `customer_po`, `bd`.`cost_center` AS `cost_center`, sum(`bd`.`cantik_inv_value_taxable`) AS `cantik_inv_value_taxable` FROM `billing_details` AS `bd` GROUP BY `bd`.`customer_po`, `bd`.`cost_center` ;
+CREATE VIEW `billing_summary` AS SELECT `bd`.`customer_po` AS `customer_po`, `bd`.`cost_center` AS `cost_center`, sum(`bd`.`cantik_inv_value_taxable`) AS `cantik_inv_value_taxable` FROM `billing_details` AS `bd` GROUP BY `bd`.`customer_po`, `bd`.`cost_center` ;
 
 -- --------------------------------------------------------
 
@@ -416,7 +416,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `outsourcing_invoicing_latest`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `outsourcing_invoicing_latest`  AS SELECT `lp`.`customer_po` AS `customer_po`, `lp`.`latest_cantik_po_no` AS `latest_cantik_po_no`, coalesce(sum(`od`.`vendor_inv_value`),0) AS `vendor_invoicing_till_date` FROM (`outsourcing_latest_po` `lp` left join `outsourcing_detail` `od` on(`od`.`customer_po` = `lp`.`customer_po` and `od`.`cantik_po_no` = `lp`.`latest_cantik_po_no`)) GROUP BY `lp`.`customer_po`, `lp`.`latest_cantik_po_no` ;
+CREATE VIEW `outsourcing_invoicing_latest` AS SELECT `lp`.`customer_po` AS `customer_po`, `lp`.`latest_cantik_po_no` AS `latest_cantik_po_no`, coalesce(sum(`od`.`vendor_inv_value`),0) AS `vendor_invoicing_till_date` FROM (`outsourcing_latest_po` `lp` left join `outsourcing_detail` `od` on(`od`.`customer_po` = `lp`.`customer_po` and `od`.`cantik_po_no` = `lp`.`latest_cantik_po_no`)) GROUP BY `lp`.`customer_po`, `lp`.`latest_cantik_po_no` ;
 
 -- --------------------------------------------------------
 
@@ -425,7 +425,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `outsourcing_latest_po`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `outsourcing_latest_po`  AS SELECT `od`.`customer_po` AS `customer_po`, max(`od`.`cantik_po_no`) AS `latest_cantik_po_no`, max(`od`.`cantik_po_value`) AS `latest_cantik_po_value` FROM `outsourcing_detail` AS `od` GROUP BY `od`.`customer_po` ;
+CREATE VIEW `outsourcing_latest_po` AS SELECT `od`.`customer_po` AS `customer_po`, max(`od`.`cantik_po_no`) AS `latest_cantik_po_no`, max(`od`.`cantik_po_value`) AS `latest_cantik_po_value` FROM `outsourcing_detail` AS `od` GROUP BY `od`.`customer_po` ;
 
 -- --------------------------------------------------------
 
@@ -434,7 +434,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `outsourcing_summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `outsourcing_summary`  AS SELECT `lp`.`customer_po` AS `customer_po`, `lp`.`latest_cantik_po_no` AS `cantik_po_no`, `lp`.`latest_cantik_po_value` AS `cantik_po_value`, `il`.`vendor_invoicing_till_date` AS `vendor_inv_value` FROM (`outsourcing_latest_po` `lp` left join `outsourcing_invoicing_latest` `il` on(`il`.`customer_po` = `lp`.`customer_po` and `il`.`latest_cantik_po_no` = `lp`.`latest_cantik_po_no`)) ;
+CREATE VIEW `outsourcing_summary` AS SELECT `lp`.`customer_po` AS `customer_po`, `lp`.`latest_cantik_po_no` AS `cantik_po_no`, `lp`.`latest_cantik_po_value` AS `cantik_po_value`, `il`.`vendor_invoicing_till_date` AS `vendor_inv_value` FROM (`outsourcing_latest_po` `lp` left join `outsourcing_invoicing_latest` `il` on(`il`.`customer_po` = `lp`.`customer_po` and `il`.`latest_cantik_po_no` = `lp`.`latest_cantik_po_no`)) ;
 
 -- --------------------------------------------------------
 
@@ -443,7 +443,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `posummary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `posummary`  AS SELECT `po`.`id` AS `po_id`, `po`.`project_description` AS `project_description`, `po`.`cost_center` AS `cost_center`, `po`.`po_number` AS `po_number`, `po`.`po_value` AS `po_value`, `po`.`vendor_name` AS `vendor_name`, `po`.`target_gm` AS `target_gm` FROM `po_details` AS `po` ;
+CREATE VIEW `posummary` AS SELECT `po`.`id` AS `po_id`, `po`.`project_description` AS `project_description`, `po`.`cost_center` AS `cost_center`, `po`.`po_number` AS `po_number`, `po`.`po_value` AS `po_value`, `po`.`vendor_name` AS `vendor_name`, `po`.`target_gm` AS `target_gm` FROM `po_details` AS `po` ;
 
 -- --------------------------------------------------------
 
@@ -452,7 +452,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `po_summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `po_summary`  AS SELECT `pd`.`id` AS `id`, `pd`.`project_description` AS `project_description`, `pd`.`cost_center` AS `cost_center`, `pd`.`sow_number` AS `sow_number`, `pd`.`start_date` AS `start_date`, `pd`.`end_date` AS `end_date`, `pd`.`po_number` AS `po_number`, `pd`.`po_date` AS `po_date`, `pd`.`po_value` AS `po_value`, `pd`.`billing_frequency` AS `billing_frequency`, `pd`.`target_gm` AS `target_gm`, `pd`.`pending_amount` AS `pending_amount`, `pd`.`po_status` AS `po_status`, `pd`.`remarks` AS `remarks`, `pd`.`vendor_name` AS `vendor_name`, round(`pd`.`po_value` * `pd`.`target_gm`,2) AS `target_gm_value`, date_format('1899-12-30' + interval `pd`.`start_date` day,'%d-%m-%Y') AS `start_date_formatted`, date_format('1899-12-30' + interval `pd`.`end_date` day,'%d-%m-%Y') AS `end_date_formatted`, date_format('1899-12-30' + interval `pd`.`po_date` day,'%d-%m-%Y') AS `po_date_formatted` FROM `po_details` AS `pd` ;
+CREATE VIEW `po_summary` AS SELECT `pd`.`id` AS `id`, `pd`.`project_description` AS `project_description`, `pd`.`cost_center` AS `cost_center`, `pd`.`sow_number` AS `sow_number`, `pd`.`start_date` AS `start_date`, `pd`.`end_date` AS `end_date`, `pd`.`po_number` AS `po_number`, `pd`.`po_date` AS `po_date`, `pd`.`po_value` AS `po_value`, `pd`.`billing_frequency` AS `billing_frequency`, `pd`.`target_gm` AS `target_gm`, `pd`.`pending_amount` AS `pending_amount`, `pd`.`po_status` AS `po_status`, `pd`.`remarks` AS `remarks`, `pd`.`vendor_name` AS `vendor_name`, round(`pd`.`po_value` * `pd`.`target_gm`,2) AS `target_gm_value`, date_format('1899-12-30' + interval `pd`.`start_date` day,'%d-%m-%Y') AS `start_date_formatted`, date_format('1899-12-30' + interval `pd`.`end_date` day,'%d-%m-%Y') AS `end_date_formatted`, date_format('1899-12-30' + interval `pd`.`po_date` day,'%d-%m-%Y') AS `po_date_formatted` FROM `po_details` AS `pd` ;
 
 -- --------------------------------------------------------
 
@@ -461,7 +461,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `so_form_summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `so_form_summary`  AS SELECT `ps`.`project_description` AS `project`, `ps`.`cost_center` AS `cost_center`, `ps`.`po_number` AS `customer_po_no`, `ps`.`po_value` AS `customer_po_value`, coalesce(`bsum`.`cantik_inv_value_taxable`,0) AS `billed_till_date`, greatest(`ps`.`po_value` - coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) AS `remaining_balance_po`, `ps`.`vendor_name` AS `vendor_name`, `os`.`cantik_po_no` AS `cantik_po_no`, coalesce(`os`.`cantik_po_value`,0) AS `vendor_po_value`, coalesce(`os`.`vendor_inv_value`,0) AS `vendor_invoicing_till_date`, greatest(coalesce(`os`.`cantik_po_value`,0) - coalesce(`os`.`vendor_inv_value`,0),0) AS `remaining_balance_in_po`, coalesce(round((coalesce(`bsum`.`cantik_inv_value_taxable`,0) - coalesce(`os`.`vendor_inv_value`,0)) / nullif(coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) * 100,2),0) AS `margin_till_date`, round(`ps`.`target_gm` * 100,2) AS `target_gm`, coalesce(round((coalesce(`bsum`.`cantik_inv_value_taxable`,0) - coalesce(`os`.`vendor_inv_value`,0)) / nullif(coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) * 100 - `ps`.`target_gm` * 100,2),0) AS `variance_in_gm` FROM ((`posummary` `ps` left join `billing_summary` `bsum` on(`bsum`.`customer_po` = `ps`.`po_number`)) left join `outsourcing_summary` `os` on(`os`.`customer_po` = `ps`.`po_number`)) ORDER BY `ps`.`cost_center` ASC, `ps`.`po_number` ASC ;
+CREATE VIEW `so_form_summary` AS SELECT `ps`.`project_description` AS `project`, `ps`.`cost_center` AS `cost_center`, `ps`.`po_number` AS `customer_po_no`, `ps`.`po_value` AS `customer_po_value`, coalesce(`bsum`.`cantik_inv_value_taxable`,0) AS `billed_till_date`, greatest(`ps`.`po_value` - coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) AS `remaining_balance_po`, `ps`.`vendor_name` AS `vendor_name`, `os`.`cantik_po_no` AS `cantik_po_no`, coalesce(`os`.`cantik_po_value`,0) AS `vendor_po_value`, coalesce(`os`.`vendor_inv_value`,0) AS `vendor_invoicing_till_date`, greatest(coalesce(`os`.`cantik_po_value`,0) - coalesce(`os`.`vendor_inv_value`,0),0) AS `remaining_balance_in_po`, coalesce(round((coalesce(`bsum`.`cantik_inv_value_taxable`,0) - coalesce(`os`.`vendor_inv_value`,0)) / nullif(coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) * 100,2),0) AS `margin_till_date`, round(`ps`.`target_gm` * 100,2) AS `target_gm`, coalesce(round((coalesce(`bsum`.`cantik_inv_value_taxable`,0) - coalesce(`os`.`vendor_inv_value`,0)) / nullif(coalesce(`bsum`.`cantik_inv_value_taxable`,0),0) * 100 - `ps`.`target_gm` * 100,2),0) AS `variance_in_gm` FROM ((`posummary` `ps` left join `billing_summary` `bsum` on(`bsum`.`customer_po` = `ps`.`po_number`)) left join `outsourcing_summary` `os` on(`os`.`customer_po` = `ps`.`po_number`)) ORDER BY `ps`.`cost_center` ASC, `ps`.`po_number` ASC ;
 
 --
 -- Indexes for dumped tables
