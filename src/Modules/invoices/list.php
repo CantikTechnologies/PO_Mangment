@@ -15,6 +15,10 @@ $project_filter = isset($_GET['project']) ? trim($_GET['project']) : '';
 $vendor_filter = isset($_GET['vendor']) ? trim($_GET['vendor']) : '';
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
+// Pagination params
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$per_page_raw = isset($_GET['per_page']) ? $_GET['per_page'] : 'all';
+$per_page = strtolower($per_page_raw) === 'all' ? 'all' : max(1, (int)$per_page_raw);
 
 // Build WHERE clause
 $where_conditions = [];
@@ -22,12 +26,13 @@ $params = [];
 $param_types = '';
 
 if (!empty($search)) {
-    $where_conditions[] = "(cantik_invoice_no LIKE ? OR project_details LIKE ? OR vendor_name LIKE ?)";
+    $where_conditions[] = "(cantik_invoice_no LIKE ? OR project_details LIKE ? OR vendor_name LIKE ? OR customer_po LIKE ?)";
     $search_param = "%$search%";
     $params[] = $search_param;
     $params[] = $search_param;
     $params[] = $search_param;
-    $param_types .= 'sss';
+    $params[] = $search_param;
+    $param_types .= 'ssss';
 }
 
 if (!empty($project_filter)) {
@@ -56,20 +61,44 @@ if (!empty($date_to)) {
 
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
-// Get billing details (invoices) with proper field names from database
-$sql = "SELECT * FROM billing_details $where_clause ORDER BY created_at DESC";
-$stmt = $conn->prepare($sql);
+// Total count for pagination
+$count_sql = "SELECT COUNT(*) AS total FROM billing_details $where_clause";
+$count_stmt = $conn->prepare($count_sql);
 if (!empty($params)) {
-    $stmt->bind_param($param_types, ...$params);
+    $count_stmt->bind_param($param_types, ...$params);
+}
+$count_stmt->execute();
+$count_res = $count_stmt->get_result();
+$total_rows = (int)($count_res->fetch_assoc()['total'] ?? 0);
+$count_stmt->close();
+
+// Get billing details (invoices) with optional pagination
+if ($per_page === 'all') {
+    $sql = "SELECT * FROM billing_details $where_clause ORDER BY created_at DESC";
+    $stmt = $conn->prepare($sql);
+    if (!empty($params)) {
+        $stmt->bind_param($param_types, ...$params);
+    }
+} else {
+    $offset = ($page - 1) * $per_page;
+    $sql = "SELECT * FROM billing_details $where_clause ORDER BY created_at DESC LIMIT ?, ?";
+    $stmt = $conn->prepare($sql);
+    // Bind dynamic params + limit/offset
+    if (!empty($params)) {
+        $bind_types = $param_types . 'ii';
+        $stmt->bind_param($bind_types, ...array_merge($params, [$offset, $per_page]));
+    } else {
+        $stmt->bind_param('ii', $offset, $per_page);
+    }
 }
 $stmt->execute();
 $invoice_results = $stmt->get_result();
 
 // Get filter options
-$projects_query = "SELECT DISTINCT project_details FROM billing_details ORDER BY project_details";
+$projects_query = "SELECT DISTINCT project_details FROM billing_details WHERE project_details IS NOT NULL AND project_details <> '' ORDER BY project_details";
 $projects_result = $conn->query($projects_query);
 
-$vendors_query = "SELECT DISTINCT vendor_name FROM billing_details WHERE vendor_name IS NOT NULL ORDER BY vendor_name";
+$vendors_query = "SELECT DISTINCT vendor_name FROM billing_details WHERE vendor_name IS NOT NULL AND vendor_name <> '' ORDER BY vendor_name";
 $vendors_result = $conn->query($vendors_query);
 
 function formatDate($excel_date) {
@@ -131,7 +160,7 @@ function formatCurrency($amount) {
                             <div class="relative">
                                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
                                 <input class="w-full rounded-lg border-gray-200 bg-gray-50 pl-10 pr-4 py-2 text-sm focus:bg-white focus:border-red-500 focus:ring-red-500" 
-                                       placeholder="Search invoice, project, or vendor" type="search" name="q" 
+                                       placeholder="Search invoice, project, vendor, or PO" type="search" name="q" 
                                        value="<?= htmlspecialchars($search) ?>"/>
       </div>
 
@@ -163,16 +192,25 @@ function formatCurrency($amount) {
                             
                             <div>
                                 <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 placeholder-gray-400 focus:border-red-500 focus:ring-red-500" 
-                                       type="text" name="date_from" placeholder="dd-mm-yyyy" 
+                                       type="text" name="date_from" placeholder="From Date" 
                                        onfocus="this.type='date'" onblur="if(!this.value) this.type='text'" 
                                        value="<?= htmlspecialchars($date_from) ?>"/>
           </div>
                             
           <div>
                                 <input class="w-full rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 placeholder-gray-400 focus:border-red-500 focus:ring-red-500" 
-                                       type="text" name="date_to" placeholder="dd-mm-yyyy" 
+                                       type="text" name="date_to" placeholder="To Date" 
                                        onfocus="this.type='date'" onblur="if(!this.value) this.type='text'" 
                                        value="<?= htmlspecialchars($date_to) ?>"/>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
+          <div>
+            <select name="per_page" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
+              <?php $pps = ['50','100','250','all']; foreach ($pps as $pp): ?>
+                <option value="<?= $pp ?>" <?= (string)$per_page_raw === (string)$pp ? 'selected' : '' ?>>Show <?= strtoupper($pp) === 'ALL' ? 'All' : $pp ?></option>
+              <?php endforeach; ?>
+            </select>
           </div>
         </div>
                         <div class="flex gap-4 mt-4">
@@ -262,6 +300,28 @@ function formatCurrency($amount) {
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
+
+                <!-- Pagination footer -->
+                <div class="flex items-center justify-between mt-4 text-sm text-gray-600">
+                  <div>
+                    <?php
+                      $from = ($per_page === 'all') ? 1 : (($page - 1) * (int)$per_page + 1);
+                      $to = ($per_page === 'all') ? $total_rows : min($page * (int)$per_page, $total_rows);
+                    ?>
+                    Showing <?= $total_rows ? $from : 0 ?>–<?= $to ?> of <?= $total_rows ?>
+                  </div>
+                  <?php if ($per_page !== 'all' && $total_rows > $per_page): ?>
+                  <div class="flex gap-2">
+                    <?php $baseQuery = $_GET; unset($baseQuery['page']); $qs = http_build_query($baseQuery); ?>
+                    <?php if ($page > 1): ?>
+                      <a class="px-3 py-1 border rounded" href="?<?= $qs ?>&page=<?= $page-1 ?>">Prev</a>
+                    <?php endif; ?>
+                    <?php $maxPage = (int)ceil($total_rows / (int)$per_page); if ($page < $maxPage): ?>
+                      <a class="px-3 py-1 border rounded" href="?<?= $qs ?>&page=<?= $page+1 ?>">Next</a>
+                    <?php endif; ?>
+                  </div>
+                  <?php endif; ?>
+                </div>
       </div>
     </main>
   </div>

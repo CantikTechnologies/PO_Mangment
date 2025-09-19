@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare($sql);
         
         if ($stmt) {
-            $stmt->bind_param("sssiisidsdsssii", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $customer_name, $id);
+            $stmt->bind_param("sssiisidsdssssi", $project, $cost_center, $sow, $start_excel, $end_excel, $po_number, $po_date_excel, $po_value, $billing, $target_gm, $status, $remarks, $vendor, $customer_name, $id);
             
             if ($stmt->execute()) {
                 $success = "Purchase order updated successfully!";
@@ -243,7 +243,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- PO Date -->
                             <div>
                                 <label for="po_date" class="block text-sm font-medium text-gray-700 mb-2">PO Date</label>
-                                <input type="date" id="po_date" name="po_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
+                                <input type="text" id="po_date" name="po_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
+                                       onfocus="this.type='date'" onblur="if(!this.value) this.type='text'"
                                        value="<?= excelToDate($po['po_date']) ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                                 <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
@@ -294,9 +295,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Vendor Name -->
                             <div>
                                 <label for="vendor_name" class="block text-sm font-medium text-gray-700 mb-2">Vendor Name</label>
-                                <input type="text" id="vendor_name" name="vendor_name" readonly
+                                <input type="text" id="vendor_name" name="vendor_name"
                                        value="<?= htmlspecialchars($po['vendor_name']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <p class="mt-1 text-xs text-gray-500">If left blank, system may auto-derive from invoices/outsourcing data.</p>
                             </div>
 
                             <!-- Customer Name -->

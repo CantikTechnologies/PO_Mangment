@@ -281,9 +281,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Payment Value -->
                             <div>
                                 <label for="payment_value" class="block text-sm font-medium text-gray-700 mb-2">Payment Value</label>
-                                <input type="number" id="payment_value" name="payment_value" step="0.01" readonly
+                                <input type="number" id="payment_value" name="payment_value" step="0.01"
                                        value="<?= htmlspecialchars($outsourcing['payment_value']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <!-- Payment Date -->

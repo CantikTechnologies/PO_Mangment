@@ -1,3 +1,4 @@
+
 <?php
 // Invoices bulk upload
 header('Content-Type: application/json');
@@ -11,12 +12,32 @@ if (!hasPermission('add_invoices')) {
 
 function parseDateToSerial($value) {
   if ($value === null) return null;
-  $placeholders = ['-', ' - ', '(0)', '0', 'N/A', 'n/a'];
-  if (in_array(trim((string)$value), $placeholders, true)) return null;
+  $t = trim((string)$value);
+  if ($t === '') return null;
+  $placeholders = ['-', ' - ', '--', '—', '–', '(0)', '0', 'N/A', 'n/a', 'NA', 'na', 'N.A.', 'n.a.', 'Nil', 'nil', 'NIL'];
+  if (in_array($t, $placeholders, true)) return null;
   if (is_numeric($value)) return (int)$value;
-  $trimmed = trim((string)$value);
-  if ($trimmed === '') return null;
-  $normalized = str_replace(['\\', '.'], ['/', '/'], $trimmed);
+  // Support dd/mm/yyyy or dd-mm-yyyy (2 or 4 digit years)
+  $s2 = str_replace(['.', ' '], ['', ''], $t);
+  if (preg_match('/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/', $s2, $m)) {
+    $d=(int)$m[1]; $mo=(int)$m[2]; $y=(int)$m[3];
+    if ($y < 100) { $y += ($y >= 70 ? 1900 : 2000); }
+    if ($mo>=1 && $mo<=12 && $d>=1 && $d<=31) {
+      $ts = gmmktime(0,0,0,$mo,$d,$y);
+      return (int)floor($ts/86400) + 25569;
+    }
+  }
+  // Support d-MMM-yyyy with -, /, or space separators
+  if (preg_match('/^(\d{1,2})[\-\/\s]([A-Za-z]{3,})[\-\/\s](\d{4})$/', $t, $m)) {
+    $d=(int)$m[1]; $mon=strtolower(substr($m[2],0,3)); $y=(int)$m[3];
+    $map=['jan'=>1,'feb'=>2,'mar'=>3,'apr'=>4,'may'=>5,'jun'=>6,'jul'=>7,'aug'=>8,'sep'=>9,'oct'=>10,'nov'=>11,'dec'=>12];
+    if (isset($map[$mon]) && $d>=1 && $d<=31) {
+      $ts = gmmktime(0,0,0,$map[$mon],$d,$y);
+      return (int)floor($ts/86400) + 25569;
+    }
+  }
+  // Fallback
+  $normalized = str_replace(['\\', '.'], ['/', '/'], $t);
   $ts = strtotime($normalized);
   if ($ts === false) return null;
   return (int)floor($ts/86400) + 25569;
@@ -54,7 +75,7 @@ $alias=[
 ];
 $headers=[]; foreach($headersRaw as $h){ $k=canon($h); $headers[] = $alias[$k] ?? $h; }
 
-$required = ['project_details','cost_center','customer_po','cantik_invoice_no','cantik_invoice_date','cantik_inv_value_taxable'];
+$required = ['cost_center','customer_po','cantik_invoice_no','cantik_invoice_date','cantik_inv_value_taxable'];
 $optional = ['against_vendor_inv_number','payment_receipt_date','payment_advise_no','vendor_name'];
 $all = array_merge($required, $optional);
 
@@ -66,6 +87,27 @@ foreach ($required as $h) {
 }
 
 $inserted=0;$skipped=0;$errors=[];$rowNumber=1;
+$seenInvoiceNos = [];
+
+// Helpers for cleaning values similar to PO upload
+function isEmptyLike($value){
+  if ($value===null) return true;
+  $t=trim((string)$value);
+  if ($t==='') return true;
+  $p=['-',' - ','--','—','–','(0)','0','N/A','n/a','NA','na','N.A.','n.a.','Nil','nil','NIL'];
+  return in_array($t,$p,true);
+}
+function cleanAmount($value){
+  if ($value===null) return '';
+  $s=trim((string)$value);
+  if ($s===''||$s==='-'||strtoupper($s)==='N/A') return '';
+  $s=preg_replace('/[₹$,\s]/u','',$s);
+  $neg=false;
+  if (preg_match('/^\((.*)\)$/',$s,$m)){ $neg=true; $s=$m[1]; }
+  $s=preg_replace('/[^0-9.\-]/','',$s);
+  if ($s===''||!is_numeric($s)) return '';
+  $n=(float)$s; if ($neg) $n=-$n; return (string)$n;
+}
 $dryRun = isset($_POST['dry_run']) && $_POST['dry_run']=='1';
 $conn->begin_transaction();
 for ($i=1;$i<count($lines);$i++) {
@@ -76,14 +118,39 @@ for ($i=1;$i<count($lines);$i++) {
   if (count($cols) < count($headers)) $cols = array_pad($cols, count($headers), '');
   $data = array_combine($headers, $cols);
 
-  // Basic validation
+  // Enrich/clean before validation
+  // 1) Project details: try derive from po_details if empty
+  if (!isset($data['project_details']) || trim($data['project_details'])==='') {
+    $pd = '';
+    if (isset($data['customer_po']) && trim($data['customer_po'])!=='') {
+      $po = trim($data['customer_po']);
+      $st = $conn->prepare('SELECT project_description FROM po_details WHERE po_number = ? LIMIT 1');
+      if ($st){ $st->bind_param('s',$po); $st->execute(); $res=$st->get_result(); if ($row=$res->fetch_assoc()){ $pd = $row['project_description'] ?? ''; } $st->close(); }
+    }
+    if ($pd!=='') { $data['project_details']=$pd; }
+  }
+  // 2) Clean taxable amount
+  $cleanTaxable = cleanAmount($data['cantik_inv_value_taxable'] ?? '');
+  // 3) Normalize date
+  $cantikDate = parseDateToSerial($data['cantik_invoice_date'] ?? null);
+  $paymentDate = isset($data['payment_receipt_date']) ? parseDateToSerial($data['payment_receipt_date']) : null;
+
+  // Basic validation after enrichment
   $missing=[]; foreach ($required as $h){ if (!isset($data[$h]) || trim($data[$h])==='') $missing[]=$h; }
   if (!empty($missing)) { $errors[]=['row'=>$rowNumber,'message'=>'Missing fields: '.implode(', ',$missing)]; continue; }
-  if (!is_numeric($data['cantik_inv_value_taxable'])) { $errors[]=['row'=>$rowNumber,'message'=>'cantik_inv_value_taxable must be numeric']; continue; }
-
-  $cantikDate = parseDateToSerial($data['cantik_invoice_date']);
+  if ($cleanTaxable === '' || !is_numeric($cleanTaxable)) { $errors[]=['row'=>$rowNumber,'message'=>'cantik_inv_value_taxable must be numeric']; continue; }
   if ($cantikDate===null) { $errors[]=['row'=>$rowNumber,'message'=>'Invalid cantik_invoice_date']; continue; }
-  $paymentDate = isset($data['payment_receipt_date']) ? parseDateToSerial($data['payment_receipt_date']) : null;
+
+  // 4) Enforce unique cantik_invoice_no (within file and database)
+  $invoiceNo = trim($data['cantik_invoice_no']);
+  $invoiceKey = strtolower($invoiceNo);
+  if (isset($seenInvoiceNos[$invoiceKey])) {
+    $errors[] = ['row'=>$rowNumber,'message'=>'Duplicate cantik_invoice_no in uploaded file'];
+    $skipped++; continue;
+  }
+  $seenInvoiceNos[$invoiceKey] = true;
+  $du = $conn->prepare('SELECT id FROM billing_details WHERE cantik_invoice_no = ? LIMIT 1');
+  if ($du) { $du->bind_param('s', $invoiceNo); $du->execute(); $dures=$du->get_result(); if ($dures && $dures->num_rows>0) { $errors[]=['row'=>$rowNumber,'message'=>'cantik_invoice_no already exists']; $skipped++; $du->close(); continue; } $du->close(); }
 
   // Insert
   if ($dryRun) { $inserted++; continue; }
@@ -92,12 +159,25 @@ for ($i=1;$i<count($lines);$i++) {
     cantik_inv_value_taxable,against_vendor_inv_number,payment_receipt_date,payment_advise_no,vendor_name
   ) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
   $zero = 0.00;
+  // Prepare variables for bind_param (must be variables, not expressions)
+  $projectDetails = $data['project_details'];
+  $costCenter = $data['cost_center'];
+  $customerPo = $data['customer_po'];
+  $remainingBalance = $zero;
+  $cantikInvoiceNo = $data['cantik_invoice_no'];
+  $cantikInvoiceDate = $cantikDate; // int serial
+  $taxableAmount = (float)$cleanTaxable;
+  $againstVendorInvNumber = isset($data['against_vendor_inv_number']) && trim($data['against_vendor_inv_number']) !== '' ? $data['against_vendor_inv_number'] : null;
+  $paymentReceiptDate = $paymentDate; // int serial or null
+  $paymentAdviseNo = isset($data['payment_advise_no']) && trim($data['payment_advise_no']) !== '' ? $data['payment_advise_no'] : null;
+  $vendorName = isset($data['vendor_name']) && trim($data['vendor_name']) !== '' ? $data['vendor_name'] : null;
+
   $stmt->bind_param(
     'sssdsidisis',
-    $data['project_details'], $data['cost_center'], $data['customer_po'], $zero,
-    $data['cantik_invoice_no'], $cantikDate, $data['cantik_inv_value_taxable'],
-    $data['against_vendor_inv_number'] ?: null, $paymentDate, $data['payment_advise_no'] ?: null,
-    $data['vendor_name'] ?: null
+    $projectDetails, $costCenter, $customerPo, $remainingBalance,
+    $cantikInvoiceNo, $cantikInvoiceDate, $taxableAmount,
+    $againstVendorInvNumber, $paymentReceiptDate, $paymentAdviseNo,
+    $vendorName
   );
   if ($stmt->execute()) { $inserted++; } else { $errors[]=['row'=>$rowNumber,'message'=>'DB: '.$stmt->error]; }
 }
