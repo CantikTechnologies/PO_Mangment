@@ -402,6 +402,21 @@ function formatCurrency($amount) {
         <label class="block text-sm font-medium text-gray-700 mb-2">Select CSV/TSV File</label>
         <input type="file" id="outsFile" name="csvFile" accept=".csv,.tsv,.txt" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
       </div>
+      <!-- Client-side CSV Preview -->
+      <div id="outsCsvPreview" class="hidden mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-sm font-medium text-gray-900">CSV Preview (first 5 rows)</h4>
+          <div id="outsCsvMeta" class="text-xs text-gray-500"></div>
+        </div>
+        <div class="overflow-x-auto rounded-md border border-gray-200">
+          <div class="max-h-64 overflow-y-auto">
+            <table class="w-full text-xs font-mono">
+              <thead id="outsCsvHead" class="bg-gray-50 sticky top-0 z-10"></thead>
+              <tbody id="outsCsvBody" class="divide-y divide-gray-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div class="mb-4 flex items-center gap-3">
         <label class="inline-flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" id="outsDryRun" class="rounded border-gray-300"> Dry run (validate only)
@@ -432,19 +447,145 @@ function formatCurrency($amount) {
     try{ data=JSON.parse(t);}catch(err){ showOutsErr('Server returned invalid JSON: '+t.substring(0,300)); return; }
     lastOutsErrors = data.errors || [];
     document.getElementById('outsDownloadErrors').classList.toggle('hidden', lastOutsErrors.length === 0);
-    if(!data.success){ showOutsErr(data.errors.map(e=>`Row ${e.row}: ${e.message}`).join('<br>')); } else {
+    if(!data.success){
+      renderDryRunPanel({ ok: data.inserted || 0, errors: lastOutsErrors, isError: true });
+    } else {
       if (document.getElementById('outsDryRun').checked) {
-        const ok = data.inserted || 0;
-        showOutsErr(`Dry run completed. ${ok} rows would be inserted. ${lastOutsErrors.length} rows have issues.`);
-        const el=document.getElementById('outsErrors');
-        el.classList.remove('bg-red-50','border-red-200','text-red-700');
-        el.classList.add('bg-blue-50','border-blue-200','text-blue-700');
+        renderDryRunPanel({ ok: data.inserted || 0, errors: lastOutsErrors, isError: false });
       } else {
         location.reload();
       }
     }
   });
+  
+  // Lightweight client-side CSV/TSV preview (first 5 rows)
+  (function(){
+    const fileInput = document.getElementById('outsFile');
+    const preview = document.getElementById('outsCsvPreview');
+    const head = document.getElementById('outsCsvHead');
+    const body = document.getElementById('outsCsvBody');
+    const meta = document.getElementById('outsCsvMeta');
+
+    function detectDelimiter(line){
+      const tabs = (line.match(/\t/g)||[]).length;
+      const commas = (line.match(/,/g)||[]).length;
+      const delim = tabs > commas ? '\t' : ','; // return actual character
+      const label = delim === '\t' ? 'Tab' : 'Comma';
+      return { delim, label };
+    }
+
+    function parseLine(line, delim){
+      // Naive split, good enough for preview; server does robust parse
+      const re = new RegExp(`(?:^|${delim})(\"(?:[^\"]|\"\")*\"|[^${delim}]*)`, 'g');
+      const out = [];
+      let m;
+      while ((m = re.exec(line)) !== null){
+        let v = m[1] || '';
+        if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1,-1).replace(/\"\"/g,'"');
+        if (v.startsWith("'" ) && v.endsWith("'" )) v = v.slice(1,-1);
+        if (v.startsWith(' ')) v = v.trimStart();
+        out.push(v);
+      }
+      if (out.length && out[0] === '') out.shift();
+      return out;
+    }
+
+    function render(headers, rows, total, fileMeta){
+      head.innerHTML = `<tr>${headers.map(h=>`<th class=\"text-left px-3 py-2 font-semibold text-gray-600\">${h || '&nbsp;'}</th>`).join('')}</tr>`;
+      body.innerHTML = rows.map((r,i)=>`<tr class=\"${i%2===0?'bg-white':'bg-gray-50'}\">${r.map(c=>{
+        const val=(c||'').toString();
+        const safe=val.replace(/</g,'&lt;');
+        return `<td class=\"px-3 py-2 align-top\"><div class=\"max-w-[240px] truncate\" title=\"${safe}\">${safe}</div></td>`;
+      }).join('')}</tr>`).join('');
+      const size = fileMeta && typeof fileMeta.size==='number' ? `, Size: ${(fileMeta.size/1024).toFixed(1)} KB` : '';
+      const cols = headers.length ? `, Columns: ${headers.length}` : '';
+      const delim = fileMeta && fileMeta.delimLabel ? `, Delimiter: ${fileMeta.delimLabel}` : '';
+      const name = fileMeta && fileMeta.name ? `${fileMeta.name}` : 'Selected file';
+      meta.textContent = `${name} — Total rows: ${total}${cols}${delim}${size}`;
+      preview.classList.remove('hidden');
+    }
+
+    fileInput.addEventListener('change', function(){
+      const f = this.files && this.files[0];
+      if (!f){ preview.classList.add('hidden'); return; }
+      const reader = new FileReader();
+      reader.onload = function(){
+        const text = (reader.result || '').toString().replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+        const lines = text.split('\n').filter(x=>x!== '');
+        if (!lines.length){ preview.classList.add('hidden'); return; }
+        const det = detectDelimiter(lines[0]);
+        const headers = parseLine(lines[0], det.delim);
+        const rows = [];
+        for (let i=1; i<Math.min(lines.length, 6); i++){
+          rows.push(parseLine(lines[i], det.delim));
+        }
+        render(headers, rows, Math.max(lines.length-1, 0), { name: f.name, size: f.size, delimLabel: det.label });
+      };
+      reader.readAsText(f);
+    });
+  })();
   function showOutsErr(msg){ const el=document.getElementById('outsErrors'); el.innerHTML=msg; el.classList.remove('hidden'); }
+
+  function renderDryRunPanel({ ok, errors, isError }){
+    const el = document.getElementById('outsErrors');
+    if (!el) return;
+    const totalErrors = errors.length;
+    const first = errors.slice(0, 5);
+    const hasErrors = totalErrors > 0 || isError;
+    const headerClass = hasErrors ? 'text-red-800' : 'text-blue-800';
+    const boxClassesAdd = hasErrors
+      ? ['bg-red-50','border-red-200','text-red-700']
+      : ['bg-blue-50','border-blue-200','text-blue-700'];
+    const boxClassesRemove = hasErrors
+      ? ['bg-blue-50','border-blue-200','text-blue-700']
+      : ['bg-red-50','border-red-200','text-red-700'];
+
+    el.classList.remove('hidden');
+    boxClassesRemove.forEach(c=>el.classList.remove(c));
+    boxClassesAdd.forEach(c=>el.classList.add(c));
+
+    let html = '';
+    html += `<div class="flex items-center justify-between">
+               <h4 class="text-sm font-semibold ${headerClass}">Dry run summary</h4>
+               <div class="text-xs">Preview only — no data inserted</div>
+             </div>`;
+    html += `<div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
+               <div class="rounded-md bg-white/60 border border-current/10 px-3 py-2">
+                 <div class="text-[11px] opacity-70">Rows ready</div>
+                 <div class="text-base font-semibold">${ok}</div>
+               </div>
+               <div class="rounded-md bg-white/60 border border-current/10 px-3 py-2">
+                 <div class="text-[11px] opacity-70">Rows with issues</div>
+                 <div class="text-base font-semibold">${totalErrors}</div>
+               </div>
+               <div class="rounded-md bg-white/60 border border-current/10 px-3 py-2">
+                 <div class="text-[11px] opacity-70">Download details</div>
+                 <button type="button" onclick="downloadOutsErrors()" class="mt-1 inline-flex items-center gap-1 rounded bg-black/10 px-2 py-1 text-xs font-medium hover:bg-black/20">Error CSV</button>
+               </div>
+             </div>`;
+    if (first.length){
+      html += `<div class="mt-3 overflow-hidden rounded-md border border-current/10">
+                 <table class="w-full text-xs">
+                   <thead class="bg-white/60">
+                     <tr>
+                       <th class="text-left px-3 py-2">Row</th>
+                       <th class="text-left px-3 py-2">Issue</th>
+                     </tr>
+                   </thead>
+                   <tbody class="bg-white/40">
+                     ${first.map(e=>`<tr>
+                       <td class="px-3 py-2 align-top">${e.row}</td>
+                       <td class="px-3 py-2">${(e.message||'').replace(/</g,'&lt;')}</td>
+                     </tr>`).join('')}
+                   </tbody>
+                 </table>
+               </div>`;
+      if (totalErrors > first.length){
+        html += `<div class="mt-2 text-[11px] opacity-70">+${totalErrors - first.length} more… Use "Error CSV" to see all.</div>`;
+      }
+    }
+    el.innerHTML = html;
+  }
   function downloadOutsErrors(){
     if (!lastOutsErrors || lastOutsErrors.length===0) return;
     const header = ['row','message'];

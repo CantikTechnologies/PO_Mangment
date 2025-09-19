@@ -1,4 +1,3 @@
-project_details,cost_center,customer_po,vendor_name,cantik_po_no,cantik_po_date,cantik_po_value,vendor_invoice_frequency,vendor_inv_number,vendor_inv_date,vendor_inv_value,payment_status_from_ntt,payment_value,payment_date,remarks
-"Sample Project - Development Team","Sample PT","4500099999","Sample Vendor Ltd","CTPL/PO/24-25/0001",45680,65000,"Monthly","MAH/650/24-25",45690,65000,,, ,
-"Another Project - QA Team","QA PT","4500099998","Another Vendor Inc","CTPL/PO/24-25/0002",45685,70000,"Quarterly","QA/INV/24-25/010",45695,70000,,, ,
+project_details,cost_center,customer_po,vendor_name,cantik_po_no,cantik_po_date,cantik_po_value,remaining_bal_in_po,vendor_invoice_frequency,vendor_inv_number,vendor_inv_date,vendor_inv_value,tds_ded	net_payble,payment_status_from_ntt,payment_value,payment_date,pending_payment,remarks
+Raptakos Resource Deployment - Anuj Kushwaha,Raptakos PT,4500095281,VRATA TECH SOLUTIONS PRIVATE LIMITED,CTPL/PO/24-25/396,27/Jan/2025," 1,67,143.00 ",,Monthly,MAH/464/24-25,31/Jan/2025," 33,548.00 ", 671 ," 38,916 ",3/Jun/2025," 38,915 ",12/Mar/2025, 1 ,
 
