@@ -187,8 +187,8 @@ function formatCurrency($amount) {
                             </div>
                             
                             <div class="relative">
-                                <select name="vendor" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
-                                    <option value="">All Vendors</option>
+                                <select name="vendor" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm <?= ($vendor_filter === '') ? 'text-gray-500' : 'text-gray-900' ?> focus:border-red-500 focus:ring-red-500">
+                                    <option value="" <?= ($vendor_filter === '') ? 'selected' : '' ?>>All Vendors</option>
                                     <?php while ($vendor = $vendors_result->fetch_assoc()): ?>
                                     <option value="<?= htmlspecialchars($vendor['vendor_name']) ?>" 
                                             <?= $vendor_filter == $vendor['vendor_name'] ? 'selected' : '' ?>>
@@ -200,8 +200,8 @@ function formatCurrency($amount) {
                             </div>
                             
                             <div class="relative">
-                                <select name="status" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 focus:border-red-500 focus:ring-red-500">
-                                    <option value="">All Statuses</option>
+                                <select name="status" class="w-full appearance-none rounded-lg border-gray-200 bg-gray-50 px-4 py-2 text-sm <?= ($status_filter === '') ? 'text-gray-500' : 'text-gray-900' ?> focus:border-red-500 focus:ring-red-500">
+                                    <option value="" <?= ($status_filter === '') ? 'selected' : '' ?>>All Statuses</option>
                                     <?php while ($status = $statuses_result->fetch_assoc()): ?>
                                     <option value="<?= htmlspecialchars($status['payment_status_from_ntt']) ?>" 
                                             <?= $status_filter == $status['payment_status_from_ntt'] ? 'selected' : '' ?>>
@@ -453,6 +453,24 @@ function formatCurrency($amount) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href=url; a.download='outsourcing_errors.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   }
+  
+  // Ensure placeholder text color for Vendor/Status selects
+  (function(){
+    function setColor(el){
+      if (!el) return;
+      el.style.color = (el.value === '') ? '#6b7280' : '#111827';
+    }
+    function init(){
+      const vendor = document.querySelector('select[name="vendor"]');
+      const status = document.querySelector('select[name="status"]');
+      setColor(vendor); setColor(status);
+      if (vendor) vendor.addEventListener('change', ()=>setColor(vendor));
+      if (status) status.addEventListener('change', ()=>setColor(status));
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else { init(); }
+  })();
 </script>
 </body>
 </html>

@@ -186,7 +186,7 @@ function formatCurrency($amount) {
                                         <?= htmlspecialchars($vendor['vendor_name']) ?>
                                     </option>
                                     <?php endwhile; ?>
-            </select>
+                                </select>
                                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
                             </div>
                             
