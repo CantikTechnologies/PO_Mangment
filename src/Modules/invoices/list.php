@@ -414,6 +414,138 @@ function formatCurrency($amount) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href=url; a.download='invoice_errors.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   }
+
+  // Date parsing functionality for search filters
+  (function() {
+    const toIso = (str) => {
+      if (!str) return null; 
+      const s = String(str).trim();
+      
+      // Handle yyyy-mm-dd format (already ISO)
+      let m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/i.exec(s);
+      if (m) {
+        const y = m[1];
+        const mo = m[2].padStart(2,'0');
+        const d = m[3].padStart(2,'0');
+        if (+mo >= 1 && +mo <= 12 && +d >= 1 && +d <= 31) {
+          return `${y}-${mo}-${d}`;
+        }
+        return null;
+      }
+      
+      // Handle dd/mm/yyyy or dd-mm-yyyy formats
+      m = /^(\d{1,2})[-\/](\d{1,2})[-\/]?(\d{4})$/i.exec(s);
+      if (m) {
+        const d = m[1].padStart(2,'0'); 
+        const mo = m[2].padStart(2,'0'); 
+        const y = m[3]; 
+        if (+mo >= 1 && +mo <= 12 && +d >= 1 && +d <= 31) {
+          return `${y}-${mo}-${d}`;
+        }
+        return null;
+      }
+      
+      // Handle dd-mmm-yyyy or dd mmm yyyy formats
+      m = /^(\d{1,2})[-\s]([A-Za-z]{3,})[-\s](\d{4})$/i.exec(s);
+      if (m) {
+        const d = m[1].padStart(2,'0'); 
+        const mon = m[2].slice(0,3).toLowerCase(); 
+        const y = m[3]; 
+        const map = {
+          jan:'01', feb:'02', mar:'03', apr:'04', may:'05', jun:'06',
+          jul:'07', aug:'08', sep:'09', oct:'10', nov:'11', dec:'12'
+        }; 
+        const mo = map[mon]; 
+        if (mo && +d >= 1 && +d <= 31) {
+          return `${y}-${mo}-${d}`;
+        }
+        return null;
+      }
+      
+      // Handle dd-mmm-yy format (2-digit year)
+      m = /^(\d{1,2})[-\s]([A-Za-z]{3,})[-\s](\d{2})$/i.exec(s);
+      if (m) {
+        const d = m[1].padStart(2,'0'); 
+        const mon = m[2].slice(0,3).toLowerCase(); 
+        let y = m[3]; 
+        // Convert 2-digit year to 4-digit (assuming 20xx for years 00-99)
+        if (+y >= 0 && +y <= 99) {
+          y = '20' + y.padStart(2,'0');
+        }
+        const map = {
+          jan:'01', feb:'02', mar:'03', apr:'04', may:'05', jun:'06',
+          jul:'07', aug:'08', sep:'09', oct:'10', nov:'11', dec:'12'
+        }; 
+        const mo = map[mon]; 
+        if (mo && +d >= 1 && +d <= 31) {
+          return `${y}-${mo}-${d}`;
+        }
+        return null;
+      }
+      
+      // Handle mm/dd/yyyy format (US style)
+      m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/i.exec(s);
+      if (m) {
+        const mo = m[1].padStart(2,'0'); 
+        const d = m[2].padStart(2,'0'); 
+        const y = m[3]; 
+        if (+mo >= 1 && +mo <= 12 && +d >= 1 && +d <= 31) {
+          return `${y}-${mo}-${d}`;
+        }
+        return null;
+      }
+      
+      return null;
+    };
+    
+    const wire = (input) => {
+      const convert = () => {
+        const v = input.value;
+        const iso = toIso(v);
+        if (iso) {
+          input.value = iso;
+          input.type = 'date';
+        }
+      };
+      
+      input.addEventListener('blur', convert);
+      input.addEventListener('paste', (e) => {
+        // Get the pasted text immediately
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        const iso = toIso(pastedText);
+        if (iso) {
+          e.preventDefault();
+          input.value = iso;
+          input.type = 'date';
+        } else {
+          // If not a valid date format, let the paste happen normally and check after
+          setTimeout(() => {
+            const text = input.value;
+            const iso = toIso(text);
+            if (iso) {
+              input.value = iso;
+              input.type = 'date';
+            }
+          }, 10);
+        }
+      });
+      
+      // Also handle input event for better paste support
+      input.addEventListener('input', (e) => {
+        const v = e.target.value;
+        if (v.length >= 8) { // Minimum length for a date
+          const iso = toIso(v);
+          if (iso) {
+            input.value = iso;
+            input.type = 'date';
+          }
+        }
+      });
+    };
+    
+    // Apply to date filter inputs
+    document.querySelectorAll('input[name="date_from"], input[name="date_to"]').forEach(wire);
+  })();
 </script>
 </body>
 </html>

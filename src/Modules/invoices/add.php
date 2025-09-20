@@ -174,9 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Cantik Invoice Date -->
                             <div>
                                 <label for="cantik_invoice_date" class="block text-sm font-medium text-gray-700 mb-2">Cantik Invoice Date</label>
-                                <input type="date" id="cantik_invoice_date" name="cantik_invoice_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
+                                <input type="text" id="cantik_invoice_date" name="cantik_invoice_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= htmlspecialchars($_POST['cantik_invoice_date'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                       onfocus="this.type='date'" onblur="if(!this.value) this.type='text'">
                                 <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
@@ -223,9 +224,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Payment Receipt Date -->
                             <div>
                                 <label for="payment_receipt_date" class="block text-sm font-medium text-gray-700 mb-2">Payment Receipt Date</label>
-                                <input type="date" id="payment_receipt_date" name="payment_receipt_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
+                                <input type="text" id="payment_receipt_date" name="payment_receipt_date" data-accept-ddmmyyyy placeholder="dd-mmm-yyyy"
                                        value="<?= htmlspecialchars($_POST['payment_receipt_date'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                       onfocus="this.type='date'" onblur="if(!this.value) this.type='text'">
                                 <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
           </div>
 
@@ -265,28 +267,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Allow dd-mm-yyyy or d-MMM-yyyy paste/typing for inputs with data-accept-ddmmyyyy
         (function() {
             const toIso = (str) => {
-                if (!str) return null;
+                if (!str) return null; 
                 const s = String(str).trim();
-                // dd-mm-yyyy or dd/mm/yyyy
-                let m = /^(\d{1,2})[-\/](\d{1,2})[-\/]?(\d{4})$/i.exec(s);
+                
+                // Handle yyyy-mm-dd format (already ISO)
+                let m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/i.exec(s);
                 if (m) {
-                    const d = m[1].padStart(2,'0');
+                    const y = m[1];
                     const mo = m[2].padStart(2,'0');
-                    const y = m[3];
-                    if (+mo >= 1 && +mo <= 12 && +d >= 1 && +d <= 31) return `${y}-${mo}-${d}`;
+                    const d = m[3].padStart(2,'0');
+                    if (+mo >= 1 && +mo <= 12 && +d >= 1 && +d <= 31) {
+                        return `${y}-${mo}-${d}`;
+                    }
                     return null;
                 }
-                // d-MMM-yyyy
+                
+                // Handle dd/mm/yyyy or dd-mm-yyyy formats
+                m = /^(\d{1,2})[-\/](\d{1,2})[-\/]?(\d{4})$/i.exec(s);
+                if (m) {
+                    const d = m[1].padStart(2,'0'); 
+                    const mo = m[2].padStart(2,'0'); 
+                    const y = m[3]; 
+                    if (+mo >= 1 && +mo <= 12 && +d >= 1 && +d <= 31) {
+                        return `${y}-${mo}-${d}`;
+                    }
+                    return null;
+                }
+                
+                // Handle dd-mmm-yyyy or dd mmm yyyy formats
                 m = /^(\d{1,2})[-\s]([A-Za-z]{3,})[-\s](\d{4})$/i.exec(s);
                 if (m) {
-                    const d = m[1].padStart(2,'0');
-                    const monTxt = m[2].slice(0,3).toLowerCase();
-                    const y = m[3];
-                    const map = {jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
-                    const mo = map[monTxt];
-                    if (mo && +d >= 1 && +d <= 31) return `${y}-${mo}-${d}`;
+                    const d = m[1].padStart(2,'0'); 
+                    const mon = m[2].slice(0,3).toLowerCase(); 
+                    const y = m[3]; 
+                    const map = {
+                        jan:'01', feb:'02', mar:'03', apr:'04', may:'05', jun:'06',
+                        jul:'07', aug:'08', sep:'09', oct:'10', nov:'11', dec:'12'
+                    }; 
+                    const mo = map[mon]; 
+                    if (mo && +d >= 1 && +d <= 31) {
+                        return `${y}-${mo}-${d}`;
+                    }
                     return null;
                 }
+                
+                // Handle dd-mmm-yy format (2-digit year)
+                m = /^(\d{1,2})[-\s]([A-Za-z]{3,})[-\s](\d{2})$/i.exec(s);
+                if (m) {
+                    const d = m[1].padStart(2,'0'); 
+                    const mon = m[2].slice(0,3).toLowerCase(); 
+                    let y = m[3]; 
+                    // Convert 2-digit year to 4-digit (assuming 20xx for years 00-99)
+                    if (+y >= 0 && +y <= 99) {
+                        y = '20' + y.padStart(2,'0');
+                    }
+                    const map = {
+                        jan:'01', feb:'02', mar:'03', apr:'04', may:'05', jun:'06',
+                        jul:'07', aug:'08', sep:'09', oct:'10', nov:'11', dec:'12'
+                    }; 
+                    const mo = map[mon]; 
+                    if (mo && +d >= 1 && +d <= 31) {
+                        return `${y}-${mo}-${d}`;
+                    }
+                    return null;
+                }
+                
+                // Handle mm/dd/yyyy format (US style)
+                m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/i.exec(s);
+                if (m) {
+                    const mo = m[1].padStart(2,'0'); 
+                    const d = m[2].padStart(2,'0'); 
+                    const y = m[3]; 
+                    if (+mo >= 1 && +mo <= 12 && +d >= 1 && +d <= 31) {
+                        return `${y}-${mo}-${d}`;
+                    }
+                    return null;
+                }
+                
                 return null;
             };
             const wire = (input) => {
@@ -297,15 +354,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 };
                 input.addEventListener('blur', convert);
                 input.addEventListener('paste', (e) => {
-                    const text = (e.clipboardData || window.clipboardData).getData('text');
-                    const iso = toIso(text);
+                    // Get the pasted text immediately
+                    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                    const iso = toIso(pastedText);
                     if (iso) {
                         e.preventDefault();
                         input.value = iso;
+                        input.type = 'date';
+                    } else {
+                        // If not a valid date format, let the paste happen normally and check after
+                        setTimeout(() => {
+                            const text = input.value;
+                            const iso = toIso(text);
+                            if (iso) {
+                                input.value = iso;
+                                input.type = 'date';
+                            }
+                        }, 10);
+                    }
+                });
+                
+                // Also handle input event for better paste support
+                input.addEventListener('input', (e) => {
+                    const v = e.target.value;
+                    if (v.length >= 8) { // Minimum length for a date
+                        const iso = toIso(v);
+                        if (iso) {
+                            input.value = iso;
+                            input.type = 'date';
+                        }
                     }
                 });
             };
-            document.querySelectorAll('input[type="date"][data-accept-ddmmyyyy]').forEach(wire);
+            document.querySelectorAll('input[data-accept-ddmmyyyy]').forEach(wire);
         })();
         // Live financial calculations and remaining balance update
         let basePendingInPo = 0;
