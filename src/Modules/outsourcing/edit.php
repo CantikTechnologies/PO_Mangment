@@ -345,4 +345,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     };
     document.querySelectorAll('input[type="date"][data-accept-ddmmyyyy]').forEach(wire);
 })();
+
+// Automatic calculation for TDS, Net Payable, and Pending Payment
+(function() {
+    const vendorInvValueInput = document.getElementById('vendor_inv_value');
+    const tdsDedInput = document.getElementById('tds_ded');
+    const netPayableInput = document.getElementById('net_payble');
+    const paymentValueInput = document.getElementById('payment_value');
+    const pendingPaymentInput = document.getElementById('pending_payment');
+    
+    function calculateValues() {
+        const vendorInvValue = parseFloat(vendorInvValueInput.value) || 0;
+        const paymentValue = parseFloat(paymentValueInput.value) || 0;
+        
+        // TDS calculation (10% of vendor invoice value)
+        const tdsRate = 0.10;
+        const tdsAmount = vendorInvValue * tdsRate;
+        
+        // Net Payable = Vendor Invoice Value - TDS
+        const netPayable = vendorInvValue - tdsAmount;
+        
+        // Pending Payment = Net Payable - Payment Value
+        const pendingPayment = Math.max(netPayable - paymentValue, 0);
+        
+        tdsDedInput.value = tdsAmount.toFixed(2);
+        netPayableInput.value = netPayable.toFixed(2);
+        pendingPaymentInput.value = pendingPayment.toFixed(2);
+    }
+    
+    if (vendorInvValueInput) {
+        vendorInvValueInput.addEventListener('input', calculateValues);
+        vendorInvValueInput.addEventListener('change', calculateValues);
+    }
+    
+    if (paymentValueInput) {
+        paymentValueInput.addEventListener('input', calculateValues);
+        paymentValueInput.addEventListener('change', calculateValues);
+    }
+})();
 </script>

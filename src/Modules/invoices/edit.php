@@ -305,4 +305,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     };
     document.querySelectorAll('input[type="date"][data-accept-ddmmyyyy]').forEach(wire);
 })();
+
+// Automatic calculation for TDS and Receivable
+(function() {
+    const taxableInput = document.getElementById('cantik_inv_value_taxable');
+    const tdsInput = document.getElementById('tds');
+    const receivableInput = document.getElementById('receivable');
+    
+    function calculateValues() {
+        const taxableValue = parseFloat(taxableInput.value) || 0;
+        const tdsRate = 0.10; // 10% TDS rate
+        const tdsAmount = taxableValue * tdsRate;
+        const receivableAmount = taxableValue - tdsAmount;
+        
+        tdsInput.value = tdsAmount.toFixed(2);
+        receivableInput.value = receivableAmount.toFixed(2);
+    }
+    
+    if (taxableInput) {
+        taxableInput.addEventListener('input', calculateValues);
+        taxableInput.addEventListener('change', calculateValues);
+    }
+})();
 </script>
