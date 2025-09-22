@@ -120,6 +120,24 @@ $vendors_result = $conn->query($vendors_query);
 $statuses_query = "SELECT DISTINCT payment_status_from_ntt FROM outsourcing_detail WHERE payment_status_from_ntt IS NOT NULL ORDER BY payment_status_from_ntt";
 $statuses_result = $conn->query($statuses_query);
 
+// Get summary totals for current filtered results
+$summary_sql = "SELECT 
+    COUNT(*) as total_records,
+    SUM(vendor_inv_value) as total_vendor_inv_value,
+    SUM(tds_ded) as total_tds_ded,
+    SUM(net_payble) as total_net_payble,
+    SUM(payment_value) as total_payment_value,
+    SUM(pending_payment) as total_pending_payment
+    FROM outsourcing_detail $where_clause";
+$summary_stmt = $conn->prepare($summary_sql);
+if (!empty($params)) {
+    $summary_stmt->bind_param($param_types, ...$params);
+}
+$summary_stmt->execute();
+$summary_result = $summary_stmt->get_result();
+$summary_data = $summary_result->fetch_assoc();
+$summary_stmt->close();
+
 function formatDate($excel_date) {
     if (empty($excel_date)) return '-';
     $unix_date = ($excel_date - 25569) * 86400;
@@ -162,8 +180,16 @@ function formatCurrency($amount) {
                         <h1 class="text-3xl font-bold text-gray-900">Outsourcing</h1>
                         <p class="text-gray-600 mt-2">Manage and track all outsourcing records</p>
                     </div>
-                    <?php if (hasPermission('add_outsourcing')): ?>
                     <div class="flex gap-3">
+                      <button onclick="downloadReport()" class="flex items-center justify-center gap-2 rounded-full bg-purple-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-purple-700 transition-colors">
+                        <span class="material-symbols-outlined">download</span>
+                        <span class="truncate">Download Report</span>
+                      </button>
+                      <button onclick="openSummaryDialog()" class="flex items-center justify-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-green-700 transition-colors">
+                        <span class="material-symbols-outlined">analytics</span>
+                        <span class="truncate">Summary</span>
+                      </button>
+                      <?php if (hasPermission('add_outsourcing')): ?>
                       <button onclick="openOutsourcingBulkUpload()" class="flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
                         <span class="material-symbols-outlined">upload</span>
                         <span class="truncate">Bulk Upload</span>
@@ -172,8 +198,8 @@ function formatCurrency($amount) {
                         <span class="material-symbols-outlined">add</span>
                         <span class="truncate">New Outsourcing</span>
                       </a>
+                      <?php endif; ?>
                     </div>
-                    <?php endif; ?>
                 </div>
 
                 <!-- Filters -->
@@ -761,6 +787,85 @@ function formatCurrency($amount) {
     // Apply to date filter inputs
     document.querySelectorAll('input[name="date_from"], input[name="date_to"]').forEach(wire);
   })();
+
+  // Summary dialog functionality
+  function openSummaryDialog() {
+    document.getElementById('summaryDialog').classList.remove('hidden');
+  }
+  
+  function closeSummaryDialog() {
+    document.getElementById('summaryDialog').classList.add('hidden');
+  }
+
+  // Download report functionality
+  function downloadReport() {
+    // Get current filter parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryString = urlParams.toString();
+    
+    // Create download URL with current filters
+    const downloadUrl = 'download_report.php?' + queryString;
+    
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'outsourcing_report_' + new Date().toISOString().split('T')[0] + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 </script>
+
+<!-- Summary Dialog -->
+<div id="summaryDialog" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Outsourcing Summary</h3>
+        <button onclick="closeSummaryDialog()" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-600">Total Records</p>
+              <p class="text-2xl font-bold text-gray-900"><?= number_format($summary_data['total_records'] ?? 0) ?></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">Total Vendor Inv Value</p>
+              <p class="text-2xl font-bold text-green-600">₹<?= number_format($summary_data['total_vendor_inv_value'] ?? 0, 2) ?></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">Total TDS Ded</p>
+              <p class="text-2xl font-bold text-blue-600">₹<?= number_format($summary_data['total_tds_ded'] ?? 0, 2) ?></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">Total Net Payable</p>
+              <p class="text-2xl font-bold text-purple-600">₹<?= number_format($summary_data['total_net_payble'] ?? 0, 2) ?></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">Total Payment Value</p>
+              <p class="text-2xl font-bold text-orange-600">₹<?= number_format($summary_data['total_payment_value'] ?? 0, 2) ?></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">Total Pending Payment</p>
+              <p class="text-2xl font-bold text-red-600">₹<?= number_format($summary_data['total_pending_payment'] ?? 0, 2) ?></p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end">
+          <button onclick="closeSummaryDialog()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
