@@ -9,6 +9,16 @@ if (!isset($_SESSION['username'])) {
 }
 requirePermission('view_invoices');
 
+// Success message handling
+$success_message = '';
+if (isset($_GET['success'])) {
+    if ($_GET['success'] === 'created') {
+        $success_message = 'Invoice created successfully!';
+    } elseif ($_GET['success'] === 'updated') {
+        $success_message = 'Invoice updated successfully!';
+    }
+}
+
 // Search and filter parameters
 $search = isset($_GET['q']) ? trim($_GET['q']) : '';
 $project_filter = isset($_GET['project']) ? trim($_GET['project']) : '';
@@ -130,6 +140,13 @@ function formatCurrency($amount) {
         
         <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
             <div class="max-w-7xl mx-auto">
+                <!-- Success Message -->
+                <?php if (!empty($success_message)): ?>
+                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <p class="text-green-800"><?= htmlspecialchars($success_message) ?></p>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Header -->
                 <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
                     <div>

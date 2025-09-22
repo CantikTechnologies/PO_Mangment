@@ -75,16 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($stmt->execute()) {
             $success = "Outsourcing record updated successfully!";
             $auth->logAction('update_outsourcing', 'outsourcing_detail', $id);
-            // Refresh outsourcing data
-            $sql = "SELECT * FROM outsourcing_detail WHERE id = ?";
-            $stmt2 = $conn->prepare($sql);
-            if ($stmt2) {
-                $stmt2->bind_param("i", $id);
-                $stmt2->execute();
-                $result = $stmt2->get_result();
-                $outsourcing = $result->fetch_assoc();
-                $stmt2->close();
-            }
+            // Redirect to list page after successful update
+            header('Location: list.php?success=updated');
+            exit();
   } else {
     $error = "Error: " . $stmt->error;
   }

@@ -119,16 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $success = "Purchase order updated successfully!";
                 $auth->logAction('update_po', 'po_details', $id);
-                // Refresh PO data
-                $sql = "SELECT * FROM po_details WHERE id = ?";
-                $stmt2 = $conn->prepare($sql);
-                if ($stmt2) {
-                    $stmt2->bind_param("i", $id);
-                    $stmt2->execute();
-                    $result = $stmt2->get_result();
-                    $po = $result->fetch_assoc();
-                    $stmt2->close();
-                }
+                // Redirect to list page after successful update
+                header('Location: list.php?success=updated');
+                exit();
             } else {
                 $error = "Error: " . $stmt->error;
             }

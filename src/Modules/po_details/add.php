@@ -49,7 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $success = "Purchase order created successfully!";
                 $auth->logAction('create_po', 'po_details', $conn->insert_id);
-                $_POST = array(); // Clear form data
+                // Redirect to list page after successful creation
+                header('Location: list.php?success=created');
+                exit();
             } else {
                 $error = "Error: " . $stmt->error;
             }
