@@ -273,9 +273,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
           </div>
 
-                            <!-- Payment Status from NTT -->
+                            <!-- Payment Status from Customer -->
                             <div>
-                                <label for="payment_status_from_ntt" class="block text-sm font-medium text-gray-700 mb-2">Payment Status from NTT</label>
+                                <label for="payment_status_from_ntt" class="block text-sm font-medium text-gray-700 mb-2">Payment Status from Customer</label>
                                 <select id="payment_status_from_ntt" name="payment_status_from_ntt"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                                     <option value="">Select status</option>

@@ -290,10 +290,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Vendor Name -->
                             <div>
                                 <label for="vendor_name" class="block text-sm font-medium text-gray-700 mb-2">Vendor Name</label>
-                                <input type="text" id="vendor_name" name="vendor_name"
+                                <input type="text" id="vendor_name" name="vendor_name" readonly
                                        value="<?= htmlspecialchars($po['vendor_name']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
-                                <p class="mt-1 text-xs text-gray-500">If left blank, system may auto-derive from invoices/outsourcing data.</p>
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed text-gray-600">
+                                <p class="mt-1 text-xs text-gray-500">Vendor name is read-only and auto-derived from related records.</p>
                             </div>
 
                             <!-- Customer Name -->

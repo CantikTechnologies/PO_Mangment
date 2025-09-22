@@ -47,10 +47,10 @@ if ($search !== '') {
 }
 
 // Get filter options
-$projects_query = "SELECT DISTINCT project_description FROM posummary WHERE project_description IS NOT NULL AND project_description != '' ORDER BY project_description";
+$projects_query = "SELECT DISTINCT project_description FROM po_details WHERE project_description IS NOT NULL AND project_description != '' ORDER BY project_description";
 $projects_result = $conn->query($projects_query);
 
-$cost_centers_query = "SELECT DISTINCT cost_center FROM posummary WHERE cost_center IS NOT NULL AND cost_center != '' ORDER BY cost_center";
+$cost_centers_query = "SELECT DISTINCT cost_center FROM po_details WHERE cost_center IS NOT NULL AND cost_center != '' ORDER BY cost_center";
 $cost_centers_result = $conn->query($cost_centers_query);
 
 function formatCurrency($amount) {
@@ -201,7 +201,7 @@ $sql = "
     ROUND(ps.target_gm * 100, 2) AS target_gm,
     COALESCE(ROUND((((COALESCE(bsum.total_billed, 0) - COALESCE(osum.vendor_invoicing_till_date, 0))
                     / NULLIF(COALESCE(bsum.total_billed, 0), 0)) * 100) - (ps.target_gm * 100), 2), 0) AS variance_in_gm
-  FROM posummary ps
+  FROM po_details ps
   LEFT JOIN (
     SELECT customer_po AS po_number,
            SUM(cantik_inv_value_taxable) AS total_billed
@@ -248,7 +248,34 @@ if (isset($prep_error)) {
         echo "<td class='px-3 py-2 text-right border border-gray-200 align-top'>" . formatCurrency($r['billed_till_date'] ?? 0) . "</td>";
         echo "<td class='px-3 py-2 text-right border border-gray-200 align-top'>" . formatCurrency($r['remaining_balance_po'] ?? 0) . "</td>";
         $vendorName = trim((string)($r['vendor_name'] ?? ''));
-        if ($vendorName === '') { $vendorName = '-'; }
+        if ($vendorName === '') { 
+            // Try to manually fetch vendor name from related tables
+            $po_number = $r['customer_po_no'] ?? '';
+            if ($po_number) {
+                // Check outsourcing_detail first
+                $vendor_sql = "SELECT vendor_name FROM outsourcing_detail WHERE customer_po = ? AND vendor_name IS NOT NULL AND vendor_name != '' ORDER BY id DESC LIMIT 1";
+                $vendor_stmt = $conn->prepare($vendor_sql);
+                $vendor_stmt->bind_param('s', $po_number);
+                $vendor_stmt->execute();
+                $vendor_result = $vendor_stmt->get_result();
+                if ($vendor_row = $vendor_result->fetch_assoc()) {
+                    $vendorName = trim($vendor_row['vendor_name']);
+                } else {
+                    // Check billing_details
+                    $vendor_sql2 = "SELECT vendor_name FROM billing_details WHERE customer_po = ? AND vendor_name IS NOT NULL AND vendor_name != '' ORDER BY id DESC LIMIT 1";
+                    $vendor_stmt2 = $conn->prepare($vendor_sql2);
+                    $vendor_stmt2->bind_param('s', $po_number);
+                    $vendor_stmt2->execute();
+                    $vendor_result2 = $vendor_stmt2->get_result();
+                    if ($vendor_row2 = $vendor_result2->fetch_assoc()) {
+                        $vendorName = trim($vendor_row2['vendor_name']);
+                    }
+                    $vendor_stmt2->close();
+                }
+                $vendor_stmt->close();
+            }
+            if ($vendorName === '') { $vendorName = '-'; }
+        }
         $cantikPo = trim((string)($r['cantik_po_no'] ?? ''));
         if ($cantikPo === '') { $cantikPo = '-'; }
         echo "<td class='px-3 py-2 border border-gray-200 align-top whitespace-normal'>" . htmlspecialchars($vendorName) . "</td>";
