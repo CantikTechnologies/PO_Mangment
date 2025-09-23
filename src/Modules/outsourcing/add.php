@@ -42,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Pending Payment (no longer shown/posted in UI) still computed server-side for DB consistency
     $pending_payment = round(((float)$net_payble) - ((float)$payment_value ?: 0), 2);
     $payment_advise_no = trim($_POST['payment_advise_no'] ?? '');
-    $payment_notes = trim($_POST['payment_notes'] ?? '');
     $remarks = trim($_POST['remarks'] ?? '');
 
     // Convert dates to Excel format if provided
@@ -50,11 +49,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vendor_inv_date_excel = $vendor_inv_date ? (strtotime($vendor_inv_date) / 86400) + 25569 : null;
     $payment_date_excel = $payment_date ? (strtotime($payment_date) / 86400) + 25569 : null;
 
-    $sql = "INSERT INTO outsourcing_detail (project_details, cost_center, customer_po, vendor_name, cantik_po_no, cantik_po_date, cantik_po_value, remaining_bal_in_po, vendor_invoice_frequency, vendor_inv_number, vendor_inv_date, vendor_inv_value, tds_ded, net_payble, payment_status_from_ntt, payment_value, payment_date, pending_payment, payment_advise_no, payment_notes, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO outsourcing_detail (project_details, cost_center, customer_po, vendor_name, cantik_po_no, cantik_po_date, cantik_po_value, remaining_bal_in_po, vendor_invoice_frequency, vendor_inv_number, vendor_inv_date, vendor_inv_value, tds_ded, net_payble, payment_status_from_ntt, payment_value, payment_date, pending_payment, payment_advise_no, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
-        $stmt->bind_param("sssssiddssidddsdidsss", $project_details, $cost_center, $customer_po, $vendor_name, $cantik_po_no, $cantik_po_date_excel, $cantik_po_value, $remaining_bal_in_po, $vendor_invoice_frequency, $vendor_inv_number, $vendor_inv_date_excel, $vendor_inv_value, $tds_ded, $net_payble, $payment_status_from_ntt, $payment_value, $payment_date_excel, $pending_payment, $payment_advise_no, $payment_notes, $remarks);
+        $stmt->bind_param("sssssiddssidddsdidss", $project_details, $cost_center, $customer_po, $vendor_name, $cantik_po_no, $cantik_po_date_excel, $cantik_po_value, $remaining_bal_in_po, $vendor_invoice_frequency, $vendor_inv_number, $vendor_inv_date_excel, $vendor_inv_value, $tds_ded, $net_payble, $payment_status_from_ntt, $payment_value, $payment_date_excel, $pending_payment, $payment_advise_no, $remarks);
 
     if ($stmt->execute()) {
             $success = "Outsourcing record created successfully!";
@@ -314,12 +313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
-                            <!-- Payment Notes -->
-                            <div class="md:col-span-2 lg:col-span-3">
-                                <label for="payment_notes" class="block text-sm font-medium text-gray-700 mb-2">Payment Notes</label>
-                                <textarea id="payment_notes" name="payment_notes" rows="2"
-                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"><?= htmlspecialchars($_POST['payment_notes'] ?? '') ?></textarea>
-                            </div>
+                            
 
                             <!-- Remarks -->
                             <div class="md:col-span-2 lg:col-span-3">
@@ -504,7 +498,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     let bookedTillDate = 0;
 
     function recalc() {
-        if (!invEl || !tdsEl || !netEl || !pendingEl) return;
+        // Only require inputs we actually have on the form
+        if (!invEl || !tdsEl || !netEl) return;
         const inv = parseFloat(invEl.value || '0') || 0;
         const rate = parseFloat(rateEl && rateEl.value ? rateEl.value : '2') || 2;
         const tds = +(inv * (rate/100)).toFixed(2);
@@ -514,7 +509,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         tdsEl.value = isFinite(tds) ? tds : '';
         netEl.value = isFinite(net) ? net : '';
-        pendingEl.value = isFinite(pending) ? pending : '';
+        if (pendingEl) pendingEl.value = isFinite(pending) ? pending : '';
 
         // Remaining balance in PO = Cantik PO Value - Vendor invoices booked till date
         const cantikPoVal = parseFloat(cantikPoValEl && cantikPoValEl.value ? cantikPoValEl.value : '0') || 0;

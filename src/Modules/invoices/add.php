@@ -43,11 +43,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
-        $stmt->bind_param("sssdsidddsisss", $project_details, $cost_center, $customer_po, $remaining_balance, $cantik_invoice_no, $cantik_invoice_date_excel, $cantik_inv_value_taxable, $tds, $receivable, $against_vendor_inv_number, $payment_receipt_date_excel, $payment_advise_no, $vendor_name);
+        $stmt->bind_param("sssdsidddsiss", $project_details, $cost_center, $customer_po, $remaining_balance, $cantik_invoice_no, $cantik_invoice_date_excel, $cantik_inv_value_taxable, $tds, $receivable, $against_vendor_inv_number, $payment_receipt_date_excel, $payment_advise_no, $vendor_name);
 
     if ($stmt->execute()) {
             $success = "Invoice created successfully!";
             $auth->logAction('create_invoice', 'billing_details', $conn->insert_id);
+            // After creating invoice, update PO remaining balance based on total billed
+            if ($customer_po !== '') {
+                if ($upd = $conn->prepare(
+                    "UPDATE po_details pd
+                     LEFT JOIN (
+                       SELECT customer_po, COALESCE(SUM(cantik_inv_value_taxable),0) AS total_billed
+                       FROM billing_details
+                       WHERE customer_po = ?
+                     ) b ON b.customer_po = pd.po_number
+                     SET pd.pending_amount = GREATEST(0, COALESCE(pd.po_value,0) - COALESCE(b.total_billed,0))
+                     WHERE pd.po_number = ?"
+                )) {
+                    $upd->bind_param('ss', $customer_po, $customer_po);
+                    $upd->execute();
+                    $upd->close();
+                }
+            }
             // Redirect to list page after successful creation
             header('Location: list.php?success=created');
             exit();
@@ -434,8 +451,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('cost_center').value = po.cost_center ?? '';
                     document.getElementById('customer_po').value = po.po_number ?? '';
                     setVal('vendor_name', po.vendor_name ?? '');
-                    // Seed remaining balance with PO Value as requested
-                    basePendingInPo = parseFloat(po.po_value ?? '0') || 0;
+                    // Seed remaining balance with current pending amount from PO
+                    basePendingInPo = parseFloat(po.pending_amount ?? po.po_value ?? '0') || 0;
                     const remainEl = document.getElementById('remaining_balance_in_po');
                     if (remainEl && (remainEl.value === '' || remainEl.value === undefined)) {
                         remainEl.value = basePendingInPo;
@@ -447,6 +464,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             });
     }
+
+        // Auto-fetch remaining when customer_po is already filled (e.g., preselected)
+        (async () => {
+            const customerPoEl = document.getElementById('customer_po');
+            const remainEl = document.getElementById('remaining_balance_in_po');
+            if (customerPoEl && customerPoEl.value && remainEl && (remainEl.value === '' || remainEl.value === undefined)) {
+                try {
+                    const res = await fetch(`../po_details/get_po.php?po_number=${encodeURIComponent(customerPoEl.value)}`);
+                    if (res.ok) {
+                        const json = await res.json();
+                        const po = json.data || {};
+                        basePendingInPo = parseFloat(po.pending_amount ?? po.po_value ?? '0') || 0;
+                        remainEl.value = basePendingInPo;
+                        recalcInvoiceFinancials();
+                    }
+                } catch(e) { /* ignore */ }
+            }
+        })();
   </script>
 </body>
 </html>
