@@ -451,8 +451,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('cost_center').value = po.cost_center ?? '';
                     document.getElementById('customer_po').value = po.po_number ?? '';
                     setVal('vendor_name', po.vendor_name ?? '');
-                    // Seed remaining balance with current pending amount from PO
-                    basePendingInPo = parseFloat(po.pending_amount ?? po.po_value ?? '0') || 0;
+                    // Seed remaining balance: prefer pending_amount if > 0, otherwise fallback to full PO value
+                    const pend = parseFloat(po.pending_amount);
+                    const poval = parseFloat(po.po_value);
+                    basePendingInPo = (isFinite(pend) && pend > 0) ? pend : (isFinite(poval) ? poval : 0);
                     const remainEl = document.getElementById('remaining_balance_in_po');
                     if (remainEl && (remainEl.value === '' || remainEl.value === undefined)) {
                         remainEl.value = basePendingInPo;
@@ -475,7 +477,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (res.ok) {
                         const json = await res.json();
                         const po = json.data || {};
-                        basePendingInPo = parseFloat(po.pending_amount ?? po.po_value ?? '0') || 0;
+                        const pend = parseFloat(po.pending_amount);
+                        const poval = parseFloat(po.po_value);
+                        basePendingInPo = (isFinite(pend) && pend > 0) ? pend : (isFinite(poval) ? poval : 0);
                         remainEl.value = basePendingInPo;
                         recalcInvoiceFinancials();
                     }
