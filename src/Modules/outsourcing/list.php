@@ -818,50 +818,135 @@ function formatCurrency($amount) {
 
 <!-- Summary Dialog -->
 <div id="summaryDialog" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-    <div class="mt-3">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium text-gray-900">Outsourcing Summary</h3>
-        <button onclick="closeSummaryDialog()" class="text-gray-400 hover:text-gray-600">
-          <span class="material-symbols-outlined">close</span>
+  <div class="relative top-10 mx-auto p-0 border-0 w-full max-w-7xl shadow-2xl rounded-lg bg-white">
+    <div class="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-t-lg">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <span class="material-symbols-outlined text-2xl">analytics</span>
+          <h3 class="text-xl font-semibold">Outsourcing Summary</h3>
+        </div>
+        <button onclick="closeSummaryDialog()" class="text-white hover:text-gray-200 transition-colors">
+          <span class="material-symbols-outlined text-2xl">close</span>
         </button>
       </div>
-      
-      <div class="space-y-4">
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-sm text-gray-600">Total Records</p>
-              <p class="text-2xl font-bold text-gray-900"><?= number_format($summary_data['total_records'] ?? 0) ?></p>
+    </div>
+    
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Total Records -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Records</p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= number_format($summary_data['total_records'] ?? 0) ?></p>
             </div>
-            <div>
-              <p class="text-sm text-gray-600">Total Vendor Inv Value</p>
-              <p class="text-2xl font-bold text-green-600">₹<?= number_format($summary_data['total_vendor_inv_value'] ?? 0, 2) ?></p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-600">Total TDS Ded</p>
-              <p class="text-2xl font-bold text-blue-600">₹<?= number_format($summary_data['total_tds_ded'] ?? 0, 2) ?></p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-600">Total Net Payable</p>
-              <p class="text-2xl font-bold text-purple-600">₹<?= number_format($summary_data['total_net_payble'] ?? 0, 2) ?></p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-600">Total Payment Value</p>
-              <p class="text-2xl font-bold text-orange-600">₹<?= number_format($summary_data['total_payment_value'] ?? 0, 2) ?></p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-600">Total Pending Payment</p>
-              <p class="text-2xl font-bold text-red-600">₹<?= number_format($summary_data['total_pending_payment'] ?? 0, 2) ?></p>
+            <div class="bg-gray-100 p-3 rounded-full ml-3">
+              <span class="material-symbols-outlined text-gray-600 text-xl">inventory</span>
             </div>
           </div>
         </div>
         
-        <div class="flex justify-end">
-          <button onclick="closeSummaryDialog()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-            Close
-          </button>
+        <!-- Total Vendor Inv Value -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Vendor Inv Value</p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_vendor_inv_value'] ?? 0, 2) ?></p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded-full ml-3">
+              <span class="material-symbols-outlined text-gray-600 text-xl">receipt_long</span>
+            </div>
+          </div>
         </div>
+        
+        <!-- Total TDS Ded -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total TDS Ded</p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_tds_ded'] ?? 0, 2) ?></p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded-full ml-3">
+              <span class="material-symbols-outlined text-gray-600 text-xl">savings</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Total Net Payable -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Net Payable</p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_net_payble'] ?? 0, 2) ?></p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded-full ml-3">
+              <span class="material-symbols-outlined text-gray-600 text-xl">account_balance</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Total Payment Value -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Payment Value</p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_payment_value'] ?? 0, 2) ?></p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded-full ml-3">
+              <span class="material-symbols-outlined text-gray-600 text-xl">payments</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Total Pending Payment -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Pending Payment</p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_pending_payment'] ?? 0, 2) ?></p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded-full ml-3">
+              <span class="material-symbols-outlined text-gray-600 text-xl">pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Additional Info -->
+      <div class="mt-8 bg-gray-50 p-6 rounded-xl">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="text-center">
+            <p class="text-sm text-gray-600">Average Invoice Value</p>
+            <p class="text-xl font-semibold text-gray-900">
+              ₹<?= number_format(($summary_data['total_records'] > 0) ? ($summary_data['total_vendor_inv_value'] / $summary_data['total_records']) : 0, 2) ?>
+            </p>
+          </div>
+          <div class="text-center">
+            <p class="text-sm text-gray-600">TDS Rate</p>
+            <p class="text-xl font-semibold text-gray-900">
+              <?= number_format(($summary_data['total_vendor_inv_value'] > 0) ? (($summary_data['total_tds_ded'] / $summary_data['total_vendor_inv_value']) * 100) : 0, 1) ?>%
+            </p>
+          </div>
+          <div class="text-center">
+            <p class="text-sm text-gray-600">Payment Rate</p>
+            <p class="text-xl font-semibold text-gray-900">
+              <?= number_format(($summary_data['total_net_payble'] > 0) ? (($summary_data['total_payment_value'] / $summary_data['total_net_payble']) * 100) : 0, 1) ?>%
+            </p>
+          </div>
+          <div class="text-center">
+            <p class="text-sm text-gray-600">Outstanding Rate</p>
+            <p class="text-xl font-semibold text-gray-900">
+              <?= number_format(($summary_data['total_net_payble'] > 0) ? (($summary_data['total_pending_payment'] / $summary_data['total_net_payble']) * 100) : 0, 1) ?>%
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex justify-end mt-6">
+        <button onclick="closeSummaryDialog()" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+          <span class="material-symbols-outlined mr-2">close</span>
+          Close
+        </button>
       </div>
     </div>
   </div>

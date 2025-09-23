@@ -92,12 +92,12 @@ function badgePctClass($pct) {
                         <h1 class="text-3xl font-bold text-gray-900">So Form - Summary Report</h1>
                         <p class="text-gray-600 mt-2">Comprehensive overview of projects, billing, and margins</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="exportToExcel()" class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportToExcel()" class="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-green-600 to-green-700 px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105">
                             <span class="material-symbols-outlined text-base">download</span>
                             Export Excel
                         </button>
-                        <button onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        <button onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105">
                             <span class="material-symbols-outlined text-base">print</span>
                             Print
                         </button>
@@ -313,10 +313,13 @@ if (isset($prep_error)) {
 
     <script>
         function exportToExcel() {
-            // Create a simple CSV export
+            // Create Excel-compatible CSV export with BOM
             const table = document.querySelector('table');
             const rows = table.querySelectorAll('tr');
             let csv = [];
+            
+            // Add BOM for UTF-8 to ensure proper Excel compatibility
+            csv.push('\uFEFF');
             
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td, th');
@@ -327,11 +330,11 @@ if (isset($prep_error)) {
             });
             
             const csvContent = csv.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'so_form_summary_' + new Date().toISOString().split('T')[0] + '.csv';
+            a.download = 'so_form_summary_' + new Date().toISOString().split('T')[0] + '.xlsx';
             a.click();
             window.URL.revokeObjectURL(url);
         }

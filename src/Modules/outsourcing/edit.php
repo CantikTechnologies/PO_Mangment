@@ -57,7 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_status_from_ntt = trim($_POST['payment_status_from_ntt'] ?? '');
     $payment_value = $_POST['payment_value'] ?: 0;
     $payment_date = $_POST['payment_date'] ?: null;
-    $pending_payment = $_POST['pending_payment'] ?: 0;
+    // Pending Payment re-derived server-side; ignore any posted value
+    $pending_payment = max(0, round(((float)$net_payble) - ((float)$payment_value ?: 0), 2));
+    $payment_advise_no = trim($_POST['payment_advise_no'] ?? ($outsourcing['payment_advise_no'] ?? ''));
+    $payment_notes = trim($_POST['payment_notes'] ?? ($outsourcing['payment_notes'] ?? ''));
     $remarks = trim($_POST['remarks'] ?? '');
 
     // Convert dates to Excel format if provided (cast to integers)
@@ -65,12 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vendor_inv_date_excel = $vendor_inv_date ? (int)floor((strtotime($vendor_inv_date) / 86400) + 25569) : null;
     $payment_date_excel = $payment_date ? (int)floor((strtotime($payment_date) / 86400) + 25569) : null;
 
-    $sql = "UPDATE outsourcing_detail SET project_details = ?, cost_center = ?, customer_po = ?, vendor_name = ?, cantik_po_no = ?, cantik_po_date = ?, cantik_po_value = ?, remaining_bal_in_po = ?, vendor_invoice_frequency = ?, vendor_inv_number = ?, vendor_inv_date = ?, vendor_inv_value = ?, tds_ded = ?, net_payble = ?, payment_status_from_ntt = ?, payment_value = ?, payment_date = ?, pending_payment = ?, remarks = ? WHERE id = ?";
+    $sql = "UPDATE outsourcing_detail SET project_details = ?, cost_center = ?, customer_po = ?, vendor_name = ?, cantik_po_no = ?, cantik_po_date = ?, cantik_po_value = ?, remaining_bal_in_po = ?, vendor_invoice_frequency = ?, vendor_inv_number = ?, vendor_inv_date = ?, vendor_inv_value = ?, tds_ded = ?, net_payble = ?, payment_status_from_ntt = ?, payment_value = ?, payment_date = ?, pending_payment = ?, payment_advise_no = ?, payment_notes = ?, remarks = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
-        // Types (20): s s s s s i d d s s i d d d s d i d s i
-        $stmt->bind_param("sssssiddssidddsdidsi", $project_details, $cost_center, $customer_po, $vendor_name, $cantik_po_no, $cantik_po_date_excel, $cantik_po_value, $remaining_bal_in_po, $vendor_invoice_frequency, $vendor_inv_number, $vendor_inv_date_excel, $vendor_inv_value, $tds_ded, $net_payble, $payment_status_from_ntt, $payment_value, $payment_date_excel, $pending_payment, $remarks, $id);
+        // Types (22): s s s s s i d d s s i d d d s d i d s s s i
+        $stmt->bind_param("sssssiddssidddsdidsssi", $project_details, $cost_center, $customer_po, $vendor_name, $cantik_po_no, $cantik_po_date_excel, $cantik_po_value, $remaining_bal_in_po, $vendor_invoice_frequency, $vendor_inv_number, $vendor_inv_date_excel, $vendor_inv_value, $tds_ded, $net_payble, $payment_status_from_ntt, $payment_value, $payment_date_excel, $pending_payment, $payment_advise_no, $payment_notes, $remarks, $id);
 
   if ($stmt->execute()) {
             $success = "Outsourcing record updated successfully!";
@@ -291,13 +294,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
-                            <!-- Pending Payment -->
+                            <!-- Payment Advise No -->
                             <div>
-                                <label for="pending_payment" class="block text-sm font-medium text-gray-700 mb-2">Pending Payment</label>
-                                <input type="number" id="pending_payment" name="pending_payment" step="0.01" readonly
-                                       value="<?= htmlspecialchars($outsourcing['pending_payment']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
-          </div>
+                                <label for="payment_advise_no" class="block text-sm font-medium text-gray-700 mb-2">Payment Advise No</label>
+                                <input type="text" id="payment_advise_no" name="payment_advise_no"
+                                       value="<?= htmlspecialchars($outsourcing['payment_advise_no'] ?? '') ?>"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+
+                            <!-- Payment Notes -->
+                            <div class="md:col-span-2 lg:col-span-3">
+                                <label for="payment_notes" class="block text-sm font-medium text-gray-700 mb-2">Payment Notes</label>
+                                <textarea id="payment_notes" name="payment_notes" rows="2"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"><?= htmlspecialchars($outsourcing['payment_notes'] ?? '') ?></textarea>
+                            </div>
+
+                            
 
                             <!-- Remarks -->
                             <div class="md:col-span-2 lg:col-span-3">

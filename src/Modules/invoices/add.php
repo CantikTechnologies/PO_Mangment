@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
-        $stmt->bind_param("sssdsidddsiss", $project_details, $cost_center, $customer_po, $remaining_balance, $cantik_invoice_no, $cantik_invoice_date_excel, $cantik_inv_value_taxable, $tds, $receivable, $against_vendor_inv_number, $payment_receipt_date_excel, $payment_advise_no, $vendor_name);
+        $stmt->bind_param("sssdsidddsisss", $project_details, $cost_center, $customer_po, $remaining_balance, $cantik_invoice_no, $cantik_invoice_date_excel, $cantik_inv_value_taxable, $tds, $receivable, $against_vendor_inv_number, $payment_receipt_date_excel, $payment_advise_no, $vendor_name);
 
     if ($stmt->execute()) {
             $success = "Invoice created successfully!";
@@ -240,6 +240,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        value="<?= htmlspecialchars($_POST['payment_advise_no'] ?? '') ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
           </div>
+
+                            
 
                             <!-- Vendor Name -->
                             <div>
