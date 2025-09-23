@@ -41,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_date = $_POST['payment_date'] ?: null;
     // Pending Payment (no longer shown/posted in UI) still computed server-side for DB consistency
     $pending_payment = round(((float)$net_payble) - ((float)$payment_value ?: 0), 2);
-    $payment_advise_no = trim($_POST['payment_advise_no'] ?? '');
     $remarks = trim($_POST['remarks'] ?? '');
 
     // Convert dates to Excel format if provided
@@ -49,11 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vendor_inv_date_excel = $vendor_inv_date ? (strtotime($vendor_inv_date) / 86400) + 25569 : null;
     $payment_date_excel = $payment_date ? (strtotime($payment_date) / 86400) + 25569 : null;
 
-    $sql = "INSERT INTO outsourcing_detail (project_details, cost_center, customer_po, vendor_name, cantik_po_no, cantik_po_date, cantik_po_value, remaining_bal_in_po, vendor_invoice_frequency, vendor_inv_number, vendor_inv_date, vendor_inv_value, tds_ded, net_payble, payment_status_from_ntt, payment_value, payment_date, pending_payment, payment_advise_no, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO outsourcing_detail (project_details, cost_center, customer_po, vendor_name, cantik_po_no, cantik_po_date, cantik_po_value, remaining_bal_in_po, vendor_invoice_frequency, vendor_inv_number, vendor_inv_date, vendor_inv_value, tds_ded, net_payble, payment_status_from_ntt, payment_value, payment_date, pending_payment, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
-        $stmt->bind_param("sssssiddssidddsdidss", $project_details, $cost_center, $customer_po, $vendor_name, $cantik_po_no, $cantik_po_date_excel, $cantik_po_value, $remaining_bal_in_po, $vendor_invoice_frequency, $vendor_inv_number, $vendor_inv_date_excel, $vendor_inv_value, $tds_ded, $net_payble, $payment_status_from_ntt, $payment_value, $payment_date_excel, $pending_payment, $payment_advise_no, $remarks);
+        $stmt->bind_param("sssssiddssidddsdids", $project_details, $cost_center, $customer_po, $vendor_name, $cantik_po_no, $cantik_po_date_excel, $cantik_po_value, $remaining_bal_in_po, $vendor_invoice_frequency, $vendor_inv_number, $vendor_inv_date_excel, $vendor_inv_value, $tds_ded, $net_payble, $payment_status_from_ntt, $payment_value, $payment_date_excel, $pending_payment, $remarks);
 
     if ($stmt->execute()) {
             $success = "Outsourcing record created successfully!";
@@ -305,13 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <p class="mt-1 text-xs text-gray-500">Enter date as dd-mm-yyyy or dd-mmm-yyyy (e.g., 03-Jun-2025). You can paste.</p>
                             </div>
 
-                            <!-- Payment Advise No -->
-                            <div>
-                                <label for="payment_advise_no" class="block text-sm font-medium text-gray-700 mb-2">Payment Advise No</label>
-                                <input type="text" id="payment_advise_no" name="payment_advise_no"
-                                       value="<?= htmlspecialchars($_POST['payment_advise_no'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
-                            </div>
+                            
 
                             
 

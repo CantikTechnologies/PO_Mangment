@@ -103,7 +103,7 @@ $headers = [
     'Payment Value',
     'Payment Date',
     'Pending Payment',
-    'Payment Advise No',
+    
     'Remarks',
     'Created At'
 ];
@@ -138,7 +138,7 @@ while ($row = $results->fetch_assoc()) {
         $row['payment_value'],
         formatDateForCSV($row['payment_date']),
         $row['pending_payment'],
-        $row['payment_advise_no'] ?? '',
+        
         $row['remarks'],
         $row['created_at']
     ];
