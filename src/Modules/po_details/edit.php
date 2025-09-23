@@ -119,6 +119,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $success = "Purchase order updated successfully!";
                 $auth->logAction('update_po', 'po_details', $id);
+                // Sync key fields to related tables based on customer_po = po_number
+                if ($po_number !== '') {
+                    // Update Billing Details
+                    if ($u1 = $conn->prepare("UPDATE billing_details SET project_details = ?, cost_center = ? WHERE customer_po = ?")) {
+                        $u1->bind_param('sss', $project, $cost_center, $po_number);
+                        $u1->execute();
+                        $u1->close();
+                    }
+                    // Update Outsourcing Detail
+                    if ($u2 = $conn->prepare("UPDATE outsourcing_detail SET project_details = ?, cost_center = ? WHERE customer_po = ?")) {
+                        $u2->bind_param('sss', $project, $cost_center, $po_number);
+                        $u2->execute();
+                        $u2->close();
+                    }
+                }
                 // Redirect to list page after successful update
                 header('Location: list.php?success=updated');
                 exit();
