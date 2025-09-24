@@ -56,9 +56,7 @@ $outsourcing_stmt->execute();
 $outsourcing_records = $outsourcing_stmt->get_result();
 $outsourcing_stmt->close();
 
-function formatCurrency($amount) {
-    return '₹ ' . number_format($amount, 0, '.', ',');
-}
+// Formatting functions are now included from shared/formatting.php
 
 function getBadgeClass($status) {
     switch (strtolower($status)) {

@@ -57,4 +57,7 @@ if (!isset($auth)) {
         throw new Exception("Authentication system not found");
     }
 }
+
+// Include formatting functions
+include_once __DIR__ . '/formatting.php';
 ?>

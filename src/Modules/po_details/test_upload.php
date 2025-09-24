@@ -1,15 +1,11 @@
 <?php
-// Enable error reporting but do not display to keep JSON output clean
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-
-// Set content type to JSON first
+// Test upload functionality - validates CSV without inserting data
 header('Content-Type: application/json');
 
 session_start();
 if (!isset($_SESSION['username'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'errors' => [['row' => 0, 'message' => 'Unauthorized access']]]);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
@@ -19,17 +15,17 @@ try {
     
     // Check permission without redirecting
     if (!hasPermission('add_po_details')) {
-        echo json_encode(['success' => false, 'errors' => [['row' => 0, 'message' => 'Insufficient permissions']]]);
+        echo json_encode(['success' => false, 'message' => 'Insufficient permissions']);
         exit();
     }
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'errors' => [['row' => 0, 'message' => 'Configuration error: ' . $e->getMessage()]]]);
+    echo json_encode(['success' => false, 'message' => 'Configuration error: ' . $e->getMessage()]);
     exit();
 }
 
 // Check if file was uploaded
 if (!isset($_FILES['csvFile']) || $_FILES['csvFile']['error'] !== UPLOAD_ERR_OK) {
-    echo json_encode(['success' => false, 'errors' => [['row' => 0, 'message' => 'No file uploaded or upload error']]]);
+    echo json_encode(['success' => false, 'message' => 'No file uploaded or upload error']);
     exit();
 }
 
@@ -38,7 +34,7 @@ $file = $_FILES['csvFile'];
 // Validate file type
 $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 if (!in_array($fileExtension, ['csv','tsv','txt'], true)) {
-    echo json_encode(['success' => false, 'errors' => [['row' => 0, 'message' => 'Only CSV/TSV files are allowed']]]);
+    echo json_encode(['success' => false, 'message' => 'Only CSV/TSV files are allowed']);
     exit();
 }
 
@@ -48,10 +44,9 @@ $requiredFields = [
 ];
 
 $optionalFields = [
-    'vendor_name',
-    'remarks',
-    'pending_amount',
-    'po_status'
+    'project_description', 'cost_center', 'sow_number', 'start_date', 'end_date',
+    'po_number', 'po_date', 'po_value', 'billing_frequency', 'target_gm',
+    'vendor_name', 'remarks', 'pending_amount', 'po_status'
 ];
 
 $allFields = array_merge($requiredFields, $optionalFields);
@@ -168,17 +163,6 @@ function parseDateToSerial($value) {
     return (int)floor($ts / 86400) + 25569;
 }
 
-// Function to convert Excel serial date to MySQL date
-function excelToDate($excelDate) {
-    if (empty($excelDate) || !is_numeric($excelDate)) {
-        return null;
-    }
-    // Excel serial date starts from 1900-01-01, but Excel incorrectly treats 1900 as a leap year
-    // So we need to adjust for this
-    $unixTimestamp = ($excelDate - 25569) * 86400;
-    return date('Y-m-d', $unixTimestamp);
-}
-
 // Function to validate data
 function validateRow($row, $rowNumber) {
     global $requiredFields;
@@ -279,9 +263,6 @@ function validateRow($row, $rowNumber) {
     return $errors;
 }
 
-// Check if this is a dry run
-$dryRun = isset($_POST['dry_run']) && $_POST['dry_run'] === '1';
-
 try {
     // Validate file size (max 10MB)
     if ($file['size'] > 10 * 1024 * 1024) {
@@ -318,26 +299,19 @@ try {
         $headers[] = $trim; // keep as-is; may be extra header
     }
     
-    // No mandatory headers enforced server-side
-    
     // Check for extra headers
     $extraHeaders = array_diff($headers, $allFields);
+    $warnings = [];
     if (!empty($extraHeaders)) {
-        // Log warning but don't fail
-        error_log('Extra headers found in CSV: ' . implode(', ', $extraHeaders));
+        $warnings[] = 'Extra headers found (will be ignored): ' . implode(', ', $extraHeaders);
     }
     
-    $inserted = 0;
-    $skipped = 0;
+    $validRows = 0;
+    $invalidRows = 0;
     $errors = [];
     $rowNumber = 1; // Start from 1 since we already read the header
     
-    // Begin transaction (skip for dry run)
-    if (!$dryRun) {
-        $conn->begin_transaction();
-    }
-    
-    // Process each row
+    // Process each row for validation only
     for ($i = 1; $i < count($lines); $i++) {
         $rowNumber++;
 
@@ -365,158 +339,85 @@ try {
         // Validate row data
         $rowErrors = validateRow($rowData, $rowNumber);
         if (!empty($rowErrors)) {
+            $invalidRows++;
             foreach ($rowErrors as $error) {
                 $errors[] = ['row' => $rowNumber, 'message' => $error];
             }
-            continue;
+        } else {
+            $validRows++;
+        }
+    }
+    
+    // Check for duplicate PO numbers in the file
+    $poNumbers = [];
+    for ($i = 1; $i < count($lines); $i++) {
+        $line = trim($lines[$i] ?? '');
+        if ($line === '') continue;
+        
+        $row = str_getcsv($line, $delimiter);
+        if (count($row) < count($headers)) {
+            $row = array_pad($row, count($headers), '');
+        } elseif (count($row) > count($headers)) {
+            $row = array_slice($row, 0, count($headers));
         }
         
-        // Determine PO number; generate temporary if missing
-        $originalPo = isset($rowData['po_number']) ? trim($rowData['po_number']) : '';
-        $generatedTemp = false;
-        if ($originalPo === '') {
-            $poNumber = 'TEMP-PO-' . date('Ymd') . '-' . $rowNumber . '-' . substr(uniqid('', true), -4);
-            $generatedTemp = true;
-        } else {
-            $poNumber = $originalPo;
-            // Check for duplicate only when provided
+        $rowData = array_combine($headers, $row);
+        if (isset($rowData['po_number']) && trim($rowData['po_number']) !== '') {
+            $poNumber = trim($rowData['po_number']);
+            if (isset($poNumbers[$poNumber])) {
+                $errors[] = ['row' => $i + 1, 'message' => "Duplicate PO number '$poNumber' found in file"];
+            } else {
+                $poNumbers[$poNumber] = $i + 1;
+            }
+        }
+    }
+    
+    // Check for existing PO numbers in database
+    if (!empty($poNumbers)) {
+        $existingPos = [];
+        foreach ($poNumbers as $poNumber => $rowNum) {
             $checkStmt = $conn->prepare("SELECT id FROM po_details WHERE po_number = ?");
             $checkStmt->bind_param("s", $poNumber);
             $checkStmt->execute();
             $result = $checkStmt->get_result();
             if ($result->num_rows > 0) {
-                $skipped++;
-                $errors[] = ['row' => $rowNumber, 'message' => "PO number '$poNumber' already exists"];
-                continue;
+                $existingPos[] = ['row' => $rowNum, 'message' => "PO number '$poNumber' already exists in database"];
             }
+            $checkStmt->close();
         }
-        
-        // Prepare data for insertion
-        $projectDescription = isset($rowData['project_description']) ? trim($rowData['project_description']) : '';
-        $costCenter = isset($rowData['cost_center']) ? trim($rowData['cost_center']) : '';
-        $sowNumber = isset($rowData['sow_number']) ? trim($rowData['sow_number']) : '';
-        $startDate = parseDateToSerial($rowData['start_date'] ?? null);
-        $endDate = parseDateToSerial($rowData['end_date'] ?? null);
-        $poDate = parseDateToSerial($rowData['po_date'] ?? null);
-        // Fallbacks: if start missing, use po_date; if end missing, use start
-        if ($startDate === null && $poDate !== null) {
-            $startDate = $poDate;
-        }
-        if ($endDate === null && $startDate !== null) {
-            $endDate = $startDate;
-        }
-        // Final validation
-        // Dates are optional; only error if explicitly provided but invalid (handled above)
-        $poValueStr = cleanAmount($rowData['po_value'] ?? '');
-        $poValue = ($poValueStr === '') ? 0.0 : (float)$poValueStr;
-        $billingFrequency = isset($rowData['billing_frequency']) ? trim($rowData['billing_frequency']) : '';
-        $gmStr = cleanGmToDecimal($rowData['target_gm'] ?? '');
-        $targetGm = ($gmStr === '') ? 0.0 : (float)$gmStr;
-        $vendorName = isset($rowData['vendor_name']) ? trim($rowData['vendor_name']) : null;
-        $remarks = isset($rowData['remarks']) ? trim($rowData['remarks']) : null;
-        if ($generatedTemp) {
-            $note = 'Auto-generated PO number due to missing value in upload';
-            $remarks = $remarks ? ($remarks . ' | ' . $note) : $note;
-        }
-        $pendingAmountStr = cleanAmount($rowData['pending_amount'] ?? '');
-        $pendingAmount = ($pendingAmountStr === '') ? 0.00 : (float)$pendingAmountStr;
-        $poStatus = isset($rowData['po_status']) && trim($rowData['po_status']) !== ''
-            ? ucfirst(strtolower(trim($rowData['po_status']))) : 'Active';
-        
-        // Insert record (skip for dry run)
-        if ($dryRun) {
-            $inserted++; // Count as successful for dry run
-        } else {
-            $insertStmt = $conn->prepare("
-                INSERT INTO po_details (
-                    project_description, cost_center, sow_number, start_date, end_date,
-                    po_number, po_date, po_value, billing_frequency, target_gm,
-                    vendor_name, remarks, po_status, pending_amount
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-            
-            $insertStmt->bind_param(
-                "sssiiisdsdsssd",
-                $projectDescription, $costCenter, $sowNumber, $startDate, $endDate,
-                $poNumber, $poDate, $poValue, $billingFrequency, $targetGm,
-                $vendorName, $remarks, $poStatus, $pendingAmount
-            );
-            
-            if ($insertStmt->execute()) {
-                $inserted++;
-                
-                // Log the creation in audit log
-                $userId = $_SESSION['user_id'] ?? 1;
-                $auditStmt = $conn->prepare("
-                    INSERT INTO audit_log (user_id, action, table_name, record_id, created_at) 
-                    VALUES (?, 'create_po', 'po_details', ?, NOW())
-                ");
-                $auditStmt->bind_param("ii", $userId, $conn->insert_id);
-                $auditStmt->execute();
-            } else {
-                $errors[] = ['row' => $rowNumber, 'message' => 'Database error: ' . $insertStmt->error];
-            }
-        }
+        $errors = array_merge($errors, $existingPos);
     }
     
-    // No file handle to close; using file() above
+    $totalRows = count($lines) - 1; // Subtract header row
+    $success = empty($errors);
     
-    // Commit transaction if no critical errors (skip for dry run)
-    if ($dryRun) {
-        echo json_encode([
-            'success' => empty($errors),
-            'inserted' => $inserted,
-            'skipped' => $skipped,
-            'errors' => $errors,
-            'dry_run' => true,
-            'message' => empty($errors) ? 'Dry run successful - CSV is ready for upload' : 'Dry run found validation errors'
-        ]);
-    } else {
-        if (empty($errors) || $inserted > 0) {
-            $conn->commit();
-            echo json_encode([
-                'success' => true,
-                'inserted' => $inserted,
-                'skipped' => $skipped,
-                'errors' => $errors,
-                'dry_run' => false
-            ]);
-        } else {
-            $conn->rollback();
-            echo json_encode([
-                'success' => false,
-                'inserted' => 0,
-                'skipped' => $skipped,
-                'errors' => $errors,
-                'dry_run' => false
-            ]);
-        }
-    }
+    echo json_encode([
+        'success' => $success,
+        'message' => $success ? 'CSV validation successful!' : 'CSV validation found issues',
+        'summary' => [
+            'total_rows' => $totalRows,
+            'valid_rows' => $validRows,
+            'invalid_rows' => $invalidRows,
+            'duplicate_pos_in_file' => count($poNumbers) - count(array_unique($poNumbers)),
+            'existing_pos_in_db' => count($existingPos ?? [])
+        ],
+        'warnings' => $warnings,
+        'errors' => $errors,
+        'headers_found' => $headers,
+        'headers_expected' => $allFields
+    ]);
     
 } catch (Exception $e) {
-    if (isset($conn)) {
-        $conn->rollback();
-    }
     echo json_encode([
         'success' => false,
-        'errors' => [['row' => 0, 'message' => $e->getMessage()]],
-        'debug' => [
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString()
-        ]
+        'message' => 'Validation failed: ' . $e->getMessage(),
+        'errors' => [['row' => 0, 'message' => $e->getMessage()]]
     ]);
 } catch (Error $e) {
-    if (isset($conn)) {
-        $conn->rollback();
-    }
     echo json_encode([
         'success' => false,
-        'errors' => [['row' => 0, 'message' => 'PHP Error: ' . $e->getMessage()]],
-        'debug' => [
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ]
+        'message' => 'PHP Error: ' . $e->getMessage(),
+        'errors' => [['row' => 0, 'message' => 'PHP Error: ' . $e->getMessage()]]
     ]);
 }
 ?>

@@ -46,9 +46,7 @@ $po_result = $po_stmt->get_result();
 $po = $po_result->fetch_assoc();
 $po_stmt->close();
 
-function formatCurrency($amount) {
-    return '₹' . number_format((float)$amount, 2);
-}
+// Formatting functions are now included from shared/formatting.php
 
 function getBadgeClass($status) {
     switch (strtolower($status)) {

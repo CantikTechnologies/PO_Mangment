@@ -44,9 +44,7 @@ if ($res = $conn->query("SELECT COUNT(*) AS cnt, COALESCE(SUM(pending_payment),0
       $res->free();
     }
 
-function formatCurrency($amount) {
-    return '₹ ' . number_format($amount, 0, '.', ',');
-}
+// Formatting functions are now included from shared/formatting.php
 
 // Get recent activity
 $recentPOs = $conn->query("SELECT id, po_number, project_description, po_status, po_value FROM po_details ORDER BY created_at DESC LIMIT 5");
@@ -308,5 +306,7 @@ function formatDate($excel_date) {
             </div>
         </main>
   </div>
+
+<script src="assets/indian-numbering.js"></script>
 </body>
 </html>

@@ -121,9 +121,7 @@ function formatDate($excel_date) {
     return strtolower($formatted); // 16 jan 2025
 }
 
-function formatCurrency($amount) {
-    return '₹ ' . number_format($amount, 2);
-}
+// Formatting functions are now included from shared/formatting.php
 ?>
 
 <!DOCTYPE html>
@@ -349,7 +347,7 @@ function formatCurrency($amount) {
           <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
             <h4 class="text-sm font-medium text-blue-800 mb-2">Upload Format Requirements:</h4>
             <div class="text-sm text-blue-700">
-              <p class="mb-1">Required columns (case-sensitive). You can upload CSV (comma) or TSV (tab) files:</p>
+              <p class="mb-1">All columns are optional, but recommended for complete data. You can upload CSV (comma) or TSV (tab) files:</p>
               <ul class="list-disc list-inside ml-4 space-y-1">
                 <li><strong>project_description</strong> - Project name/description</li>
                 <li><strong>cost_center</strong> - Cost center code</li>
@@ -363,6 +361,8 @@ function formatCurrency($amount) {
                 <li><strong>target_gm</strong> - Target gross margin (decimal, e.g., 0.05 for 5%)</li>
                 <li><strong>vendor_name</strong> - Vendor name (optional)</li>
                 <li><strong>remarks</strong> - Additional remarks (optional)</li>
+                <li><strong>pending_amount</strong> - Pending amount (optional)</li>
+                <li><strong>po_status</strong> - PO status: Active, Closed, Open, Inactive (optional)</li>
               </ul>
             </div>
           </div>
@@ -380,6 +380,19 @@ function formatCurrency($amount) {
               <span class="material-symbols-outlined text-sm">download</span>
               Download Template
             </a>
+          </div>
+          
+          <div class="bg-purple-50 border border-purple-200 rounded-md p-4 mb-4">
+            <h4 class="text-sm font-medium text-purple-800 mb-2">Validation Features:</h4>
+            <div class="text-sm text-purple-700">
+              <ul class="list-disc list-inside ml-4 space-y-1">
+                <li><strong>Test Connection</strong> - Validates CSV structure and data without uploading</li>
+                <li><strong>Dry Run</strong> - Simulates the upload process to check for errors</li>
+                <li><strong>CSV Preview</strong> - Shows first 5 rows of your file before upload</li>
+                <li><strong>Auto-detection</strong> - Automatically detects CSV/TSV delimiters</li>
+                <li><strong>Flexible Headers</strong> - Supports various header name variations</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -427,6 +440,10 @@ function formatCurrency($amount) {
                     class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500">
               Test Connection
             </button>
+            <button type="button" onclick="dryRunUpload()" 
+                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+              Dry Run
+            </button>
             <button type="button" onclick="closeBulkUploadModal()" 
                     class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
               Cancel
@@ -442,6 +459,17 @@ function formatCurrency($amount) {
   </div>
 
   <script>
+    // Helper function to validate headers
+    function validateHeaders(foundHeaders, expectedHeaders) {
+      const found = foundHeaders.map(h => h.toLowerCase().trim());
+      const expected = expectedHeaders.map(h => h.toLowerCase().trim());
+      
+      const missing = expected.filter(h => !found.includes(h));
+      const extra = found.filter(h => !expected.includes(h));
+      
+      return { missing, extra };
+    }
+
     function openBulkUploadModal() {
       document.getElementById('bulkUploadModal').classList.remove('hidden');
       resetUploadForm();
@@ -518,13 +546,29 @@ function formatCurrency($amount) {
         const totalRows = lines.length - 1; // Subtract header row
         document.getElementById('rowCount').textContent = `Total rows: ${totalRows}`;
         
-        // Validate headers (minimal requirement to match server-side)
-        const requiredHeaders = ['po_number'];
-        const missingHeaders = requiredHeaders.filter(header => !headers.map(h => h.toLowerCase().trim()).includes(header));
-        if (missingHeaders.length > 0) {
-          document.getElementById('rowCount').innerHTML = 
-            `Total rows: ${totalRows} <span class="text-red-600">(Missing required header: ${missingHeaders.join(', ')})</span>`;
+        // Enhanced header validation
+        const expectedHeaders = [
+          'project_description', 'cost_center', 'sow_number', 'start_date', 'end_date',
+          'po_number', 'po_date', 'po_value', 'billing_frequency', 'target_gm',
+          'vendor_name', 'remarks', 'pending_amount', 'po_status'
+        ];
+        
+        const headerValidation = validateHeaders(headers, expectedHeaders);
+        let rowCountText = `Total rows: ${totalRows}`;
+        
+        if (headerValidation.missing.length > 0) {
+          rowCountText += ` <span class="text-red-600">(Missing: ${headerValidation.missing.join(', ')})</span>`;
         }
+        
+        if (headerValidation.extra.length > 0) {
+          rowCountText += ` <span class="text-yellow-600">(Extra: ${headerValidation.extra.join(', ')})</span>`;
+        }
+        
+        if (headerValidation.missing.length === 0 && headerValidation.extra.length === 0) {
+          rowCountText += ` <span class="text-green-600">(Headers OK)</span>`;
+        }
+        
+        document.getElementById('rowCount').innerHTML = rowCountText;
         
         previewDiv.classList.remove('hidden');
       };
@@ -628,20 +672,180 @@ function formatCurrency($amount) {
     });
 
     function testConnection() {
+      const fileInput = document.getElementById('csvFile');
+      
+      if (!fileInput.files[0]) {
+        alert('Please select a CSV file first before testing connection.');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('csvFile', fileInput.files[0]);
+      
+      // Show loading state
+      const testBtn = document.querySelector('button[onclick="testConnection()"]');
+      const originalText = testBtn.textContent;
+      testBtn.disabled = true;
+      testBtn.textContent = 'Testing...';
+      
       fetch('test_upload.php', {
-        method: 'POST'
+        method: 'POST',
+        body: formData
       })
-      .then(response => response.text())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
       .then(text => {
         try {
           const data = JSON.parse(text);
-          alert('Test successful!\n\nResponse: ' + JSON.stringify(data, null, 2));
+          
+          // Show detailed validation results
+          let message = `CSV Validation Results:\n\n`;
+          message += `Total Rows: ${data.summary?.total_rows || 'N/A'}\n`;
+          message += `Valid Rows: ${data.summary?.valid_rows || 'N/A'}\n`;
+          message += `Invalid Rows: ${data.summary?.invalid_rows || 'N/A'}\n`;
+          message += `Duplicate POs in File: ${data.summary?.duplicate_pos_in_file || 'N/A'}\n`;
+          message += `Existing POs in DB: ${data.summary?.existing_pos_in_db || 'N/A'}\n\n`;
+          
+          if (data.success) {
+            message += `✅ Validation Successful!\n`;
+            message += `Your CSV file is ready for upload.`;
+          } else {
+            message += `❌ Validation Failed!\n`;
+            message += `Found ${data.errors?.length || 0} errors:\n\n`;
+            
+            if (data.errors && data.errors.length > 0) {
+              data.errors.slice(0, 10).forEach(error => {
+                message += `Row ${error.row}: ${error.message}\n`;
+              });
+              if (data.errors.length > 10) {
+                message += `... and ${data.errors.length - 10} more errors.\n`;
+              }
+            }
+          }
+          
+          if (data.warnings && data.warnings.length > 0) {
+            message += `\n⚠️ Warnings:\n`;
+            data.warnings.forEach(warning => {
+              message += `• ${warning}\n`;
+            });
+          }
+          
+          alert(message);
+          
         } catch (e) {
+          console.error('Invalid JSON response:', text);
           alert('Test failed - Invalid JSON response:\n\n' + text.substring(0, 500));
         }
       })
       .catch(error => {
         alert('Test failed - Network error:\n\n' + error.message);
+      })
+      .finally(() => {
+        // Restore button state
+        testBtn.disabled = false;
+        testBtn.textContent = originalText;
+      });
+    }
+
+    function dryRunUpload() {
+      const fileInput = document.getElementById('csvFile');
+      
+      if (!fileInput.files[0]) {
+        alert('Please select a CSV file first before running dry run.');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('csvFile', fileInput.files[0]);
+      formData.append('dry_run', '1');
+      
+      // Show loading state
+      const dryRunBtn = document.querySelector('button[onclick="dryRunUpload()"]');
+      const originalText = dryRunBtn.textContent;
+      dryRunBtn.disabled = true;
+      dryRunBtn.textContent = 'Running...';
+      
+      // Show progress
+      document.getElementById('uploadProgress').classList.remove('hidden');
+      document.getElementById('uploadBtn').disabled = true;
+      
+      // Reset results
+      document.getElementById('uploadResults').classList.add('hidden');
+      document.getElementById('successResults').classList.add('hidden');
+      document.getElementById('errorResults').classList.add('hidden');
+      
+      // Simulate progress
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += 10;
+        document.getElementById('progressBar').style.width = progress + '%';
+        if (progress >= 90) {
+          clearInterval(progressInterval);
+        }
+      }, 100);
+      
+      fetch('bulk_upload.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(text => {
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error('Invalid JSON response:', text);
+          throw new Error('Server returned invalid JSON. Response: ' + text.substring(0, 200));
+        }
+      })
+      .then(data => {
+        clearInterval(progressInterval);
+        document.getElementById('progressBar').style.width = '100%';
+        document.getElementById('progressText').textContent = 'Dry run complete!';
+        
+        setTimeout(() => {
+          document.getElementById('uploadProgress').classList.add('hidden');
+          document.getElementById('uploadResults').classList.remove('hidden');
+          
+          if (data.success) {
+            document.getElementById('successResults').classList.remove('hidden');
+            document.getElementById('successMessage').textContent = 
+              `Dry run successful! ${data.inserted} records would be inserted. ${data.skipped} records would be skipped.`;
+          } else {
+            document.getElementById('errorResults').classList.remove('hidden');
+            const errorList = document.getElementById('errorList');
+            errorList.innerHTML = '';
+            data.errors.forEach(error => {
+              const errorItem = document.createElement('div');
+              errorItem.className = 'mb-1';
+              errorItem.textContent = `Row ${error.row}: ${error.message}`;
+              errorList.appendChild(errorItem);
+            });
+          }
+          
+          document.getElementById('uploadBtn').disabled = false;
+        }, 500);
+      })
+      .catch(error => {
+        clearInterval(progressInterval);
+        document.getElementById('uploadProgress').classList.add('hidden');
+        document.getElementById('uploadResults').classList.remove('hidden');
+        document.getElementById('errorResults').classList.remove('hidden');
+        document.getElementById('errorList').innerHTML = '<div class="mb-1">Dry run failed: ' + error.message + '</div>';
+        document.getElementById('uploadBtn').disabled = false;
+      })
+      .finally(() => {
+        // Restore button state
+        dryRunBtn.disabled = false;
+        dryRunBtn.textContent = originalText;
       });
     }
 
@@ -715,7 +919,7 @@ function formatCurrency($amount) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total PO Value</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_po_value'] ?? 0, 2) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_po_value'] ?? 0) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">account_balance_wallet</span>
@@ -728,7 +932,7 @@ function formatCurrency($amount) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Pending Amount</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_pending_amount'] ?? 0, 2) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_pending_amount'] ?? 0) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">pending</span>
@@ -743,7 +947,7 @@ function formatCurrency($amount) {
           <div class="text-center">
             <p class="text-sm text-gray-600">Average PO Value</p>
             <p class="text-xl font-semibold text-gray-900">
-              ₹<?= number_format(($summary_data['total_pos'] > 0) ? ($summary_data['total_po_value'] / $summary_data['total_pos']) : 0, 2) ?>
+              <?= formatCurrency(($summary_data['total_pos'] > 0) ? ($summary_data['total_po_value'] / $summary_data['total_pos']) : 0) ?>
             </p>
           </div>
           <div class="text-center">
@@ -771,5 +975,6 @@ function formatCurrency($amount) {
   </div>
 </div>
 
+<script src="../../assets/indian-numbering.js"></script>
 </body>
 </html>

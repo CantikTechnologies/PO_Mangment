@@ -536,3 +536,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     recalc();
 })();
 </script>
+
+<script src="../../assets/indian-numbering.js"></script>

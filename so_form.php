@@ -53,20 +53,7 @@ $projects_result = $conn->query($projects_query);
 $cost_centers_query = "SELECT DISTINCT cost_center FROM po_details WHERE cost_center IS NOT NULL AND cost_center != '' ORDER BY cost_center";
 $cost_centers_result = $conn->query($cost_centers_query);
 
-function formatCurrency($amount) {
-    return number_format((float)$amount, 2);
-}
-
-function formatPercentage($value) {
-    return is_numeric($value) ? number_format((float)$value, 2) . '%' : '-';
-}
-
-function badgePctClass($pct) {
-    $v = is_numeric($pct) ? (float)$pct : 0.0;
-    if ($v >= 20) return 'bg-green-100 text-green-700';
-    if ($v >= 10) return 'bg-amber-100 text-amber-700';
-    return 'bg-red-100 text-red-700';
-}
+// Formatting functions are now included from shared/formatting.php
 ?>
 
 <!DOCTYPE html>
@@ -339,5 +326,7 @@ if (isset($prep_error)) {
             window.URL.revokeObjectURL(url);
         }
     </script>
+
+<script src="assets/indian-numbering.js"></script>
 </body>
 </html>

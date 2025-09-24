@@ -489,3 +489,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 })();
 </script>
+
+<script src="../../assets/indian-numbering.js"></script>

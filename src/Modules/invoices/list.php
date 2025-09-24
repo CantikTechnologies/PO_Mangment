@@ -134,9 +134,7 @@ function formatDate($excel_date) {
     return strtolower($formatted); // 16 jan 2025
 }
 
-function formatCurrency($amount) {
-    return '₹ ' . number_format($amount, 2);
-}
+// Formatting functions are now included from shared/formatting.php
 ?>
 
 <!DOCTYPE html>
@@ -651,7 +649,7 @@ function formatCurrency($amount) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Taxable Value</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_cantik_inv_value_taxable'] ?? 0, 2) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_cantik_inv_value_taxable'] ?? 0) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">account_balance_wallet</span>
@@ -664,7 +662,7 @@ function formatCurrency($amount) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total TDS</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_tds'] ?? 0, 2) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_tds'] ?? 0) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">savings</span>
@@ -677,7 +675,7 @@ function formatCurrency($amount) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Receivable</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_receivable'] ?? 0, 2) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_receivable'] ?? 0) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">payments</span>
@@ -692,7 +690,7 @@ function formatCurrency($amount) {
           <div class="text-center">
             <p class="text-sm text-gray-600">Average Invoice Value</p>
             <p class="text-xl font-semibold text-gray-900">
-              ₹<?= number_format(($summary_data['total_invoices'] > 0) ? ($summary_data['total_cantik_inv_value_taxable'] / $summary_data['total_invoices']) : 0, 2) ?>
+              <?= formatCurrency(($summary_data['total_invoices'] > 0) ? ($summary_data['total_cantik_inv_value_taxable'] / $summary_data['total_invoices']) : 0) ?>
             </p>
           </div>
           <div class="text-center">
@@ -720,5 +718,6 @@ function formatCurrency($amount) {
   </div>
 </div>
 
+<script src="../../assets/indian-numbering.js"></script>
 </body>
 </html>

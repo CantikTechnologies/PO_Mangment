@@ -52,12 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($customer_po !== '') {
                 if ($upd = $conn->prepare(
                     "UPDATE po_details pd
-                     LEFT JOIN (
-                       SELECT customer_po, COALESCE(SUM(cantik_inv_value_taxable),0) AS total_billed
-                       FROM billing_details
-                       WHERE customer_po = ?
-                     ) b ON b.customer_po = pd.po_number
-                     SET pd.pending_amount = GREATEST(0, COALESCE(pd.po_value,0) - COALESCE(b.total_billed,0))
+                     SET pd.pending_amount = GREATEST(0, COALESCE(pd.po_value,0) - (SELECT COALESCE(SUM(bd.cantik_inv_value_taxable),0)
+                          FROM billing_details bd
+                          WHERE bd.customer_po = ?
+                        )
+                     )
                      WHERE pd.po_number = ?"
                 )) {
                     $upd->bind_param('ss', $customer_po, $customer_po);
@@ -487,5 +486,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         })();
   </script>
+
+<script src="../../assets/indian-numbering.js"></script>
 </body>
 </html>
