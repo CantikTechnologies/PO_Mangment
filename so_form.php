@@ -422,3 +422,68 @@ if (isset($prep_error)) {
 </script>
 </body>
 </html>
+<script>
+  // Toggle full screen width/height for the report card
+  function toggleFullReport(){
+    const card = document.getElementById('reportCard');
+    const table = card.querySelector('table');
+    const headers = card.querySelectorAll('thead th');
+    const cells = card.querySelectorAll('tbody td');
+    const isFull = card.classList.contains('fixed');
+    if (!isFull){
+      // Enter full view overlay
+      card.classList.add('fixed','inset-4','z-50');
+      card.classList.remove('shadow-md');
+      card.classList.add('shadow-2xl');
+      // Prevent background scroll
+      document.body.style.overflow = 'hidden';
+
+      // Save previous classes to restore later
+      if (table && !table.dataset.prevTableClass) {
+        table.dataset.prevTableClass = table.className;
+      }
+      headers.forEach((th)=>{
+        if (!th.dataset.prevClass) th.dataset.prevClass = th.className;
+        // remove fixed width classes like w-64, w-40, etc.
+        th.className = th.className
+          .split(' ')
+          .filter(c => c && !/^w-/.test(c))
+          .join(' ');
+        th.style.width = 'auto';
+      });
+      cells.forEach((td)=>{
+        if (!td.dataset.prevClass) td.dataset.prevClass = td.className;
+        td.className = td.className
+          .split(' ')
+          .filter(c => c && !/^w-/.test(c))
+          .join(' ');
+        td.style.width = 'auto';
+      });
+      if (table) {
+        table.classList.remove('table-fixed');
+        table.classList.add('table-auto');
+      }
+    } else {
+      // Exit full view
+      card.classList.remove('fixed','inset-4','z-50');
+      card.classList.remove('shadow-2xl');
+      card.classList.add('shadow-md');
+      document.body.style.overflow = '';
+
+      // Restore previous classes
+      if (table && table.dataset.prevTableClass) {
+        table.className = table.dataset.prevTableClass;
+      }
+      headers.forEach((th)=>{
+        if (th.dataset.prevClass) th.className = th.dataset.prevClass;
+        th.style.width = '';
+      });
+      cells.forEach((td)=>{
+        if (td.dataset.prevClass) td.className = td.dataset.prevClass;
+        td.style.width = '';
+      });
+    }
+  }
+</script>
+</body>
+</html>

@@ -168,6 +168,65 @@ function excelToDate($excelDate) {
     return date('Y-m-d', $unixTimestamp);
 }
 
+// Function to validate PO numbers in batch (for better performance)
+function validatePONumbers($allRows) {
+    global $conn;
+    $poNumbers = [];
+    $rowPOMap = []; // Track which rows use which POs
+    
+    // Collect all unique PO numbers and track their usage
+    foreach ($allRows as $rowIndex => $row) {
+        if (isset($row['customer_po']) && !isEmptyLike($row['customer_po'])) {
+            $po = trim($row['customer_po']);
+            // Normalize whitespace and remove any invisible characters
+            $po = preg_replace('/\s+/', ' ', $po);
+            $po = trim($po);
+            
+            if (!in_array($po, $poNumbers)) {
+                $poNumbers[] = $po;
+            }
+            if (!isset($rowPOMap[$po])) {
+                $rowPOMap[$po] = [];
+            }
+            $rowPOMap[$po][] = $rowIndex + 2; // +2 because row 1 is header, array is 0-based
+        }
+    }
+    
+    $poErrors = [];
+    
+    if (!empty($poNumbers)) {
+        $placeholders = str_repeat('?,', count($poNumbers) - 1) . '?';
+        $sql = "SELECT po_number FROM po_details WHERE po_number IN ($placeholders)";
+        $checkStmt = $conn->prepare($sql);
+        $checkStmt->bind_param(str_repeat('s', count($poNumbers)), ...$poNumbers);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+        
+        $existingPOs = [];
+        while ($row = $result->fetch_assoc()) {
+            $existingPOs[] = $row['po_number'];
+        }
+        
+        $missingPOs = array_diff($poNumbers, $existingPOs);
+        
+        // Debug: Log what we're checking vs what exists
+        error_log("PO Validation Debug - Checking POs: " . implode(', ', $poNumbers));
+        error_log("PO Validation Debug - Found existing POs: " . implode(', ', $existingPOs));
+        error_log("PO Validation Debug - Missing POs: " . implode(', ', $missingPOs));
+        
+        // Create specific error messages for each row with missing POs
+        foreach ($missingPOs as $missingPO) {
+            foreach ($rowPOMap[$missingPO] as $rowNum) {
+                $poErrors[] = ['row' => $rowNum, 'message' => "Customer PO '$missingPO' does not exist in the system. Please create this PO first."];
+            }
+        }
+        
+        $checkStmt->close();
+    }
+    
+    return $poErrors;
+}
+
 // Function to validate data
 function validateRow($row, $rowNumber) {
     global $requiredFields;
@@ -304,23 +363,13 @@ try {
         error_log('Extra headers found in CSV: ' . implode(', ', $extraHeaders));
     }
     
-    $inserted = 0;
-    $skipped = 0;
-    $errors = [];
-    $warnings = [];
-    $rowNumber = 1; // Start from 1 since we already read the header
-    
-    // Begin transaction
-    $conn->begin_transaction();
-    
-    // Process each row
+    // Pre-parse all rows for PO validation
+    $allRowsData = [];
     for ($i = 1; $i < count($lines); $i++) {
-        $rowNumber++;
-
         $line = $lines[$i];
-        if ($line === null) { continue; }
+        if ($line === null) continue;
         $line = trim($line);
-        if ($line === '') { continue; }
+        if ($line === '') continue;
 
         $row = str_getcsv($line, $delimiter);
         // Skip if row is empty
@@ -337,6 +386,38 @@ try {
 
         // Create associative array from headers and row data
         $rowData = array_combine($headers, $row);
+        $allRowsData[] = $rowData;
+    }
+    
+    // Validate PO numbers in batch
+    $poErrors = validatePONumbers($allRowsData);
+    
+    // Debug: Add diagnostic information about PO validation
+    if (empty($poErrors)) {
+        // If no PO errors found, let's see what POs were checked
+        $debugPOs = [];
+        foreach ($allRowsData as $rowIndex => $row) {
+            if (isset($row['customer_po']) && !isEmptyLike($row['customer_po'])) {
+                $debugPOs[] = "'" . trim($row['customer_po']) . "'";
+            }
+        }
+        if (!empty($debugPOs)) {
+            $warnings[] = ['row' => 0, 'message' => 'DEBUG: PO validation passed for: ' . implode(', ', array_unique($debugPOs))];
+        }
+    }
+    
+    $inserted = 0;
+    $skipped = 0;
+    $errors = $poErrors; // Start with PO validation errors
+    // $warnings is already initialized above with debug info if needed
+    $rowNumber = 1; // Start from 1 since we already read the header
+    
+    // Begin transaction
+    $conn->begin_transaction();
+    
+    // Process each row (using pre-parsed data)
+    foreach ($allRowsData as $rowIndex => $rowData) {
+        $rowNumber = $rowIndex + 2; // +2 because row 1 is header, array is 0-based
         
         // Validate row data
         $validation = validateRow($rowData, $rowNumber);

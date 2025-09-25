@@ -450,6 +450,7 @@ try {
             ? ucfirst(strtolower(trim($rowData['po_status']))) : 'Active';
         
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Insert record (skip for dry run)
         if ($dryRun) {
             $inserted++; // Count as successful for dry run
@@ -484,6 +485,8 @@ try {
                 $errors[] = ['row' => $rowNumber, 'message' => 'Database error: ' . $insertStmt->error];
             }
 =======
+=======
+>>>>>>> Stashed changes
         // Final safety check - ensure PO number is never empty
         if (empty($poNumber) || $poNumber === '0' || trim($poNumber) === '') {
             $poNumber = 'TEMP-PO-' . date('Ymd') . '-' . $rowNumber . '-' . substr(uniqid('', true), -8);
@@ -538,6 +541,9 @@ try {
         
         if (isset($insertStmt)) {
             $insertStmt->close();
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
     }
@@ -551,6 +557,7 @@ try {
             'inserted' => $inserted,
             'skipped' => $skipped,
             'errors' => $errors,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
             'dry_run' => true,
             'message' => empty($errors) ? 'Dry run successful - CSV is ready for upload' : 'Dry run found validation errors'
@@ -576,6 +583,8 @@ try {
             ]);
         }
 =======
+=======
+>>>>>>> Stashed changes
             'warnings' => $warnings
         ]);
     } else {

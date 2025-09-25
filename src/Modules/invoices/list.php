@@ -737,8 +737,11 @@ function formatDate($excel_date) {
 </div>
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <script src="../../assets/indian-numbering.js"></script>
 =======
+=======
+>>>>>>> Stashed changes
 <!-- Bulk Upload Modal -->
 <div id="invoiceBulkUploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
   <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
@@ -1025,6 +1028,9 @@ function formatDate($excel_date) {
   }
 </script>
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 </body>
 </html>

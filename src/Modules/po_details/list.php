@@ -362,6 +362,7 @@ function formatDate($excel_date) {
         
         <div class="mb-4">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
           <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
             <h4 class="text-sm font-medium text-blue-800 mb-2">Upload Format Requirements:</h4>
             <div class="text-sm text-blue-700">
@@ -389,6 +390,8 @@ function formatDate($excel_date) {
             <h4 class="text-sm font-medium text-yellow-800 mb-2">Date Format Note:</h4>
             <p class="text-sm text-yellow-700">Dates should be in Excel serial number format. For example, 45668 represents a specific date. You can use Excel's DATEVALUE function to convert regular dates.</p>
           </div>
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
           
@@ -454,10 +457,13 @@ function formatDate($excel_date) {
             <button type="button" onclick="validatePoCsv()" 
                     class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
               Validate File
+<<<<<<< Updated upstream
             </button>
             <button type="button" onclick="dryRunUpload()" 
                     class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
               Dry Run
+=======
+>>>>>>> Stashed changes
             </button>
             <button type="button" onclick="closeBulkUploadModal()" 
                     class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
@@ -717,6 +723,7 @@ function formatDate($excel_date) {
     });
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     function testConnection() {
       const fileInput = document.getElementById('csvFile');
       
@@ -795,6 +802,36 @@ function formatDate($excel_date) {
         testBtn.disabled = false;
         testBtn.textContent = originalText;
       });
+=======
+    // Validate CSV/TSV content: basic file structure check only
+    function validatePoCsv(){
+      const input = document.getElementById('csvFile');
+      const file = input && input.files && input.files[0];
+      if (!file){ alert('Please select a CSV/TSV file first.'); return; }
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const text = (e.target.result || '').toString().replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+        const lines = text.split('\n').filter(Boolean);
+        if (lines.length < 2){ 
+          alert('The file has no data rows.'); 
+          return; 
+        }
+        
+        // Basic file structure validation passed
+        const preview = document.getElementById('uploadResults');
+        const ok = document.getElementById('successResults');
+        if (preview && ok){
+          document.getElementById('errorResults').classList.add('hidden');
+          document.getElementById('warningResults').classList.add('hidden');
+          ok.classList.remove('hidden');
+          preview.classList.remove('hidden');
+          document.getElementById('successMessage').textContent = 'File structure validation passed. Server will handle detailed validation during upload.';
+        } else {
+          alert('File structure validation passed. You can proceed with upload.');
+        }
+      };
+      reader.readAsText(file);
+>>>>>>> Stashed changes
     }
 
     function dryRunUpload() {
