@@ -67,34 +67,49 @@ $cost_centers_result = $conn->query($cost_centers_query);
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
-<body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+<body class="bg-gradient-to-br from-rose-100 via-sky-100 to-indigo-100 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
     <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
         <?php include 'src/shared/nav.php'; ?>
         
         <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
             <div class="max-w-7xl mx-auto">
-                <!-- Header -->
-                <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">So Form - Summary Report</h1>
-                        <p class="text-gray-600 mt-2">Comprehensive overview of projects, billing, and margins</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <button onclick="exportToExcel()" class="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-green-600 to-green-700 px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105">
-                            <span class="material-symbols-outlined text-base">download</span>
-                            Export Excel
-                        </button>
-                        <button onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105">
-                            <span class="material-symbols-outlined text-base">print</span>
-                            Print
-                        </button>
+                <!-- Header (Styled like index hero) -->
+                <div class="mb-6">
+                    <div class="relative overflow-hidden rounded-2xl bg-white border border-gray-300 shadow-sm">
+                        <div class="px-6 sm:px-8 py-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                                <div class="md:col-span-2 min-w-0">
+                                    <div class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-gray-600">
+                                        <span class="material-symbols-outlined text-sm">assessment</span>
+                                        SO Form - Summary Report
+                                    </div>
+                                    <h1 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
+                                        Comprehensive overview of projects, billing, and margins
+                                    </h1>
+                                    <p class="mt-1 text-sm text-gray-600">Search, filter, analyze and export summary data.</p>
+                                </div>
+                                <div class="justify-self-start md:justify-self-end w-full md:w-auto">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="exportToExcel()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-green-500 text-green-700 bg-green-50/40 hover:bg-green-100 hover:border-green-600 transition-colors shadow-sm" title="Export Excel">
+                                            <span class="material-symbols-outlined text-base">download</span>
+                                        </button>
+                                        <button onclick="window.print()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-blue-500 text-blue-700 bg-blue-50/40 hover:bg-blue-100 hover:border-blue-600 transition-colors shadow-sm" title="Print">
+                                            <span class="material-symbols-outlined text-base">print</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Filters -->
-                <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="mb-6 rounded-2xl border border-gray-300 border-l-4 border-l-blue-600 bg-white p-6 shadow-md">
                     <div class="pb-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600">tune</span>
+                            Filters
+                        </h2>
                     </div>
                     <form method="GET" class="pt-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -139,30 +154,42 @@ $cost_centers_result = $conn->query($cost_centers_query);
                 </div>
 
                 <!-- Summary Report Table -->
-                <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                <div id="reportCard" class="overflow-hidden rounded-2xl border border-gray-300 border-l-4 border-l-indigo-600 bg-white shadow-md">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Project summary report</h2>
-                        <p class="text-xs text-gray-500 mt-1">Sale Margin Till date = (Billed till date − Vendor Invoicing Till Date) / Billed till date. Variance = Sale Margin − Target GM.</p>
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-indigo-600">insights</span>
+                                    Project summary report
+                                </h2>
+                                <p class="text-xs text-gray-600 mt-1">Sale Margin Till date = (Billed till date − Vendor Invoicing Till Date) / Billed till date. Variance = Sale Margin − Target GM.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="toggleFullReport()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-rose-500 text-rose-700 bg-rose-50/40 hover:bg-rose-100 hover:border-rose-600 transition-colors shadow-sm" title="Full View">
+                                    <span class="material-symbols-outlined text-base">fullscreen</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm table-fixed border border-gray-300 border-collapse">
-                            <thead class="bg-gray-100 sticky top-0 z-10 border-b border-gray-300">
+                            <thead class="sticky top-0 z-10 border-b border-gray-300 bg-gradient-to-r from-indigo-600 via-sky-600 to-cyan-600 text-white">
                                 <tr>
-                                    <th class="px-3 py-2 w-14 text-left font-bold text-gray-900 tracking-wide border border-gray-300">ID</th>
-                                    <th class="px-3 py-2 w-64 text-left font-bold text-gray-900 tracking-wide border border-gray-300">Project Name</th>
-                                    <th class="px-3 py-2 w-40 text-left font-bold text-gray-900 tracking-wide border border-gray-300">Cost Centre</th>
-                                    <th class="px-3 py-2 w-44 text-left font-bold text-gray-900 tracking-wide border border-gray-300">Customer PO No</th>
-                                    <th class="px-3 py-2 w-40 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Customer PO Value</th>
-                                    <th class="px-3 py-2 w-40 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Billed Till Date</th>
-                                    <th class="px-3 py-2 w-44 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Remaining Balance</th>
-                                    <th class="px-3 py-2 w-56 text-left font-bold text-gray-900 tracking-wide border border-gray-300">Vendor Name</th>
-                                    <th class="px-3 py-2 w-40 text-left font-bold text-gray-900 tracking-wide border border-gray-300">Cantik PO No</th>
-                                    <th class="px-3 py-2 w-40 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Vendor PO Value</th>
-                                    <th class="px-3 py-2 w-40 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Vendor Invoicing</th>
-                                    <th class="px-3 py-2 w-44 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Remaining Balance</th>
-                                    <th class="px-3 py-2 w-36 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Sale Margin</th>
-                                    <th class="px-3 py-2 w-32 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Target GM</th>
-                                    <th class="px-3 py-2 w-32 text-right font-bold text-gray-900 tracking-wide border border-gray-300">Variance</th>
+                                    <th class="px-3 py-2 w-14 text-left font-semibold tracking-wide border border-indigo-500/40">ID</th>
+                                    <th class="px-3 py-2 w-64 text-left font-semibold tracking-wide border border-indigo-500/40">Project Name</th>
+                                    <th class="px-3 py-2 w-40 text-left font-semibold tracking-wide border border-indigo-500/40">Cost Centre</th>
+                                    <th class="px-3 py-2 w-44 text-left font-semibold tracking-wide border border-indigo-500/40">Customer PO No</th>
+                                    <th class="px-3 py-2 w-40 text-right font-semibold tracking-wide border border-indigo-500/40">Customer PO Value</th>
+                                    <th class="px-3 py-2 w-40 text-right font-semibold tracking-wide border border-indigo-500/40">Billed Till Date</th>
+                                    <th class="px-3 py-2 w-44 text-right font-semibold tracking-wide border border-indigo-500/40">Remaining Balance</th>
+                                    <th class="px-3 py-2 w-56 text-left font-semibold tracking-wide border border-indigo-500/40">Vendor Name</th>
+                                    <th class="px-3 py-2 w-40 text-left font-semibold tracking-wide border border-indigo-500/40">Cantik PO No</th>
+                                    <th class="px-3 py-2 w-40 text-right font-semibold tracking-wide border border-indigo-500/40">Vendor PO Value</th>
+                                    <th class="px-3 py-2 w-40 text-right font-semibold tracking-wide border border-indigo-500/40">Vendor Invoicing</th>
+                                    <th class="px-3 py-2 w-44 text-right font-semibold tracking-wide border border-indigo-500/40">Remaining Balance</th>
+                                    <th class="px-3 py-2 w-36 text-right font-semibold tracking-wide border border-indigo-500/40">Sale Margin</th>
+                                    <th class="px-3 py-2 w-32 text-right font-semibold tracking-wide border border-indigo-500/40">Target GM</th>
+                                    <th class="px-3 py-2 w-32 text-right font-semibold tracking-wide border border-indigo-500/40">Variance</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white">
@@ -321,12 +348,77 @@ if (isset($prep_error)) {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'so_form_summary_' + new Date().toISOString().split('T')[0] + '.xlsx';
+            a.download = 'so_form_summary_' + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             window.URL.revokeObjectURL(url);
         }
     </script>
 
 <script src="assets/indian-numbering.js"></script>
+</body>
+</html>
+<script>
+  // Toggle full screen width/height for the report card
+  function toggleFullReport(){
+    const card = document.getElementById('reportCard');
+    const table = card.querySelector('table');
+    const headers = card.querySelectorAll('thead th');
+    const cells = card.querySelectorAll('tbody td');
+    const isFull = card.classList.contains('fixed');
+    if (!isFull){
+      // Enter full view overlay
+      card.classList.add('fixed','inset-4','z-50');
+      card.classList.remove('shadow-md');
+      card.classList.add('shadow-2xl');
+      // Prevent background scroll
+      document.body.style.overflow = 'hidden';
+
+      // Save previous classes to restore later
+      if (table && !table.dataset.prevTableClass) {
+        table.dataset.prevTableClass = table.className;
+      }
+      headers.forEach((th)=>{
+        if (!th.dataset.prevClass) th.dataset.prevClass = th.className;
+        // remove fixed width classes like w-64, w-40, etc.
+        th.className = th.className
+          .split(' ')
+          .filter(c => c && !/^w-/.test(c))
+          .join(' ');
+        th.style.width = 'auto';
+      });
+      cells.forEach((td)=>{
+        if (!td.dataset.prevClass) td.dataset.prevClass = td.className;
+        td.className = td.className
+          .split(' ')
+          .filter(c => c && !/^w-/.test(c))
+          .join(' ');
+        td.style.width = 'auto';
+      });
+      if (table) {
+        table.classList.remove('table-fixed');
+        table.classList.add('table-auto');
+      }
+    } else {
+      // Exit full view
+      card.classList.remove('fixed','inset-4','z-50');
+      card.classList.remove('shadow-2xl');
+      card.classList.add('shadow-md');
+      document.body.style.overflow = '';
+
+      // Restore previous classes
+      if (table && table.dataset.prevTableClass) {
+        table.className = table.dataset.prevTableClass;
+      }
+      headers.forEach((th)=>{
+        if (th.dataset.prevClass) th.className = th.dataset.prevClass;
+        th.style.width = '';
+      });
+      cells.forEach((td)=>{
+        if (td.dataset.prevClass) td.className = td.dataset.prevClass;
+        td.style.width = '';
+      });
+    }
+  }
+</script>
 </body>
 </html>

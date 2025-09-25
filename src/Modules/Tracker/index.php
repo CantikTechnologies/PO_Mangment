@@ -114,86 +114,104 @@ function formatDate($date) {
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
-<body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+<body class="bg-gradient-to-br from-rose-100 via-sky-100 to-indigo-100 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
     <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
         <?php include getSharedIncludePath('nav.php'); ?>
         
         <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
             <div class="max-w-7xl mx-auto">
-                <!-- Page Header -->
+                <!-- Page Header (hero) -->
                 <div class="mb-8">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-3xl font-bold text-gray-900">Tracker Updates</h1>
-                            <p class="text-gray-600 mt-2">
-                                Manage and track finance tasks and updates  </p>
+                    <div class="relative overflow-hidden rounded-2xl bg-white border border-gray-300 shadow-sm">
+                        <div class="px-6 sm:px-8 py-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                                <div class="md:col-span-2 min-w-0">
+                                    <div class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-gray-600">
+                                        <span class="material-symbols-outlined text-sm">assignment</span>
+                                        Tracker Updates
+                                    </div>
+                                    <h1 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
+                                        Manage and track finance tasks and updates
+                                    </h1>
+                                    <p class="mt-1 text-sm text-gray-600">Create, monitor, and complete action items across cost centers.</p>
+                                </div>
+                                <div class="justify-self-start md:justify-self-end w-full md:w-auto">
+                                    <div class="flex items-center gap-2">
+                                        <a href="add.php" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-red-500 text-red-700 bg-red-50/40 hover:bg-red-100 hover:border-red-600 transition-colors shadow-sm" title="Add New Task">
+                                            <span class="material-symbols-outlined text-base">add</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <a href="add.php" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-                            <span class="material-symbols-outlined mr-2 text-sm">add</span>
-                            Add New Task
-                        </a>
                     </div>
                 </div>
 
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-2xl border border-gray-300 shadow-md p-6 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="group relative bg-white rounded-xl shadow-sm border border-gray-300 p-6 hover:shadow-lg transition-all border-l-4 border-l-indigo-600">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Total Tasks</p>
-                                <p class="text-2xl font-bold text-gray-900"><?= $total_trackers ?></p>
+                                <p class="mt-1 text-3xl font-extrabold text-gray-900"><?= $total_trackers ?></p>
                             </div>
-                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <span class="material-symbols-outlined text-2xl text-gray-600">assignment</span>
+                            <div class="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center ring-2 ring-inset ring-indigo-300">
+                                <span class="material-symbols-outlined text-2xl text-indigo-600">assignment</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="group relative bg-white rounded-xl shadow-sm border border-gray-300 p-6 hover:shadow-lg transition-all border-l-4 border-l-amber-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Pending</p>
-                                <p class="text-2xl font-bold text-yellow-600"><?= $pending_trackers ?></p>
+                                <p class="mt-1 text-3xl font-extrabold text-amber-700"><?= $pending_trackers ?></p>
                             </div>
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                <span class="material-symbols-outlined text-2xl text-yellow-600">schedule</span>
+                            <div class="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center ring-2 ring-inset ring-amber-300">
+                                <span class="material-symbols-outlined text-2xl text-amber-600">schedule</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="group relative bg-white rounded-xl shadow-sm border border-gray-300 p-6 hover:shadow-lg transition-all border-l-4 border-l-blue-600">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">In Progress</p>
-                                <p class="text-2xl font-bold text-blue-600"><?= $in_progress_trackers ?></p>
+                                <p class="mt-1 text-3xl font-extrabold text-blue-700"><?= $in_progress_trackers ?></p>
                             </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center ring-2 ring-inset ring-blue-300">
                                 <span class="material-symbols-outlined text-2xl text-blue-600">trending_up</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="group relative bg-white rounded-xl shadow-sm border border-gray-300 p-6 hover:shadow-lg transition-all border-l-4 border-l-green-600">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Completed</p>
-                                <p class="text-2xl font-bold text-green-600"><?= $completed_trackers ?></p>
+                                <p class="mt-1 text-3xl font-extrabold text-green-700"><?= $completed_trackers ?></p>
                             </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center ring-2 ring-inset ring-green-300">
                                 <span class="material-symbols-outlined text-2xl text-green-600">check_circle</span>
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
 
                 <!-- Tasks Table -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">All Tasks</h2>
+                <div class="bg-white rounded-2xl shadow-md border border-gray-300 border-l-4 border-l-indigo-600">
+                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-indigo-600">list</span>
+                            All Tasks
+                        </h2>
+                        <div class="text-xs text-gray-500">Showing <?= number_format($total_trackers) ?> results</div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-gray-100/70 sticky top-0 z-10">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action Required By</th>
@@ -216,7 +234,7 @@ function formatDate($date) {
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($trackers as $task): ?>
-                                    <tr class="hover:bg-gray-50">
+                                    <tr class="even:bg-gray-50/40 hover:bg-gray-50 transition-colors">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             #<?= $task['id'] ?>
                                         </td>
@@ -248,15 +266,15 @@ function formatDate($date) {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex items-center gap-2">
                                                 <?php if ($isAdmin || currentUserOwnsTask($task, $currentUserIdentifiers)): ?>
-                                                <a href="edit.php?id=<?= $task['id'] ?>" class="text-red-600 hover:text-red-900" title="Edit">
+                                                <a href="edit.php?id=<?= $task['id'] ?>" class="inline-flex items-center gap-1 px-2 py-1 rounded border border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400" title="Edit">
                                                     <span class="material-symbols-outlined text-sm">edit</span>
                                                 </a>
                                                 <?php endif; ?>
-                                                <a href="view.php?id=<?= $task['id'] ?>" class="text-blue-600 hover:text-blue-900" title="View">
+                                                <a href="view.php?id=<?= $task['id'] ?>" class="inline-flex items-center gap-1 px-2 py-1 rounded border border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400" title="View">
                                                     <span class="material-symbols-outlined text-sm">visibility</span>
                                                 </a>
                                                 <?php if ($isAdmin): ?>
-                                                <a href="delete.php?id=<?= $task['id'] ?>" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this task?')" title="Delete">
+                                                <a href="delete.php?id=<?= $task['id'] ?>" class="inline-flex items-center gap-1 px-2 py-1 rounded border border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400" onclick="return confirm('Are you sure you want to delete this task?')" title="Delete">
                                                     <span class="material-symbols-outlined text-sm">delete</span>
                                                 </a>
                                                 <?php endif; ?>

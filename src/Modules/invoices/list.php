@@ -149,7 +149,7 @@ function formatDate($excel_date) {
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
-<body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+<body class="bg-gradient-to-br from-rose-100 via-sky-100 to-indigo-100 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
     <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
         <?php include getSharedIncludePath('nav.php'); ?>
         
@@ -162,38 +162,51 @@ function formatDate($excel_date) {
                     </div>
                 <?php endif; ?>
 
-                <!-- Header -->
-                <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Invoices</h1>
-                        <p class="text-gray-600 mt-2">Manage and track all billing invoices</p>
-                    </div>
-                    <div class="flex gap-3">
-                      <button onclick="downloadReport()" class="flex items-center justify-center gap-2 rounded-full bg-purple-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-purple-700 transition-colors">
-                        <span class="material-symbols-outlined">download</span>
-                        <span class="truncate">Download Report</span>
-                      </button>
-                      <button onclick="openSummaryDialog()" class="flex items-center justify-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-green-700 transition-colors">
-                        <span class="material-symbols-outlined">analytics</span>
-                        <span class="truncate">Summary</span>
-                      </button>
-                      <?php if (hasPermission('add_invoices')): ?>
-                      <button onclick="openInvoiceBulkUpload()" class="flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
-                        <span class="material-symbols-outlined">upload</span>
-                        <span class="truncate">Bulk Upload</span>
-                      </button>
-                      <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
-                        <span class="material-symbols-outlined">add</span>
-                        <span class="truncate">New Invoice</span>
-                      </a>
-                      <?php endif; ?>
+                <!-- Header (Styled like index hero) -->
+                <div class="mb-6">
+                    <div class="relative overflow-hidden rounded-2xl bg-white border border-gray-300 shadow-sm">
+                        <div class="px-6 sm:px-8 py-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                                <div class="md:col-span-2 min-w-0">
+                                    <div class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-gray-600">
+                                        <span class="material-symbols-outlined text-sm">receipt</span>
+                                        Invoices
+                                    </div>
+                                    <h1 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
+                                        Manage and track all billing invoices
+                                    </h1>
+                                    <p class="mt-1 text-sm text-gray-600">Search, filter, analyze and export invoices.</p>
+                                </div>
+                                <div class="justify-self-start md:justify-self-end w-full md:w-auto">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="downloadReport()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-indigo-500 text-indigo-700 bg-indigo-50/40 hover:bg-indigo-100 hover:border-indigo-600 transition-colors shadow-sm" title="Download Report">
+                                            <span class="material-symbols-outlined text-base">download</span>
+                                        </button>
+                                        <button onclick="openSummaryDialog()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-green-500 text-green-700 bg-green-50/40 hover:bg-green-100 hover:border-green-600 transition-colors shadow-sm" title="Summary">
+                                            <span class="material-symbols-outlined text-base">analytics</span>
+                                        </button>
+                                        <?php if (hasPermission('add_invoices')): ?>
+                                        <button onclick="openInvoiceBulkUpload()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-blue-500 text-blue-700 bg-blue-50/40 hover:bg-blue-100 hover:border-blue-600 transition-colors shadow-sm" title="Bulk Upload">
+                                            <span class="material-symbols-outlined text-base">upload</span>
+                                        </button>
+                                        <a href="add.php" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-red-500 text-red-700 bg-red-50/40 hover:bg-red-100 hover:border-red-600 transition-colors shadow-sm" title="New Invoice">
+                                            <span class="material-symbols-outlined text-base">add</span>
+                                        </a>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Filters -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="bg-white rounded-2xl shadow-md border border-gray-300 border-l-4 border-l-blue-600 mb-6">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600">tune</span>
+                            Filters
+                        </h2>
                     </div>
                     <form method="GET" class="p-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -265,13 +278,17 @@ function formatDate($excel_date) {
                 </div>
 
                 <!-- Invoices Table -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Billing Invoices</h2>
+                <div class="bg-white rounded-2xl shadow-md border border-gray-300 border-l-4 border-l-indigo-600">
+                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-indigo-600">receipt</span>
+                            Billing Invoices
+                        </h2>
+                        <div class="text-xs text-gray-500">Showing <?= number_format($invoice_results->num_rows) ?> results</div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-gray-100/70 sticky top-0 z-10">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Details</th>
@@ -719,6 +736,295 @@ function formatDate($excel_date) {
   </div>
 </div>
 
+<<<<<<< Updated upstream
 <script src="../../assets/indian-numbering.js"></script>
+=======
+<!-- Bulk Upload Modal -->
+<div id="invoiceBulkUploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Bulk Upload Invoices</h3>
+        <button onclick="closeInvoiceBulkUploadModal()" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div class="mb-4">
+        <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+          <h4 class="text-sm font-medium text-green-800 mb-2">Need a Template?</h4>
+          <p class="text-sm text-green-700 mb-2">Download our sample CSV template to see the correct format:</p>
+          <a href="invoice_template.csv" download="invoice_template.csv" 
+             class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
+            <span class="material-symbols-outlined text-sm">download</span>
+            Download Template
+          </a>
+        </div>
+      </div>
+
+      <form id="invoiceBulkUploadForm" enctype="multipart/form-data">
+        <div class="mb-4">
+          <label for="invoiceCsvFile" class="block text-sm font-medium text-gray-700 mb-2">Select CSV/TSV File</label>
+          <input type="file" id="invoiceCsvFile" name="csvFile" accept=".csv,.tsv,.txt" required 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div id="invoiceUploadProgress" class="hidden mb-4">
+          <div class="bg-gray-200 rounded-full h-2.5">
+            <div id="invoiceProgressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <p id="invoiceProgressText" class="text-sm text-gray-600 mt-1">Processing...</p>
+        </div>
+        
+        <div id="invoiceUploadResults" class="hidden mb-4">
+          <div id="invoiceSuccessResults" class="hidden bg-green-50 border border-green-200 rounded-md p-4 mb-2">
+            <h4 class="text-sm font-medium text-green-800 mb-2">Success:</h4>
+            <p id="invoiceSuccessMessage" class="text-sm text-green-700"></p>
+          </div>
+          <div id="invoiceWarningResults" class="hidden bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-2">
+            <div class="flex items-center justify-between cursor-pointer" onclick="toggleInvoiceWarnings()">
+              <h4 class="text-sm font-medium text-yellow-800">Warnings:</h4>
+              <span id="invoiceWarningToggle" class="text-yellow-600">▼</span>
+            </div>
+            <div id="invoiceWarningList" class="text-sm text-yellow-700 mt-2 hidden"></div>
+          </div>
+          <div id="invoiceErrorResults" class="hidden bg-red-50 border border-red-200 rounded-md p-4">
+            <h4 class="text-sm font-medium text-red-800 mb-2">Errors:</h4>
+            <div id="invoiceErrorList" class="text-sm text-red-700"></div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="validateInvoiceCsv()" 
+                  class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
+            Validate File
+          </button>
+          <button type="button" onclick="closeInvoiceBulkUploadModal()" 
+                  class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            Cancel
+          </button>
+          <button type="submit" id="invoiceUploadBtn" 
+                  class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Upload CSV
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openInvoiceBulkUpload() {
+    document.getElementById('invoiceBulkUploadModal').classList.remove('hidden');
+    resetInvoiceUploadForm();
+  }
+
+  function closeInvoiceBulkUploadModal() {
+    document.getElementById('invoiceBulkUploadModal').classList.add('hidden');
+    resetInvoiceUploadForm();
+  }
+
+  function resetInvoiceUploadForm() {
+    document.getElementById('invoiceBulkUploadForm').reset();
+    document.getElementById('invoiceUploadProgress').classList.add('hidden');
+    document.getElementById('invoiceUploadResults').classList.add('hidden');
+    document.getElementById('invoiceSuccessResults').classList.add('hidden');
+    document.getElementById('invoiceWarningResults').classList.add('hidden');
+    document.getElementById('invoiceErrorResults').classList.add('hidden');
+    document.getElementById('invoiceUploadBtn').disabled = false;
+  }
+
+  function toggleInvoiceWarnings() {
+    const warningList = document.getElementById('invoiceWarningList');
+    const warningToggle = document.getElementById('invoiceWarningToggle');
+    
+    if (warningList.classList.contains('hidden')) {
+      warningList.classList.remove('hidden');
+      warningToggle.textContent = '▲';
+    } else {
+      warningList.classList.add('hidden');
+      warningToggle.textContent = '▼';
+    }
+  }
+
+  // Validate CSV/TSV content: basic file structure check only
+  function validateInvoiceCsv(){
+    const input = document.getElementById('invoiceCsvFile');
+    const file = input && input.files && input.files[0];
+    if (!file){ alert('Please select a CSV/TSV file first.'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const text = (e.target.result || '').toString().replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+      const lines = text.split('\n').filter(Boolean);
+      if (lines.length < 2){ 
+        alert('The file has no data rows.'); 
+        return; 
+      }
+      
+      // Basic file structure validation passed
+      const preview = document.getElementById('invoiceUploadResults');
+      const ok = document.getElementById('invoiceSuccessResults');
+      if (preview && ok){
+        document.getElementById('invoiceErrorResults').classList.add('hidden');
+        document.getElementById('invoiceWarningResults').classList.add('hidden');
+        ok.classList.remove('hidden');
+        preview.classList.remove('hidden');
+        document.getElementById('invoiceSuccessMessage').textContent = 'File structure validation passed. Server will handle detailed validation during upload.';
+      } else {
+        alert('File structure validation passed. You can proceed with upload.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Handle form submission
+  document.getElementById('invoiceBulkUploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    const fileInput = document.getElementById('invoiceCsvFile');
+    
+    if (!fileInput.files[0]) {
+      alert('Please select a CSV file');
+      return;
+    }
+    
+    formData.append('csvFile', fileInput.files[0]);
+    
+    // Show progress
+    document.getElementById('invoiceUploadProgress').classList.remove('hidden');
+    document.getElementById('invoiceUploadBtn').disabled = true;
+    
+    // Reset results
+    document.getElementById('invoiceUploadResults').classList.add('hidden');
+    document.getElementById('invoiceSuccessResults').classList.add('hidden');
+    document.getElementById('invoiceErrorResults').classList.add('hidden');
+    document.getElementById('invoiceWarningResults').classList.add('hidden');
+    
+    // Simulate progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += 10;
+      document.getElementById('invoiceProgressBar').style.width = progress + '%';
+      if (progress >= 90) {
+        clearInterval(progressInterval);
+      }
+    }, 100);
+    
+    fetch('bulk_upload.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(text => {
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error('Invalid JSON response:', text);
+        throw new Error('Server returned invalid JSON. Response: ' + text.substring(0, 200));
+      }
+    })
+    .then(data => {
+      clearInterval(progressInterval);
+      document.getElementById('invoiceProgressBar').style.width = '100%';
+      document.getElementById('invoiceProgressText').textContent = 'Complete!';
+      
+      setTimeout(() => {
+        document.getElementById('invoiceUploadProgress').classList.add('hidden');
+        document.getElementById('invoiceUploadResults').classList.remove('hidden');
+        
+        if (data.success) {
+          document.getElementById('invoiceSuccessResults').classList.remove('hidden');
+          document.getElementById('invoiceSuccessMessage').textContent = 
+            `Successfully uploaded ${data.inserted} records. ${data.skipped} records were skipped due to duplicates.`;
+        }
+        
+        // Show warnings if any (even on success)
+        if (data.warnings && data.warnings.length > 0) {
+          document.getElementById('invoiceWarningResults').classList.remove('hidden');
+          const warningList = document.getElementById('invoiceWarningList');
+          warningList.innerHTML = '';
+          data.warnings.forEach(warning => {
+            const warningItem = document.createElement('div');
+            warningItem.className = 'mb-1';
+            warningItem.textContent = `Row ${warning.row}: ${warning.message}`;
+            warningList.appendChild(warningItem);
+          });
+        }
+        
+        // Show errors if any
+        if (data.errors && data.errors.length > 0) {
+          document.getElementById('invoiceErrorResults').classList.remove('hidden');
+          const errorList = document.getElementById('invoiceErrorList');
+          errorList.innerHTML = '';
+          data.errors.forEach(error => {
+            const errorItem = document.createElement('div');
+            errorItem.className = 'mb-1';
+            errorItem.textContent = `Row ${error.row}: ${error.message}`;
+            errorList.appendChild(errorItem);
+          });
+        }
+        
+        document.getElementById('invoiceUploadBtn').disabled = false;
+        
+        // Refresh the page after successful upload
+        if (data.success && data.inserted > 0) {
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
+      }, 500);
+    })
+    .catch(error => {
+      clearInterval(progressInterval);
+      document.getElementById('invoiceUploadProgress').classList.add('hidden');
+      document.getElementById('invoiceUploadResults').classList.remove('hidden');
+      document.getElementById('invoiceErrorResults').classList.remove('hidden');
+      document.getElementById('invoiceErrorList').innerHTML = '<div class="mb-1">Upload failed: ' + error.message + '</div>';
+      document.getElementById('invoiceUploadBtn').disabled = false;
+    });
+  });
+
+  // Close modal when clicking outside
+  document.getElementById('invoiceBulkUploadModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeInvoiceBulkUploadModal();
+    }
+  });
+
+  // Summary dialog functionality
+  function openSummaryDialog() {
+    document.getElementById('summaryDialog').classList.remove('hidden');
+  }
+  
+  function closeSummaryDialog() {
+    document.getElementById('summaryDialog').classList.add('hidden');
+  }
+
+  // Download report functionality
+  function downloadReport() {
+    // Get current filter parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryString = urlParams.toString();
+    
+    // Create download URL with current filters
+    const downloadUrl = 'download_report.php?' + queryString;
+    
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'invoice_report_' + new Date().toISOString().split('T')[0] + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+
+>>>>>>> Stashed changes
 </body>
 </html>

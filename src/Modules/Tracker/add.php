@@ -130,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <select id="status" name="status"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                                     <option value="Pending" <?= ($_POST['status'] ?? 'Pending') === 'Pending' ? 'selected' : '' ?>>Pending</option>
-                                    <option value="In Progress" <?= ($_POST['status'] ?? '') === 'In Progress' ? 'selected' : '' ?>>In Progress</option>
+                                    <option value="Incomplete" <?= ($_POST['status'] ?? '') === 'Incomplete' ? 'selected' : '' ?>>Incomplete</option>
                                     <option value="Complete" <?= ($_POST['status'] ?? '') === 'Complete' ? 'selected' : '' ?>>Complete</option>
                                 </select>
                             </div>

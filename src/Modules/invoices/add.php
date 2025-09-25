@@ -52,10 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($customer_po !== '') {
                 if ($upd = $conn->prepare(
                     "UPDATE po_details pd
+<<<<<<< Updated upstream
                      SET pd.pending_amount = GREATEST(0, COALESCE(pd.po_value,0) - (SELECT COALESCE(SUM(bd.cantik_inv_value_taxable),0)
                           FROM billing_details bd
                           WHERE bd.customer_po = ?
                         )
+=======
+                     SET pd.pending_amount = GREATEST(
+                        0,
+                        COALESCE(pd.po_value, 0) - COALESCE((
+                            SELECT SUM(cantik_inv_value_taxable)
+                            FROM billing_details
+                            WHERE customer_po = ?
+                        ), 0)
+>>>>>>> Stashed changes
                      )
                      WHERE pd.po_number = ?"
                 )) {

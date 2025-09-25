@@ -52,6 +52,44 @@ if (!$po) {
     exit();
 }
 
+// Compute live pending balance: PO value - sum of billed taxable for this PO
+$totalBilled = 0.0;
+if (!empty($po['po_number'])) {
+    if ($sumStmt = $conn->prepare("SELECT COALESCE(SUM(cantik_inv_value_taxable),0) AS total_billed FROM billing_details WHERE customer_po = ?")) {
+        $sumStmt->bind_param('s', $po['po_number']);
+        if ($sumStmt->execute()) {
+            $sumRes = $sumStmt->get_result();
+            if ($sumRow = $sumRes->fetch_assoc()) {
+                $totalBilled = (float)$sumRow['total_billed'];
+            }
+        }
+        $sumStmt->close();
+    }
+}
+$poValue = (float)($po['po_value'] ?? 0);
+$computedPending = max(0, $poValue - $totalBilled);
+
+// Fetch latest Cantik PO number and value for this customer PO from outsourcing_detail
+$latestCantikPoNo = null;
+$latestCantikPoValue = 0.0;
+if (!empty($po['po_number'])) {
+    if ($latestStmt = $conn->prepare("SELECT 
+            MAX(cantik_po_no) AS latest_cantik_po_no,
+            MAX(cantik_po_value) AS latest_cantik_po_value
+        FROM outsourcing_detail
+        WHERE customer_po = ?")) {
+        $latestStmt->bind_param('s', $po['po_number']);
+        if ($latestStmt->execute()) {
+            $latestRes = $latestStmt->get_result();
+            if ($latestRow = $latestRes->fetch_assoc()) {
+                $latestCantikPoNo = $latestRow['latest_cantik_po_no'] ?? null;
+                $latestCantikPoValue = (float)($latestRow['latest_cantik_po_value'] ?? 0);
+            }
+        }
+        $latestStmt->close();
+    }
+}
+
 // Helper to convert Excel date int to ISO date
 $toIso = function($excelInt) {
     if (!$excelInt) return null;
@@ -74,7 +112,11 @@ $payload = [
     'po_status' => $po['po_status'] ?? '',
     'remarks' => $po['remarks'] ?? '',
     'vendor_name' => $po['vendor_name'] ?? '',
-    'pending_amount' => isset($po['pending_amount']) ? (float)$po['pending_amount'] : 0.0,
+    // Prefer live-computed pending amount to avoid stale values
+    'pending_amount' => $computedPending,
+    'pending_amount_source' => 'computed',
+    'latest_cantik_po_no' => $latestCantikPoNo,
+    'latest_cantik_po_value' => $latestCantikPoValue,
 ];
 
 echo json_encode(['data' => $payload]);

@@ -159,7 +159,7 @@ function formatDate($excel_date) {
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
-<body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+<body class="bg-gradient-to-br from-rose-100 via-sky-100 to-indigo-100 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
     <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
         <?php include getSharedIncludePath('nav.php'); ?>
         
@@ -172,38 +172,51 @@ function formatDate($excel_date) {
                     </div>
                 <?php endif; ?>
 
-                <!-- Header -->
-                <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Outsourcing</h1>
-                        <p class="text-gray-600 mt-2">Manage and track all outsourcing records</p>
-                    </div>
-                    <div class="flex gap-3">
-                      <button onclick="downloadReport()" class="flex items-center justify-center gap-2 rounded-full bg-purple-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-purple-700 transition-colors">
-                        <span class="material-symbols-outlined">download</span>
-                        <span class="truncate">Download Report</span>
-                      </button>
-                      <button onclick="openSummaryDialog()" class="flex items-center justify-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-green-700 transition-colors">
-                        <span class="material-symbols-outlined">analytics</span>
-                        <span class="truncate">Summary</span>
-                      </button>
-                      <?php if (hasPermission('add_outsourcing')): ?>
-                      <button onclick="openOutsourcingBulkUpload()" class="flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
-                        <span class="material-symbols-outlined">upload</span>
-                        <span class="truncate">Bulk Upload</span>
-                      </button>
-                      <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
-                        <span class="material-symbols-outlined">add</span>
-                        <span class="truncate">New Outsourcing</span>
-                      </a>
-                      <?php endif; ?>
+                <!-- Header (Styled like index hero) -->
+                <div class="mb-6">
+                    <div class="relative overflow-hidden rounded-2xl bg-white border border-gray-300 shadow-sm">
+                        <div class="px-6 sm:px-8 py-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                                <div class="md:col-span-2 min-w-0">
+                                    <div class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-gray-600">
+                                        <span class="material-symbols-outlined text-sm">business_center</span>
+                                        Outsourcing
+                                    </div>
+                                    <h1 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
+                                        Manage and track all outsourcing records
+                                    </h1>
+                                    <p class="mt-1 text-sm text-gray-600">Search, filter, analyze and export outsourcing data.</p>
+                                </div>
+                                <div class="justify-self-start md:justify-self-end w-full md:w-auto">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="downloadReport()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-indigo-500 text-indigo-700 bg-indigo-50/40 hover:bg-indigo-100 hover:border-indigo-600 transition-colors shadow-sm" title="Download Report">
+                                            <span class="material-symbols-outlined text-base">download</span>
+                                        </button>
+                                        <button onclick="openSummaryDialog()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-green-500 text-green-700 bg-green-50/40 hover:bg-green-100 hover:border-green-600 transition-colors shadow-sm" title="Summary">
+                                            <span class="material-symbols-outlined text-base">analytics</span>
+                                        </button>
+                                        <?php if (hasPermission('add_outsourcing')): ?>
+                                        <button onclick="openOutsourcingBulkUpload()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-blue-500 text-blue-700 bg-blue-50/40 hover:bg-blue-100 hover:border-blue-600 transition-colors shadow-sm" title="Bulk Upload">
+                                            <span class="material-symbols-outlined text-base">upload</span>
+                                        </button>
+                                        <a href="add.php" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-red-500 text-red-700 bg-red-50/40 hover:bg-red-100 hover:border-red-600 transition-colors shadow-sm" title="New Outsourcing">
+                                            <span class="material-symbols-outlined text-base">add</span>
+                                        </a>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Filters -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="bg-white rounded-2xl shadow-md border border-gray-300 border-l-4 border-l-blue-600 mb-6">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600">tune</span>
+                            Filters
+                        </h2>
                     </div>
                     <form method="GET" class="p-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
@@ -288,13 +301,17 @@ function formatDate($excel_date) {
                 </div>
 
                 <!-- Outsourcing Table -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Outsourcing Records</h2>
+                <div class="bg-white rounded-2xl shadow-md border border-gray-300 border-l-4 border-l-indigo-600">
+                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-indigo-600">business_center</span>
+                            Outsourcing Records
+                        </h2>
+                        <div class="text-xs text-gray-500">Showing <?= number_format($outsourcing_results->num_rows) ?> results</div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-gray-100/70 sticky top-0 z-10">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S.No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Details</th>
@@ -307,7 +324,7 @@ function formatDate($excel_date) {
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <?php $rowNum = 1; while ($record = $outsourcing_results->fetch_assoc()): ?>
-                                <tr class="hover:bg-gray-50">
+                                <tr class="even:bg-gray-50/40 hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= $rowNum++ ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div>
@@ -330,7 +347,7 @@ function formatDate($excel_date) {
                                         <div class="text-sm font-medium text-gray-900">PO Value: <?= formatCurrency($record['cantik_po_value']) ?></div>
                                         <div class="text-sm text-gray-500">Inv Value: <?= formatCurrency($record['vendor_inv_value']) ?></div>
                                         <div class="text-sm text-gray-500">TDS: <?= formatCurrency($record['tds_ded']) ?></div>
-                                        <div class="text-sm font-medium text-green-600">Net Payable: <?= formatCurrency($record['net_payble']) ?></div>
+                                        <div class="text-sm font-medium text-green-700">Net Payable: <span class="inline-flex items-center rounded px-2 py-0.5 bg-green-50 text-green-800 border border-green-200"><?= formatCurrency($record['net_payble']) ?></span></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">Status: <?= htmlspecialchars($record['payment_status_from_ntt'] ?: 'Pending') ?></div>
@@ -342,16 +359,16 @@ function formatDate($excel_date) {
                                         ?>
                                         <div class="text-sm text-gray-500">Payment: <?= formatCurrency($paid) ?></div>
                                         <div class="text-sm text-gray-500">Date: <?= formatDate($record['payment_date']) ?></div>
-                                        <div class="text-sm font-medium <?= $pendingClass ?>">Pending: <?= formatCurrency($pending) ?></div>
+                                        <div class="text-sm font-medium <?= $pendingClass ?>">Pending: <span class="inline-flex items-center rounded px-2 py-0.5 <?= $pending > 0.0 ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-green-50 text-green-800 border border-green-200' ?>"><?= formatCurrency($pending) ?></span></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex gap-2">
-                                            <a href="view.php?id=<?= $record['id'] ?>" class="text-blue-600 hover:text-blue-900">View</a>
+                                            <a href="view.php?id=<?= $record['id'] ?>" class="inline-flex items-center gap-1 px-2 py-1 rounded border border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400">View</a>
                                             <?php if (hasPermission('edit_outsourcing')): ?>
-                                            <a href="edit.php?id=<?= $record['id'] ?>" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                            <a href="edit.php?id=<?= $record['id'] ?>" class="inline-flex items-center gap-1 px-2 py-1 rounded border border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400">Edit</a>
                                             <?php endif; ?>
                                             <?php if (hasPermission('delete_outsourcing')): ?>
-                                            <a href="delete.php?id=<?= $record['id'] ?>" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this record?')">Delete</a>
+                                            <a href="delete.php?id=<?= $record['id'] ?>" class="inline-flex items-center gap-1 px-2 py-1 rounded border border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400" onclick="return confirm('Are you sure you want to delete this record?')">Delete</a>
                                             <?php endif; ?>
                                         </div>
                                     </td>

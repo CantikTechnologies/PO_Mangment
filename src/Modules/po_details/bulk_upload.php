@@ -183,11 +183,20 @@ function excelToDate($excelDate) {
 function validateRow($row, $rowNumber) {
     global $requiredFields;
     $errors = [];
+    $warnings = [];
     
     // Check required fields
     foreach ($requiredFields as $field) {
         if (!isset($row[$field]) || trim($row[$field]) === '') {
             $errors[] = "Required field '$field' is missing or empty";
+        }
+    }
+    
+    // Check for blank/empty optional fields and add as warnings
+    $optionalFieldsToCheck = ['project_description', 'cost_center', 'sow_number', 'start_date', 'end_date', 'po_date', 'billing_frequency', 'target_gm', 'vendor_name', 'remarks'];
+    foreach ($optionalFieldsToCheck as $field) {
+        if (!isset($row[$field]) || trim($row[$field]) === '' || trim($row[$field]) === '-' || isEmptyLike($row[$field])) {
+            $warnings[] = "Field '$field' is blank";
         }
     }
     
@@ -276,7 +285,7 @@ function validateRow($row, $rowNumber) {
         }
     }
     
-    return $errors;
+    return ['errors' => $errors, 'warnings' => $warnings];
 }
 
 // Check if this is a dry run
@@ -330,6 +339,7 @@ try {
     $inserted = 0;
     $skipped = 0;
     $errors = [];
+    $warnings = [];
     $rowNumber = 1; // Start from 1 since we already read the header
     
     // Begin transaction (skip for dry run)
@@ -363,7 +373,18 @@ try {
         $rowData = array_combine($headers, $row);
         
         // Validate row data
-        $rowErrors = validateRow($rowData, $rowNumber);
+        $validation = validateRow($rowData, $rowNumber);
+        $rowErrors = $validation['errors'];
+        $rowWarnings = $validation['warnings'];
+        
+        // Add warnings to the warnings array
+        if (!empty($rowWarnings)) {
+            foreach ($rowWarnings as $warning) {
+                $warnings[] = ['row' => $rowNumber, 'message' => $warning];
+            }
+        }
+        
+        // Only skip row if there are actual errors (not warnings)
         if (!empty($rowErrors)) {
             foreach ($rowErrors as $error) {
                 $errors[] = ['row' => $rowNumber, 'message' => $error];
@@ -374,11 +395,15 @@ try {
         // Determine PO number; generate temporary if missing
         $originalPo = isset($rowData['po_number']) ? trim($rowData['po_number']) : '';
         $generatedTemp = false;
-        if ($originalPo === '') {
-            $poNumber = 'TEMP-PO-' . date('Ymd') . '-' . $rowNumber . '-' . substr(uniqid('', true), -4);
+        
+        // Check if PO number is empty or contains only empty-like values
+        if ($originalPo === '' || isEmptyLike($originalPo) || $originalPo === '0') {
+            // Generate a unique temporary PO number
+            $poNumber = 'TEMP-PO-' . date('Ymd') . '-' . $rowNumber . '-' . substr(uniqid('', true), -6);
             $generatedTemp = true;
         } else {
-            $poNumber = $originalPo;
+            $poNumber = trim($originalPo);
+            
             // Check for duplicate only when provided
             $checkStmt = $conn->prepare("SELECT id FROM po_details WHERE po_number = ?");
             $checkStmt->bind_param("s", $poNumber);
@@ -386,9 +411,10 @@ try {
             $result = $checkStmt->get_result();
             if ($result->num_rows > 0) {
                 $skipped++;
-                $errors[] = ['row' => $rowNumber, 'message' => "PO number '$poNumber' already exists"];
+                $warnings[] = ['row' => $rowNumber, 'message' => "PO number '$poNumber' already exists - skipped"];
                 continue;
             }
+            $checkStmt->close();
         }
         
         // Prepare data for insertion
@@ -423,6 +449,7 @@ try {
         $poStatus = isset($rowData['po_status']) && trim($rowData['po_status']) !== ''
             ? ucfirst(strtolower(trim($rowData['po_status']))) : 'Active';
         
+<<<<<<< Updated upstream
         // Insert record (skip for dry run)
         if ($dryRun) {
             $inserted++; // Count as successful for dry run
@@ -456,6 +483,62 @@ try {
             } else {
                 $errors[] = ['row' => $rowNumber, 'message' => 'Database error: ' . $insertStmt->error];
             }
+=======
+        // Final safety check - ensure PO number is never empty
+        if (empty($poNumber) || $poNumber === '0' || trim($poNumber) === '') {
+            $poNumber = 'TEMP-PO-' . date('Ymd') . '-' . $rowNumber . '-' . substr(uniqid('', true), -8);
+            $generatedTemp = true;
+        }
+        
+        // Insert record
+        $insertStmt = $conn->prepare("
+            INSERT INTO po_details (
+                project_description, cost_center, sow_number, start_date, end_date,
+                po_number, po_date, po_value, billing_frequency, target_gm,
+                vendor_name, remarks, po_status, pending_amount
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        
+        $insertStmt->bind_param(
+            "sssiiisdsdsssd",
+            $projectDescription, $costCenter, $sowNumber, $startDate, $endDate,
+            $poNumber, $poDate, $poValue, $billingFrequency, $targetGm,
+            $vendorName, $remarks, $poStatus, $pendingAmount
+        );
+        
+        if ($insertStmt->execute()) {
+            $inserted++;
+            
+            // Log the creation in audit log (if audit_log table exists)
+            $userId = $_SESSION['user_id'] ?? 1;
+            $recordId = $conn->insert_id;
+            
+            // Check if audit_log table exists before trying to insert
+            $tableCheck = $conn->query("SHOW TABLES LIKE 'audit_log'");
+            if ($tableCheck && $tableCheck->num_rows > 0) {
+                $auditStmt = $conn->prepare("
+                    INSERT INTO audit_log (user_id, action, table_name, record_id, created_at) 
+                    VALUES (?, 'create_po', 'po_details', ?, NOW())
+                ");
+                if ($auditStmt) {
+                    $auditStmt->bind_param("ii", $userId, $recordId);
+                    $auditStmt->execute();
+                    $auditStmt->close();
+                }
+            }
+        } else {
+            // Check if it's a duplicate entry error
+            if (strpos($insertStmt->error, 'Duplicate entry') !== false) {
+                $skipped++;
+                $warnings[] = ['row' => $rowNumber, 'message' => "Duplicate PO number '$poNumber' - skipped"];
+            } else {
+                $errors[] = ['row' => $rowNumber, 'message' => 'Database error: ' . $insertStmt->error];
+            }
+        }
+        
+        if (isset($insertStmt)) {
+            $insertStmt->close();
+>>>>>>> Stashed changes
         }
     }
     
@@ -468,6 +551,7 @@ try {
             'inserted' => $inserted,
             'skipped' => $skipped,
             'errors' => $errors,
+<<<<<<< Updated upstream
             'dry_run' => true,
             'message' => empty($errors) ? 'Dry run successful - CSV is ready for upload' : 'Dry run found validation errors'
         ]);
@@ -491,6 +575,19 @@ try {
                 'dry_run' => false
             ]);
         }
+=======
+            'warnings' => $warnings
+        ]);
+    } else {
+        $conn->rollback();
+        echo json_encode([
+            'success' => false,
+            'inserted' => 0,
+            'skipped' => $skipped,
+            'errors' => $errors,
+            'warnings' => $warnings
+        ]);
+>>>>>>> Stashed changes
     }
     
 } catch (Exception $e) {

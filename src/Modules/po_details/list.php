@@ -135,7 +135,7 @@ function formatDate($excel_date) {
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
-<body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+<body class="bg-gradient-to-br from-rose-100 via-sky-100 to-indigo-100 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
     <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
         <?php include getSharedIncludePath('nav.php'); ?>
         
@@ -148,38 +148,51 @@ function formatDate($excel_date) {
                     </div>
                 <?php endif; ?>
 
-                <!-- Header -->
-                <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Purchase Orders</h1>
-                        <p class="text-gray-600 mt-2">Manage and track all purchase orders</p>
+                <!-- Header (Styled like index hero) -->
+                <div class="mb-6">
+                    <div class="relative overflow-hidden rounded-2xl bg-white border border-gray-300 shadow-sm">
+                        <div class="px-6 sm:px-8 py-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                                <div class="md:col-span-2 min-w-0">
+                                    <div class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-gray-600">
+                                        <span class="material-symbols-outlined text-sm">description</span>
+                                        Purchase Orders
+                                    </div>
+                                    <h1 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
+                                        Manage and track all purchase orders
+                                    </h1>
+                                    <p class="mt-1 text-sm text-gray-600">Search, filter, analyze and export your PO data.</p>
                     </div>
-                    <div class="flex gap-3">
-                        <button onclick="downloadReport()" class="flex items-center justify-center gap-2 rounded-full bg-purple-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-purple-700 transition-colors">
-                            <span class="material-symbols-outlined">download</span>
-                            <span class="truncate">Download Report</span>
+                                <div class="justify-self-start md:justify-self-end w-full md:w-auto">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="downloadReport()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-indigo-500 text-indigo-700 bg-indigo-50/40 hover:bg-indigo-100 hover:border-indigo-600 transition-colors shadow-sm" title="Download Report">
+                                            <span class="material-symbols-outlined text-base">download</span>
                         </button>
-                        <button onclick="openSummaryDialog()" class="flex items-center justify-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-green-700 transition-colors">
-                            <span class="material-symbols-outlined">analytics</span>
-                            <span class="truncate">Summary</span>
+                                        <button onclick="openSummaryDialog()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-green-500 text-green-700 bg-green-50/40 hover:bg-green-100 hover:border-green-600 transition-colors shadow-sm" title="Summary">
+                                            <span class="material-symbols-outlined text-base">analytics</span>
                         </button>
                         <?php if (hasPermission('add_po_details')): ?>
-                        <button onclick="openBulkUploadModal()" class="flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
-                            <span class="material-symbols-outlined">upload</span>
-                            <span class="truncate">Bulk Upload</span>
+                                        <button onclick="openBulkUploadModal()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-blue-500 text-blue-700 bg-blue-50/40 hover:bg-blue-100 hover:border-blue-600 transition-colors shadow-sm" title="Bulk Upload">
+                                            <span class="material-symbols-outlined text-base">upload</span>
                         </button>
-                        <a href="add.php" class="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-white text-sm font-semibold shadow-sm hover:bg-red-700 transition-colors">
-                            <span class="material-symbols-outlined">add</span>
-                            <span class="truncate">New Purchase Order</span>
+                                        <a href="add.php" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-red-500 text-red-700 bg-red-50/40 hover:bg-red-100 hover:border-red-600 transition-colors shadow-sm" title="New Purchase Order">
+                                            <span class="material-symbols-outlined text-base">add</span>
                         </a>
                         <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Filters -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="bg-white rounded-2xl shadow-md border border-gray-300 border-l-4 border-l-blue-600 mb-6">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600">tune</span>
+                            Filters
+                        </h2>
                     </div>
                     <form method="GET" class="p-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -241,13 +254,17 @@ function formatDate($excel_date) {
                 </div>
 
                 <!-- PO Details Table -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Purchase Orders</h2>
+                <div class="bg-white rounded-2xl shadow-md border border-gray-300 border-l-4 border-l-indigo-600">
+                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-indigo-600">description</span>
+                            Purchase Orders
+                        </h2>
+                        <div class="text-xs text-gray-500">Showing <?= number_format($po_results->num_rows) ?> results</div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-gray-100/70">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Details</th>
@@ -344,6 +361,7 @@ function formatDate($excel_date) {
         </div>
         
         <div class="mb-4">
+<<<<<<< Updated upstream
           <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
             <h4 class="text-sm font-medium text-blue-800 mb-2">Upload Format Requirements:</h4>
             <div class="text-sm text-blue-700">
@@ -371,6 +389,8 @@ function formatDate($excel_date) {
             <h4 class="text-sm font-medium text-yellow-800 mb-2">Date Format Note:</h4>
             <p class="text-sm text-yellow-700">Dates should be in Excel serial number format. For example, 45668 represents a specific date. You can use Excel's DATEVALUE function to convert regular dates.</p>
           </div>
+=======
+>>>>>>> Stashed changes
           
           <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
             <h4 class="text-sm font-medium text-green-800 mb-2">Need a Template?</h4>
@@ -404,18 +424,6 @@ function formatDate($excel_date) {
                    onchange="previewCSV(this)">
           </div>
           
-          <div id="csvPreview" class="hidden mb-4">
-            <div class="flex justify-between items-center mb-2">
-              <h4 class="text-sm font-medium text-gray-700">CSV Preview (First 5 rows):</h4>
-              <span id="rowCount" class="text-sm text-gray-500"></span>
-            </div>
-            <div class="bg-gray-50 border border-gray-200 rounded-md p-4 max-h-64 overflow-auto">
-              <table id="previewTable" class="w-full text-xs">
-                <thead id="previewHeaders" class="bg-gray-100"></thead>
-                <tbody id="previewBody"></tbody>
-              </table>
-            </div>
-          </div>
           
           <div id="uploadProgress" class="hidden mb-4">
             <div class="bg-gray-200 rounded-full h-2.5">
@@ -429,6 +437,13 @@ function formatDate($excel_date) {
               <h4 class="text-sm font-medium text-green-800 mb-2">Success:</h4>
               <p id="successMessage" class="text-sm text-green-700"></p>
             </div>
+            <div id="warningResults" class="hidden bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-2">
+              <div class="flex items-center justify-between cursor-pointer" onclick="toggleWarnings()">
+                <h4 class="text-sm font-medium text-yellow-800">Warnings:</h4>
+                <span id="warningToggle" class="text-yellow-600">▼</span>
+              </div>
+              <div id="warningList" class="text-sm text-yellow-700 mt-2 hidden"></div>
+            </div>
             <div id="errorResults" class="hidden bg-red-50 border border-red-200 rounded-md p-4">
               <h4 class="text-sm font-medium text-red-800 mb-2">Errors:</h4>
               <div id="errorList" class="text-sm text-red-700"></div>
@@ -436,9 +451,9 @@ function formatDate($excel_date) {
           </div>
           
           <div class="flex justify-end space-x-3">
-            <button type="button" onclick="testConnection()" 
-                    class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-              Test Connection
+            <button type="button" onclick="validatePoCsv()" 
+                    class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
+              Validate File
             </button>
             <button type="button" onclick="dryRunUpload()" 
                     class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -485,9 +500,23 @@ function formatDate($excel_date) {
       document.getElementById('uploadProgress').classList.add('hidden');
       document.getElementById('uploadResults').classList.add('hidden');
       document.getElementById('successResults').classList.add('hidden');
+      document.getElementById('warningResults').classList.add('hidden');
       document.getElementById('errorResults').classList.add('hidden');
       document.getElementById('csvPreview').classList.add('hidden');
       document.getElementById('uploadBtn').disabled = false;
+    }
+
+    function toggleWarnings() {
+      const warningList = document.getElementById('warningList');
+      const warningToggle = document.getElementById('warningToggle');
+      
+      if (warningList.classList.contains('hidden')) {
+        warningList.classList.remove('hidden');
+        warningToggle.textContent = '▲';
+      } else {
+        warningList.classList.add('hidden');
+        warningToggle.textContent = '▼';
+      }
     }
 
     function previewCSV(input) {
@@ -639,7 +668,23 @@ function formatDate($excel_date) {
             document.getElementById('successResults').classList.remove('hidden');
             document.getElementById('successMessage').textContent = 
               `Successfully uploaded ${data.inserted} records. ${data.skipped} records were skipped due to duplicates.`;
-          } else {
+          }
+          
+          // Show warnings if any (even on success)
+          if (data.warnings && data.warnings.length > 0) {
+            document.getElementById('warningResults').classList.remove('hidden');
+            const warningList = document.getElementById('warningList');
+            warningList.innerHTML = '';
+            data.warnings.forEach(warning => {
+              const warningItem = document.createElement('div');
+              warningItem.className = 'mb-1';
+              warningItem.textContent = `Row ${warning.row}: ${warning.message}`;
+              warningList.appendChild(warningItem);
+            });
+          }
+          
+          // Show errors if any
+          if (data.errors && data.errors.length > 0) {
             document.getElementById('errorResults').classList.remove('hidden');
             const errorList = document.getElementById('errorList');
             errorList.innerHTML = '';
@@ -671,6 +716,7 @@ function formatDate($excel_date) {
       });
     });
 
+<<<<<<< Updated upstream
     function testConnection() {
       const fileInput = document.getElementById('csvFile');
       
@@ -847,6 +893,36 @@ function formatDate($excel_date) {
         dryRunBtn.disabled = false;
         dryRunBtn.textContent = originalText;
       });
+=======
+    // Validate CSV/TSV content: basic file structure check only
+    function validatePoCsv(){
+      const input = document.getElementById('csvFile');
+      const file = input && input.files && input.files[0];
+      if (!file){ alert('Please select a CSV/TSV file first.'); return; }
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const text = (e.target.result || '').toString().replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+        const lines = text.split('\n').filter(Boolean);
+        if (lines.length < 2){ 
+          alert('The file has no data rows.'); 
+          return; 
+        }
+        
+        // Basic file structure validation passed
+        const preview = document.getElementById('uploadResults');
+        const ok = document.getElementById('successResults');
+        if (preview && ok){
+          document.getElementById('errorResults').classList.add('hidden');
+          document.getElementById('warningResults').classList.add('hidden');
+          ok.classList.remove('hidden');
+          preview.classList.remove('hidden');
+          document.getElementById('successMessage').textContent = 'File structure validation passed. Server will handle detailed validation during upload.';
+        } else {
+          alert('File structure validation passed. You can proceed with upload.');
+        }
+      };
+      reader.readAsText(file);
+>>>>>>> Stashed changes
     }
 
     // Close modal when clicking outside

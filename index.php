@@ -69,121 +69,161 @@ function formatDate($excel_date) {
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
-<body class="bg-gray-50 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+<body class="bg-gradient-to-br from-rose-100 via-sky-100 to-indigo-100 text-gray-900" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
     <div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
         <?php include 'src/shared/nav.php'; ?>   
         
         <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
             <div class="max-w-7xl mx-auto">
-                <!-- Welcome Section -->
-                <div class="mb-8">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-3xl font-bold text-gray-900">Welcome back, <?= htmlspecialchars($user['first_name'] ?: $user['username']) ?>!</h1>
-                            <p class="text-gray-600 mt-2">Here's what's happening with your business today.</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <div class="text-right">
-                                <p class="text-sm text-gray-500">Last login</p>
-                                <p class="text-sm font-medium text-gray-900">
-                                    <?= $user['last_login'] ? date('M j, Y g:i A', strtotime($user['last_login'])) : 'First time' ?>
-                                </p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <?php if (isset($user['profile_picture']) && $user['profile_picture'] && file_exists($user['profile_picture'])): ?>
-                                    <img src="<?= htmlspecialchars($user['profile_picture']) ?>" 
-                                         alt="Profile" 
-                                         class="w-12 h-12 rounded-full object-cover border-2 border-gray-200">
-                                <?php else: ?>
-                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-200">
-                                        <span class="material-symbols-outlined text-2xl text-gray-400">person</span>
+                <!-- Hero / Welcome Section -->
+                <div class="mb-10">
+                    <div class="relative overflow-hidden rounded-2xl bg-white border border-gray-300 shadow-sm">
+                        <div class="px-6 sm:px-8 py-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                                <!-- Title + Subtitle -->
+                                <div class="md:col-span-2 min-w-0">
+                                    <div class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-gray-600">
+                                        <span class="material-symbols-outlined text-sm">dashboard</span>
+                                        Dashboard Overview
                                     </div>
-                                <?php endif; ?>
+                                    <h1 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
+                                        Welcome back, <?= htmlspecialchars($user['first_name'] ?: $user['username']) ?>
+                                    </h1>
+                                    <p class="mt-1 text-sm text-gray-600">Quick snapshot of your POs, invoices, and outsourcing.</p>
+                                </div>
+                                <!-- Compact Actions + Meta -->
+                                <div class="justify-self-start md:justify-self-end w-full md:w-auto">
+                                    <div class="flex items-center gap-2">
+                                        <?php if (hasPermission('add_po_details')): ?>
+                                        <a href="src/Modules/po_details/add.php" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-colors" title="New PO">
+                                            <span class="material-symbols-outlined text-base">add</span>
+                                        </a>
+                                        <?php endif; ?>
+                                        <?php if (hasPermission('add_invoices')): ?>
+                                        <a href="src/Modules/invoices/add.php" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400 transition-colors" title="New Invoice">
+                                            <span class="material-symbols-outlined text-base">receipt_long</span>
+                                        </a>
+                                        <?php endif; ?>
+                                        <?php if (hasPermission('add_outsourcing')): ?>
+                                        <a href="src/Modules/outsourcing/add.php" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 transition-colors" title="New Outsourcing">
+                                            <span class="material-symbols-outlined text-base">business_center</span>
+                                        </a>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-gray-100 text-gray-700 border border-gray-200">
+                                            <span class="material-symbols-outlined text-xs">schedule</span>
+                                            <?= $user['last_login'] ? date('M j, Y g:i A', strtotime($user['last_login'])) : 'First time' ?>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-gray-100 text-gray-700 border border-gray-200">
+                                            <span class="material-symbols-outlined text-xs">person</span>
+                                            <?= htmlspecialchars($user['department'] ?? 'User') ?>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Stats Section (grouped in one container) -->
+                <div class="bg-white rounded-2xl border border-gray-300 shadow-md p-6 mb-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-rose-600">insights</span>
+                            Overview
+                        </h2>
+                        <div class="text-xs text-gray-500">Key metrics</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Purchase Orders Card -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="group relative bg-white rounded-xl shadow-sm border border-gray-300 p-6 transition-all hover:shadow-lg hover:-translate-y-0.5 hover:border-blue-400 border-l-4 border-l-blue-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Purchase Orders</p>
-                                <p class="text-2xl font-bold text-gray-900"><?= number_format($totalPOs) ?></p>
+                                <p class="mt-1 text-3xl font-extrabold text-gray-900"><?= number_format($totalPOs) ?></p>
                                 <p class="text-sm text-gray-500">Total Value: <?= formatCurrency($totalPOValue) ?></p>
                             </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center ring-2 ring-inset ring-blue-300 group-hover:ring-blue-400 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-blue-600">description</span>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <a href="src/Modules/po_details/list.php" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View all POs →</a>
+                            <a href="src/Modules/po_details/list.php" class="inline-flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900 font-medium transition-colors hover:bg-blue-50 px-2 py-1 rounded">
+                                View all POs <span class="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                            </a>
                         </div>
                     </div>
 
                     <!-- Invoices Card -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="group relative bg-white rounded-xl shadow-sm border border-gray-300 p-6 transition-all hover:shadow-lg hover:-translate-y-0.5 hover:border-green-400 border-l-4 border-l-green-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Invoices</p>
-                                <p class="text-2xl font-bold text-gray-900"><?= number_format($totalInvoices) ?></p>
+                                <p class="mt-1 text-3xl font-extrabold text-gray-900"><?= number_format($totalInvoices) ?></p>
                                 <p class="text-sm text-gray-500">Receivable: <?= formatCurrency($totalReceivable) ?></p>
                             </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center ring-2 ring-inset ring-green-300 group-hover:ring-green-400 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-green-600">receipt</span>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <a href="src/Modules/invoices/list.php" class="text-sm text-green-600 hover:text-green-800 font-medium">View all invoices →</a>
+                            <a href="src/Modules/invoices/list.php" class="inline-flex items-center gap-1 text-sm text-green-700 hover:text-green-900 font-medium transition-colors hover:bg-green-50 px-2 py-1 rounded">
+                                View all invoices <span class="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                            </a>
                         </div>
                     </div>
 
                     <!-- Outsourcing Card -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="group relative bg-white rounded-xl shadow-sm border border-gray-300 p-6 transition-all hover:shadow-lg hover:-translate-y-0.5 hover:border-purple-400 border-l-4 border-l-purple-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Outsourcing</p>
-                                <p class="text-2xl font-bold text-gray-900"><?= number_format($totalOutsourcing) ?></p>
+                                <p class="mt-1 text-3xl font-extrabold text-gray-900"><?= number_format($totalOutsourcing) ?></p>
                                 <p class="text-sm text-gray-500">Pending: <?= formatCurrency($totalPendingOutsourcing) ?></p>
                             </div>
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center ring-2 ring-inset ring-purple-300 group-hover:ring-purple-400 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-purple-600">business_center</span>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <a href="src/Modules/outsourcing/list.php" class="text-sm text-purple-600 hover:text-purple-800 font-medium">View all records →</a>
+                            <a href="src/Modules/outsourcing/list.php" class="inline-flex items-center gap-1 text-sm text-purple-700 hover:text-purple-900 font-medium transition-colors hover:bg-purple-50 px-2 py-1 rounded">
+                                View all records <span class="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                            </a>
         </div>
-        </div>
+                    </div>
 
                     <!-- Reports Card -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="group relative bg-white rounded-xl shadow-sm border border-gray-300 p-6 transition-all hover:shadow-lg hover:-translate-y-0.5 hover:border-orange-400 border-l-4 border-l-orange-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Reports</p>
                                 <p class="text-2xl font-bold text-gray-900">SO Form</p>
                                 <p class="text-sm text-gray-500">Summary & Analytics</p>
                             </div>
-                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center ring-2 ring-inset ring-orange-300 group-hover:ring-orange-400 transition-colors">
                                 <span class="material-symbols-outlined text-2xl text-orange-600">assessment</span>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <a href="so_form.php" class="text-sm text-orange-600 hover:text-orange-800 font-medium">View reports →</a>
+                            <a href="so_form.php" class="inline-flex items-center gap-1 text-sm text-orange-700 hover:text-orange-900 font-medium transition-colors hover:bg-orange-50 px-2 py-1 rounded">View reports <span class="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">arrow_forward</span></a>
                         </div>
-          </div>
+                    </div>
+                    </div>
         </div>
 
                 <!-- Quick Actions -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+                <div class="bg-white rounded-2xl shadow-md border border-gray-300 mb-10">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Quick Actions</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+                            <span class="material-symbols-outlined text-indigo-600">bolt</span>
+                            Quick Actions
+                        </h2>
                     </div>
                     <div class="p-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <?php if (hasPermission('add_po_details')): ?>
-                            <a href="src/Modules/po_details/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="src/Modules/po_details/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-blue-300 hover:bg-blue-50 hover:border-blue-400 transition-colors shadow-sm">
                                 <span class="material-symbols-outlined text-2xl text-blue-600">add</span>
             <div>
                                     <p class="font-medium text-gray-900">New PO</p>
@@ -193,7 +233,7 @@ function formatDate($excel_date) {
                 <?php endif; ?>
                             
                             <?php if (hasPermission('add_invoices')): ?>
-                            <a href="src/Modules/invoices/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="src/Modules/invoices/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-green-300 hover:bg-green-50 hover:border-green-400 transition-colors shadow-sm">
                                 <span class="material-symbols-outlined text-2xl text-green-600">add</span>
                                 <div>
                                     <p class="font-medium text-gray-900">New Invoice</p>
@@ -203,7 +243,7 @@ function formatDate($excel_date) {
                             <?php endif; ?>
                             
                             <?php if (hasPermission('add_outsourcing')): ?>
-                            <a href="src/Modules/outsourcing/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="src/Modules/outsourcing/add.php" class="flex items-center gap-3 p-4 rounded-lg border border-purple-300 hover:bg-purple-50 hover:border-purple-400 transition-colors shadow-sm">
                                 <span class="material-symbols-outlined text-2xl text-purple-600">add</span>
             <div>
                                     <p class="font-medium text-gray-900">New Outsourcing</p>
@@ -212,7 +252,7 @@ function formatDate($excel_date) {
                     </a>
                 <?php endif; ?>
                             
-                            <a href="so_form.php" class="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <a href="so_form.php" class="flex items-center gap-3 p-4 rounded-lg border border-orange-300 hover:bg-orange-50 hover:border-orange-400 transition-colors shadow-sm">
                                 <span class="material-symbols-outlined text-2xl text-orange-600">assessment</span>
                                 <div>
                                     <p class="font-medium text-gray-900">View Reports</p>
@@ -226,79 +266,106 @@ function formatDate($excel_date) {
                 <!-- Recent Activity -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Recent POs -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Purchase Orders</h3>
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-300">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-600">description</span>
+                                <h3 class="text-lg font-semibold text-gray-900">Recent Purchase Orders</h3>
+                            </div>
+                            <a href="src/Modules/po_details/list.php" class="inline-flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900 font-medium">
+                                View all <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </a>
                         </div>
-                        <div class="p-6">
+                        <div class="p-0">
                             <?php if ($recentPOs && $recentPOs->num_rows > 0): ?>
-                                <div class="space-y-4">
+                                <div class="divide-y divide-gray-100">
                                     <?php while ($po = $recentPOs->fetch_assoc()): ?>
-                                    <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                        <div>
-                                            <p class="font-medium text-gray-900"><?= htmlspecialchars($po['po_number']) ?></p>
-                                            <p class="text-sm text-gray-500"><?= htmlspecialchars($po['project_description']) ?></p>
+                                    <div class="group flex items-center justify-between gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
+                                        <div class="min-w-0">
+                                            <p class="font-medium text-gray-900 truncate"><?= htmlspecialchars($po['po_number']) ?></p>
+                                            <p class="text-sm text-gray-500 truncate"><?= htmlspecialchars($po['project_description']) ?></p>
                                             <p class="text-sm text-gray-500"><?= formatCurrency($po['po_value']) ?></p>
                                         </div>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $po['po_status'] === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' ?>">
-                                            <?= htmlspecialchars($po['po_status']) ?>
-                                        </span>
+                                        <div class="flex items-center gap-3">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $po['po_status'] === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' ?>">
+                                                <?= htmlspecialchars($po['po_status']) ?>
+                                            </span>
+                                            <span class="material-symbols-outlined text-gray-400 group-hover:text-gray-600">chevron_right</span>
+                                        </div>
                                     </div>
                                     <?php endwhile; ?>
                                 </div>
                             <?php else: ?>
-                                <p class="text-gray-500 text-center py-4">No recent purchase orders</p>
+                                <div class="p-8 text-center">
+                                    <p class="text-gray-500">No recent purchase orders</p>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
 
                     <!-- Recent Invoices -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Invoices</h3>
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-300">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-green-600">receipt</span>
+                                <h3 class="text-lg font-semibold text-gray-900">Recent Invoices</h3>
+                            </div>
+                            <a href="src/Modules/invoices/list.php" class="inline-flex items-center gap-1 text-sm text-green-700 hover:text-green-900 font-medium">
+                                View all <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </a>
                         </div>
-                        <div class="p-6">
+                        <div class="p-0">
                             <?php if ($recentInvoices && $recentInvoices->num_rows > 0): ?>
-                                <div class="space-y-4">
+                                <div class="divide-y divide-gray-100">
                                     <?php while ($invoice = $recentInvoices->fetch_assoc()): ?>
-                                    <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                        <div>
-                                            <p class="font-medium text-gray-900"><?= htmlspecialchars($invoice['cantik_invoice_no']) ?></p>
+                                    <div class="group flex items-center justify-between gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
+                                        <div class="min-w-0">
+                                            <p class="font-medium text-gray-900 truncate"><?= htmlspecialchars($invoice['cantik_invoice_no']) ?></p>
                                             <p class="text-sm text-gray-500">Date: <?= formatDate($invoice['cantik_invoice_date']) ?></p>
                                             <p class="text-sm text-gray-500"><?= formatCurrency($invoice['receivable']) ?></p>
                                         </div>
-                                        <span class="material-symbols-outlined text-green-600">receipt</span>
+                                        <span class="material-symbols-outlined text-gray-400 group-hover:text-gray-600">chevron_right</span>
                                     </div>
                                     <?php endwhile; ?>
                                 </div>
                             <?php else: ?>
-                                <p class="text-gray-500 text-center py-4">No recent invoices</p>
+                                <div class="p-8 text-center">
+                                    <p class="text-gray-500">No recent invoices</p>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
 
                     <!-- Recent Outsourcing -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Outsourcing</h3>
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-300">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-purple-600">business_center</span>
+                                <h3 class="text-lg font-semibold text-gray-900">Recent Outsourcing</h3>
+                            </div>
+                            <a href="src/Modules/outsourcing/list.php" class="inline-flex items-center gap-1 text-sm text-purple-700 hover:text-purple-900 font-medium">
+                                View all <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </a>
                         </div>
-                        <div class="p-6">
+                        <div class="p-0">
                             <?php if ($recentOutsourcing && $recentOutsourcing->num_rows > 0): ?>
-                                <div class="space-y-4">
+                                <div class="divide-y divide-gray-100">
                                     <?php while ($out = $recentOutsourcing->fetch_assoc()): ?>
-                                    <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                        <div>
-                                            <p class="font-medium text-gray-900"><?= htmlspecialchars($out['cantik_po_no']) ?></p>
-                                            <p class="text-sm text-gray-500"><?= htmlspecialchars($out['project_details']) ?></p>
-                                            <p class="text-sm text-gray-500"><?= htmlspecialchars($out['vendor_name']) ?></p>
+                                    <div class="group flex items-center justify-between gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
+                                        <div class="min-w-0">
+                                            <p class="font-medium text-gray-900 truncate"><?= htmlspecialchars($out['cantik_po_no']) ?></p>
+                                            <p class="text-sm text-gray-500 truncate"><?= htmlspecialchars($out['project_details']) ?></p>
+                                            <p class="text-sm text-gray-500 truncate"><?= htmlspecialchars($out['vendor_name']) ?></p>
                                             <p class="text-sm text-gray-500">Pending: <?= formatCurrency($out['pending_payment']) ?></p>
                                         </div>
-                                        <span class="material-symbols-outlined text-purple-600">business_center</span>
+                                        <span class="material-symbols-outlined text-gray-400 group-hover:text-gray-600">chevron_right</span>
                                     </div>
                                     <?php endwhile; ?>
                                 </div>
                             <?php else: ?>
-                                <p class="text-gray-500 text-center py-4">No recent outsourcing records</p>
+                                <div class="p-8 text-center">
+                                    <p class="text-gray-500">No recent outsourcing records</p>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>

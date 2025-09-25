@@ -202,9 +202,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Remaining Balance in PO -->
                             <div>
                                 <label for="remaining_bal_in_po" class="block text-sm font-medium text-gray-700 mb-2">Remaining Balance in PO</label>
-                                <input type="number" id="remaining_bal_in_po" name="remaining_bal_in_po" step="0.01"
+                                <input type="number" id="remaining_bal_in_po" name="remaining_bal_in_po" step="0.01" readonly
                                        value="<?= htmlspecialchars($_POST['remaining_bal_in_po'] ?? '') ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <!-- Vendor Invoice Frequency -->
@@ -338,7 +338,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const poNum = document.getElementById('linked_po_number').value.trim();
                 if (!poNum) return;
                 try {
-                    const res = await fetch(`../po_details/get_po.php?po_number=${encodeURIComponent(poNum)}`);
+                    const res = await fetch(`../po_details/get_po.php?po_number=${encodeURIComponent(poNum)}`, { credentials: 'same-origin' });
                     if (!res.ok) throw new Error('Failed to fetch PO');
                     const json = await res.json();
                     const po = json.data || {};
@@ -347,7 +347,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('customer_po').value = po.po_number ?? '';
                     const setVal = (id, val) => { const el = document.getElementById(id); if (el && (el.value === '' || el.value === undefined)) el.value = val ?? ''; };
                     setVal('vendor_name', po.vendor_name ?? '');
-                    setVal('remaining_bal_in_po', po.pending_amount ?? '');
+                    // Prefill latest Cantik PO details if present
+                    setVal('cantik_po_no', po.latest_cantik_po_no ?? '');
+                    const cpvEl = document.getElementById('cantik_po_value');
+                    if (cpvEl && (cpvEl.value === '' || cpvEl.value === undefined)) {
+                        cpvEl.value = (po.latest_cantik_po_value ?? '')
+                    }
+                    // Fetch vendor booked till date and recalc remaining for outsourcing
+                    try {
+                        const sumRes = await fetch(`get_po_vendor_sum.php?po_number=${encodeURIComponent(po.po_number ?? '')}`, { credentials: 'same-origin' });
+                        if (sumRes.ok) {
+                            const sumJson = await sumRes.json();
+                            if (sumJson && sumJson.success) {
+                                window.bookedTillDate = parseFloat(sumJson.data.total_booked || 0) || 0;
+                            }
+                        }
+                    } catch (_) {}
+                    // Recalculate remaining based on Cantik PO Value and bookedTillDate
+                    if (typeof window.recalcOutsourcing === 'function') window.recalcOutsourcing();
                 } catch (e) {
                     alert('Unable to fetch PO details.');
                 }
@@ -488,7 +505,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const cantikPoValEl = byId('cantik_po_value');
     const customerPoEl = byId('customer_po');
     const remainingBalEl = byId('remaining_bal_in_po');
-    let bookedTillDate = 0;
+    // expose globals so Fetch PO handler can reuse
+    window.bookedTillDate = 0;
 
     function recalc() {
         // Only require inputs we actually have on the form
@@ -506,9 +524,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Remaining balance in PO = Cantik PO Value - Vendor invoices booked till date
         const cantikPoVal = parseFloat(cantikPoValEl && cantikPoValEl.value ? cantikPoValEl.value : '0') || 0;
-        const remaining = Math.max(0, +(cantikPoVal - bookedTillDate).toFixed(2));
+        const remaining = Math.max(0, +(cantikPoVal - (window.bookedTillDate || 0)).toFixed(2));
         if (remainingBalEl) remainingBalEl.value = isFinite(remaining) ? remaining : '';
     }
+
+    // expose recalculation globally
+    window.recalcOutsourcing = recalc;
 
     if (invEl) ['input','change','blur'].forEach(e=>invEl.addEventListener(e, recalc));
     if (rateEl) ['change'].forEach(e=>rateEl.addEventListener(e, recalc));
