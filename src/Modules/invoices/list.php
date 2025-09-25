@@ -128,9 +128,10 @@ $summary_data = $summary_result->fetch_assoc();
 $summary_stmt->close();
 
 function formatDate($excel_date) {
-    if (empty($excel_date)) return '-';
-    $unix_date = ($excel_date - 25569) * 86400;
-    $formatted = date('d M Y', $unix_date);
+    if (empty($excel_date) || !is_numeric($excel_date)) return '-';
+    $unix_date = ((int)$excel_date - 25569) * 86400;
+    // Use GMT to avoid timezone-related off-by-one day issues
+    $formatted = gmdate('d M Y', $unix_date);
     return strtolower($formatted); // 16 jan 2025
 }
 

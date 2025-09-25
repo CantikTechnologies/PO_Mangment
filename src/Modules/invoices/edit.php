@@ -176,9 +176,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <!-- Customer PO -->
                             <div>
                                 <label for="customer_po" class="block text-sm font-medium text-gray-700 mb-2">Customer PO</label>
-                                <input type="text" id="customer_po" name="customer_po" readonly
-                                       value="<?= htmlspecialchars($invoice['customer_po']) ?>"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                <div class="flex gap-2">
+                                  <input type="text" id="customer_po" name="customer_po" readonly
+                                         value="<?= htmlspecialchars($invoice['customer_po']) ?>"
+                                         class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                                  <button type="button" onclick="fetchFromPO()" class="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    Fetch from PO
+                                  </button>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Pull latest project, cost center, vendor, and remaining from PO.</p>
                             </div>
 
                             <!-- Remaining Balance in PO -->
@@ -286,6 +292,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 </html>
 <script>
+(function(){
+  window.fetchFromPO = function() {
+    const po = document.getElementById('customer_po').value.trim();
+    if (!po) { alert('No Customer PO on this invoice.'); return; }
+    fetch('../po_details/get_po.php?po_number=' + encodeURIComponent(po), { credentials: 'same-origin' })
+      .then(r=>r.json())
+      .then(j=>{
+        if (!j || !j.data) { alert('PO not found.'); return; }
+        const d = j.data;
+        // Update read-only fields where applicable
+        const proj = document.getElementById('project_details');
+        const cc = document.getElementById('cost_center');
+        const vendor = document.getElementById('vendor_name');
+        const remain = document.getElementById('remaining_balance_in_po');
+        if (proj) proj.value = d.project_description || '';
+        if (cc) cc.value = d.cost_center || '';
+        if (vendor && (!vendor.value || vendor.value.trim()==='')) vendor.value = d.vendor_name || vendor.value;
+        if (remain) {
+          // Recompute remaining as PO value - billed till date if available from server later.
+          // For now, if PO has pending_amount populated, prefer that; else compute from po_value.
+          if (typeof d.pending_amount === 'number') {
+            remain.value = d.pending_amount.toFixed(2);
+          } else if (typeof d.po_value === 'number') {
+            // keep existing if higher fidelity number exists on the invoice already
+            const cur = parseFloat(remain.value || '0') || 0;
+            if (cur === 0) remain.value = d.po_value.toFixed(2);
+          }
+        }
+        alert('Fetched latest details from PO. Review and Save.');
+      })
+      .catch(e=>{
+        alert('Failed to fetch PO: ' + e.message);
+      });
+  }
+})();
 (function() {
     const toIso = (str) => {
         if (!str) return null; 
