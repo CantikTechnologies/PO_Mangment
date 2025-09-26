@@ -56,7 +56,7 @@ $outsourcing_stmt->execute();
 $outsourcing_records = $outsourcing_stmt->get_result();
 $outsourcing_stmt->close();
 
-// Formatting functions are now included from shared/formatting.php
+// formatCurrency is now included via shared/includes.php
 
 function getBadgeClass($status) {
     switch (strtolower($status)) {

@@ -46,7 +46,7 @@ $po_result = $po_stmt->get_result();
 $po = $po_result->fetch_assoc();
 $po_stmt->close();
 
-// Formatting functions are now included from shared/formatting.php
+// formatCurrency is now included via shared/includes.php
 
 function getBadgeClass($status) {
     switch (strtolower($status)) {

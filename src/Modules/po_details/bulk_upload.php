@@ -154,16 +154,9 @@ function parseDateToSerial($value) {
             return (int)floor($ts/86400)+25569;
         }
     }
-    // Fallback: parse using UTC to avoid timezone-induced off-by-one
+    // Fallback using strtotime after normalizing slashes
     $normalized = str_replace(['\\', '.'], ['/', '/'], $s);
-    try {
-        $dt = new DateTime($normalized, new DateTimeZone('UTC'));
-        // Normalize to midnight UTC
-        $dt->setTime(0, 0, 0);
-        $ts = $dt->getTimestamp();
-    } catch (Exception $e) {
-        return null;
-    }
+    $ts = strtotime($normalized);
     if ($ts === false) return null;
     return (int)floor($ts / 86400) + 25569;
 }
@@ -288,9 +281,6 @@ function validateRow($row, $rowNumber) {
     return ['errors' => $errors, 'warnings' => $warnings];
 }
 
-// Check if this is a dry run
-$dryRun = isset($_POST['dry_run']) && $_POST['dry_run'] === '1';
-
 try {
     // Validate file size (max 10MB)
     if ($file['size'] > 10 * 1024 * 1024) {
@@ -342,10 +332,8 @@ try {
     $warnings = [];
     $rowNumber = 1; // Start from 1 since we already read the header
     
-    // Begin transaction (skip for dry run)
-    if (!$dryRun) {
-        $conn->begin_transaction();
-    }
+    // Begin transaction
+    $conn->begin_transaction();
     
     // Process each row
     for ($i = 1; $i < count($lines); $i++) {
@@ -449,44 +437,6 @@ try {
         $poStatus = isset($rowData['po_status']) && trim($rowData['po_status']) !== ''
             ? ucfirst(strtolower(trim($rowData['po_status']))) : 'Active';
         
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-        // Insert record (skip for dry run)
-        if ($dryRun) {
-            $inserted++; // Count as successful for dry run
-        } else {
-            $insertStmt = $conn->prepare("
-                INSERT INTO po_details (
-                    project_description, cost_center, sow_number, start_date, end_date,
-                    po_number, po_date, po_value, billing_frequency, target_gm,
-                    vendor_name, remarks, po_status, pending_amount
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-            
-            $insertStmt->bind_param(
-                "sssiiisdsdsssd",
-                $projectDescription, $costCenter, $sowNumber, $startDate, $endDate,
-                $poNumber, $poDate, $poValue, $billingFrequency, $targetGm,
-                $vendorName, $remarks, $poStatus, $pendingAmount
-            );
-            
-            if ($insertStmt->execute()) {
-                $inserted++;
-                
-                // Log the creation in audit log
-                $userId = $_SESSION['user_id'] ?? 1;
-                $auditStmt = $conn->prepare("
-                    INSERT INTO audit_log (user_id, action, table_name, record_id, created_at) 
-                    VALUES (?, 'create_po', 'po_details', ?, NOW())
-                ");
-                $auditStmt->bind_param("ii", $userId, $conn->insert_id);
-                $auditStmt->execute();
-            } else {
-                $errors[] = ['row' => $rowNumber, 'message' => 'Database error: ' . $insertStmt->error];
-            }
-=======
-=======
->>>>>>> Stashed changes
         // Final safety check - ensure PO number is never empty
         if (empty($poNumber) || $poNumber === '0' || trim($poNumber) === '') {
             $poNumber = 'TEMP-PO-' . date('Ymd') . '-' . $rowNumber . '-' . substr(uniqid('', true), -8);
@@ -541,50 +491,19 @@ try {
         
         if (isset($insertStmt)) {
             $insertStmt->close();
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         }
     }
     
     // No file handle to close; using file() above
     
-    // Commit transaction if no critical errors (skip for dry run)
-    if ($dryRun) {
+    // Commit transaction if no critical errors
+    if (empty($errors) || $inserted > 0) {
+        $conn->commit();
         echo json_encode([
-            'success' => empty($errors),
+            'success' => true,
             'inserted' => $inserted,
             'skipped' => $skipped,
             'errors' => $errors,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-            'dry_run' => true,
-            'message' => empty($errors) ? 'Dry run successful - CSV is ready for upload' : 'Dry run found validation errors'
-        ]);
-    } else {
-        if (empty($errors) || $inserted > 0) {
-            $conn->commit();
-            echo json_encode([
-                'success' => true,
-                'inserted' => $inserted,
-                'skipped' => $skipped,
-                'errors' => $errors,
-                'dry_run' => false
-            ]);
-        } else {
-            $conn->rollback();
-            echo json_encode([
-                'success' => false,
-                'inserted' => 0,
-                'skipped' => $skipped,
-                'errors' => $errors,
-                'dry_run' => false
-            ]);
-        }
-=======
-=======
->>>>>>> Stashed changes
             'warnings' => $warnings
         ]);
     } else {
@@ -596,7 +515,6 @@ try {
             'errors' => $errors,
             'warnings' => $warnings
         ]);
->>>>>>> Stashed changes
     }
     
 } catch (Exception $e) {

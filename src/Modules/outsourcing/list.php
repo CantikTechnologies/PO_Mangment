@@ -145,7 +145,9 @@ function formatDate($excel_date) {
     return strtolower($formatted); // 16 jan 2025
 }
 
-// Formatting functions are now included from shared/formatting.php
+function formatCurrency($amount) {
+    return '₹' . number_format((float)$amount, 2);
+}
 ?>
 
 <!DOCTYPE html>
@@ -419,77 +421,77 @@ function formatDate($excel_date) {
       </div>
     </main>
   </div>
-<!-- Outsourcing Bulk Upload Modal and Script -->
-<div id="outsBulkModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+<!-- Bulk Upload Modal -->
+<div id="outsourcingBulkUploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
   <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-medium text-gray-900">Bulk Upload Outsourcing</h3>
-      <button onclick="closeOutsourcingBulkUpload()" class="text-gray-400 hover:text-gray-600">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-    </div>
-    <form id="outsBulkForm" enctype="multipart/form-data">
-      <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
-        <h4 class="text-sm font-medium text-blue-800 mb-2">Upload Format Requirements</h4>
-        <div class="text-sm text-blue-700">
-          <p class="mb-1">Required columns (case-sensitive). CSV (comma) or TSV (tab) files are supported:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li><strong>project_details</strong></li>
-            <li><strong>cost_center</strong></li>
-            <li><strong>customer_po</strong></li>
-            <li><strong>vendor_name</strong></li>
-            <li><strong>cantik_po_no</strong></li>
-            <li><strong>cantik_po_date</strong> - Excel serial or valid date</li>
-            <li><strong>cantik_po_value</strong> - numeric</li>
-            <li><strong>vendor_invoice_frequency</strong></li>
-            <li><strong>vendor_inv_number</strong></li>
-            <li><strong>vendor_inv_date</strong> - Excel serial or valid date</li>
-            <li><strong>vendor_inv_value</strong> - numeric</li>
-          </ul>
-          <p class="mt-2">Optional columns: payment_status_from_ntt, payment_value, payment_date, remarks</p>
-        </div>
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Bulk Upload Outsourcing</h3>
+        <button onclick="closeOutsourcingBulkUploadModal()" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
-      <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
-        <h4 class="text-sm font-medium text-green-800 mb-2">Download Template</h4>
-        <a href="sample_template.csv" download="outsourcing_template.csv" class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
-          <span class="material-symbols-outlined text-sm">download</span>
-          Download Sample CSV
-        </a>
-      </div>
+      
       <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Select CSV/TSV File</label>
-        <input type="file" id="outsFile" name="csvFile" accept=".csv,.tsv,.txt" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
-      </div>
-      <!-- Client-side CSV Preview -->
-      <div id="outsCsvPreview" class="hidden mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <h4 class="text-sm font-medium text-gray-900">CSV Preview (first 5 rows)</h4>
-          <div id="outsCsvMeta" class="text-xs text-gray-500"></div>
+        <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+          <h4 class="text-sm font-medium text-green-800 mb-2">Need a Template?</h4>
+          <p class="text-sm text-green-700 mb-2">Download our sample CSV template to see the correct format:</p>
+          <a href="outsourcing_template.csv" download="outsourcing_template.csv" 
+             class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
+            <span class="material-symbols-outlined text-sm">download</span>
+            Download Template
+          </a>
         </div>
-        <div class="overflow-x-auto rounded-md border border-gray-200">
-          <div class="max-h-64 overflow-y-auto">
-            <table class="w-full text-xs font-mono">
-              <thead id="outsCsvHead" class="bg-gray-50 sticky top-0 z-10"></thead>
-              <tbody id="outsCsvBody" class="divide-y divide-gray-100"></tbody>
-            </table>
+      </div>
+
+      <form id="outsourcingBulkUploadForm" enctype="multipart/form-data">
+        <div class="mb-4">
+          <label for="outsourcingCsvFile" class="block text-sm font-medium text-gray-700 mb-2">Select CSV/TSV File</label>
+          <input type="file" id="outsourcingCsvFile" name="csvFile" accept=".csv,.tsv,.txt" required 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div id="outsourcingUploadProgress" class="hidden mb-4">
+          <div class="bg-gray-200 rounded-full h-2.5">
+            <div id="outsourcingProgressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <p id="outsourcingProgressText" class="text-sm text-gray-600 mt-1">Processing...</p>
+        </div>
+        
+        <div id="outsourcingUploadResults" class="hidden mb-4">
+          <div id="outsourcingSuccessResults" class="hidden bg-green-50 border border-green-200 rounded-md p-4 mb-2">
+            <h4 class="text-sm font-medium text-green-800 mb-2">Success:</h4>
+            <p id="outsourcingSuccessMessage" class="text-sm text-green-700"></p>
+          </div>
+          <div id="outsourcingWarningResults" class="hidden bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-2">
+            <div class="flex items-center justify-between cursor-pointer" onclick="toggleOutsourcingWarnings()">
+              <h4 class="text-sm font-medium text-yellow-800">Warnings:</h4>
+              <span id="outsourcingWarningToggle" class="text-yellow-600">▼</span>
+            </div>
+            <div id="outsourcingWarningList" class="text-sm text-yellow-700 mt-2 hidden"></div>
+          </div>
+          <div id="outsourcingErrorResults" class="hidden bg-red-50 border border-red-200 rounded-md p-4">
+            <h4 class="text-sm font-medium text-red-800 mb-2">Errors:</h4>
+            <div id="outsourcingErrorList" class="text-sm text-red-700"></div>
           </div>
         </div>
-      </div>
-      <div class="mb-4 flex items-center gap-3">
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" id="outsDryRun" class="rounded border-gray-300"> Dry run (validate only)
-        </label>
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" id="outsForce" class="rounded border-gray-300"> Force insert (bypass PO FK)
-        </label>
-        <button type="button" id="outsDownloadErrors" onclick="downloadOutsErrors()" class="hidden px-3 py-2 bg-yellow-600 text-white rounded-md text-sm hover:bg-yellow-700">Download error CSV</button>
-      </div>
-      <div id="outsErrors" class="hidden bg-red-50 border border-red-200 rounded-md p-4 mb-4 text-sm text-red-700"></div>
-      <div class="flex justify-end gap-3">
-        <button type="button" onclick="closeOutsourcingBulkUpload()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Upload</button>
-      </div>
-    </form>
+        
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="validateOutsourcingCsv()" 
+                  class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
+            Validate File
+          </button>
+          <button type="button" onclick="closeOutsourcingBulkUploadModal()" 
+                  class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            Cancel
+          </button>
+          <button type="submit" id="outsourcingUploadBtn" 
+                  class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Upload CSV
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 <script>
@@ -866,7 +868,7 @@ function formatDate($excel_date) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Vendor Inv Value</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_vendor_inv_value'] ?? 0) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_vendor_inv_value'] ?? 0, 2) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">receipt_long</span>
@@ -879,7 +881,7 @@ function formatDate($excel_date) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total TDS Ded</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_tds_ded'] ?? 0) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_tds_ded'] ?? 0, 2) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">savings</span>
@@ -892,7 +894,7 @@ function formatDate($excel_date) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Net Payable</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_net_payble'] ?? 0) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_net_payble'] ?? 0, 2) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">account_balance</span>
@@ -905,7 +907,7 @@ function formatDate($excel_date) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Payment Value</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_payment_value'] ?? 0) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_payment_value'] ?? 0, 2) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">payments</span>
@@ -918,7 +920,7 @@ function formatDate($excel_date) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Pending Payment</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_pending_payment'] ?? 0) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_pending_payment'] ?? 0, 2) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">pending</span>
@@ -933,7 +935,7 @@ function formatDate($excel_date) {
           <div class="text-center">
             <p class="text-sm text-gray-600">Average Invoice Value</p>
             <p class="text-xl font-semibold text-gray-900">
-              <?= formatCurrency(($summary_data['total_records'] > 0) ? ($summary_data['total_vendor_inv_value'] / $summary_data['total_records']) : 0) ?>
+              ₹<?= number_format(($summary_data['total_records'] > 0) ? ($summary_data['total_vendor_inv_value'] / $summary_data['total_records']) : 0, 2) ?>
             </p>
           </div>
           <div class="text-center">
@@ -967,6 +969,152 @@ function formatDate($excel_date) {
   </div>
 </div>
 
-<script src="../../assets/indian-numbering.js"></script>
+<script>
+  function openOutsourcingBulkUpload() {
+    document.getElementById('outsourcingBulkUploadModal').classList.remove('hidden');
+    resetOutsourcingUploadForm();
+  }
+
+  function closeOutsourcingBulkUploadModal() {
+    document.getElementById('outsourcingBulkUploadModal').classList.add('hidden');
+    resetOutsourcingUploadForm();
+  }
+
+  function resetOutsourcingUploadForm() {
+    document.getElementById('outsourcingBulkUploadForm').reset();
+    document.getElementById('outsourcingUploadProgress').classList.add('hidden');
+    document.getElementById('outsourcingUploadResults').classList.add('hidden');
+    document.getElementById('outsourcingSuccessResults').classList.add('hidden');
+    document.getElementById('outsourcingWarningResults').classList.add('hidden');
+    document.getElementById('outsourcingErrorResults').classList.add('hidden');
+  }
+
+  function toggleOutsourcingWarnings() {
+    const list = document.getElementById('outsourcingWarningList');
+    const toggle = document.getElementById('outsourcingWarningToggle');
+    if (list.classList.contains('hidden')) {
+      list.classList.remove('hidden');
+      toggle.textContent = '▲';
+    } else {
+      list.classList.add('hidden');
+      toggle.textContent = '▼';
+    }
+  }
+
+  function validateOutsourcingCsv() {
+    const fileInput = document.getElementById('outsourcingCsvFile');
+    if (!fileInput.files[0]) {
+      alert('Please select a CSV file first');
+      return;
+    }
+    
+    // Simple client-side validation - just check if file has data
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        alert('CSV file must have at least a header row and one data row');
+        return;
+      }
+      
+      alert(`File validation passed! Found ${lines.length - 1} data rows.`);
+    };
+    reader.readAsText(file);
+  }
+
+  // Form submission handler
+  document.getElementById('outsourcingBulkUploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('outsourcingCsvFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+      alert('Please select a CSV file');
+      return;
+    }
+
+    // Show progress
+    document.getElementById('outsourcingUploadProgress').classList.remove('hidden');
+    document.getElementById('outsourcingProgressBar').style.width = '10%';
+    document.getElementById('outsourcingProgressText').textContent = 'Uploading file...';
+
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('csvFile', file);
+
+    try {
+      // Update progress
+      document.getElementById('outsourcingProgressBar').style.width = '50%';
+      document.getElementById('outsourcingProgressText').textContent = 'Processing data...';
+
+      const response = await fetch('bulk_upload.php', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+      });
+
+      const text = await response.text();
+      let data;
+      
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        throw new Error('Invalid JSON response: ' + text.substring(0, 300));
+      }
+
+      // Complete progress
+      document.getElementById('outsourcingProgressBar').style.width = '100%';
+      document.getElementById('outsourcingProgressText').textContent = 'Complete!';
+
+      // Show results
+      document.getElementById('outsourcingUploadResults').classList.remove('hidden');
+
+      if (data.success) {
+        // Success
+        document.getElementById('outsourcingSuccessResults').classList.remove('hidden');
+        document.getElementById('outsourcingSuccessMessage').textContent = 
+          `Successfully processed ${data.inserted || 0} records.`;
+
+        // Show warnings if any
+        if (data.warnings && data.warnings.length > 0) {
+          document.getElementById('outsourcingWarningResults').classList.remove('hidden');
+          const warningList = document.getElementById('outsourcingWarningList');
+          warningList.innerHTML = data.warnings.map(warning => 
+            `<div class="mb-1">${warning}</div>`
+          ).join('');
+        }
+
+        // Auto-close and refresh after a delay
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+
+      } else {
+        // Errors
+        document.getElementById('outsourcingErrorResults').classList.remove('hidden');
+        const errorList = document.getElementById('outsourcingErrorList');
+        const errors = data.errors || [];
+        errorList.innerHTML = errors.map(error => 
+          `<div class="mb-1">${error}</div>`
+        ).join('');
+      }
+
+    } catch (error) {
+      // Hide progress
+      document.getElementById('outsourcingUploadProgress').classList.add('hidden');
+      
+      // Show error
+      document.getElementById('outsourcingUploadResults').classList.remove('hidden');
+      document.getElementById('outsourcingErrorResults').classList.remove('hidden');
+      document.getElementById('outsourcingErrorList').innerHTML = 
+        `<div class="mb-1">Upload failed: ${error.message}</div>`;
+    }
+  });
+</script>
+
 </body>
 </html>

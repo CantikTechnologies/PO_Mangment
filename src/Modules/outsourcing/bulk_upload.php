@@ -196,7 +196,20 @@ if ($dryRun) {
   if($inserted>0){ $conn->commit(); } else { $conn->rollback(); }
 }
 if (!$dryRun && $force) { $conn->query('SET FOREIGN_KEY_CHECKS=1'); }
-echo json_encode(['success'=>$dryRun ? true : ($inserted>0),'inserted'=>$inserted,'skipped'=>0,'errors'=>$errors,'dry_run'=>$dryRun]);
+// Format errors as simple strings for the new UI
+$errorStrings = [];
+foreach ($errors as $error) {
+  $errorStrings[] = "Row {$error['row']}: {$error['message']}";
+}
+
+echo json_encode([
+  'success' => $dryRun ? true : ($inserted > 0),
+  'inserted' => $inserted,
+  'skipped' => 0,
+  'errors' => $errorStrings,
+  'warnings' => [], // Outsourcing doesn't have warnings yet, but keeping for compatibility
+  'dry_run' => $dryRun
+]);
 ?>
 
 

@@ -128,14 +128,11 @@ $summary_data = $summary_result->fetch_assoc();
 $summary_stmt->close();
 
 function formatDate($excel_date) {
-    if (empty($excel_date) || !is_numeric($excel_date)) return '-';
-    $unix_date = ((int)$excel_date - 25569) * 86400;
-    // Use GMT to avoid timezone-related off-by-one day issues
-    $formatted = gmdate('d M Y', $unix_date);
+    if (empty($excel_date)) return '-';
+    $unix_date = ($excel_date - 25569) * 86400;
+    $formatted = date('d M Y', $unix_date);
     return strtolower($formatted); // 16 jan 2025
 }
-
-// Formatting functions are now included from shared/formatting.php
 ?>
 
 <!DOCTYPE html>
@@ -667,7 +664,7 @@ function formatDate($excel_date) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Taxable Value</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_cantik_inv_value_taxable'] ?? 0) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_cantik_inv_value_taxable'] ?? 0, 2) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">account_balance_wallet</span>
@@ -680,7 +677,7 @@ function formatDate($excel_date) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total TDS</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_tds'] ?? 0) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_tds'] ?? 0, 2) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">savings</span>
@@ -693,7 +690,7 @@ function formatDate($excel_date) {
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Receivable</p>
-              <p class="text-2xl font-bold text-gray-900 mt-2 truncate"><?= formatCurrency($summary_data['total_receivable'] ?? 0) ?></p>
+              <p class="text-2xl font-bold text-gray-900 mt-2 truncate">₹<?= number_format($summary_data['total_receivable'] ?? 0, 2) ?></p>
             </div>
             <div class="bg-gray-100 p-3 rounded-full ml-3">
               <span class="material-symbols-outlined text-gray-600 text-xl">payments</span>
@@ -708,7 +705,7 @@ function formatDate($excel_date) {
           <div class="text-center">
             <p class="text-sm text-gray-600">Average Invoice Value</p>
             <p class="text-xl font-semibold text-gray-900">
-              <?= formatCurrency(($summary_data['total_invoices'] > 0) ? ($summary_data['total_cantik_inv_value_taxable'] / $summary_data['total_invoices']) : 0) ?>
+              ₹<?= number_format(($summary_data['total_invoices'] > 0) ? ($summary_data['total_cantik_inv_value_taxable'] / $summary_data['total_invoices']) : 0, 2) ?>
             </p>
           </div>
           <div class="text-center">
@@ -736,12 +733,6 @@ function formatDate($excel_date) {
   </div>
 </div>
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<script src="../../assets/indian-numbering.js"></script>
-=======
-=======
->>>>>>> Stashed changes
 <!-- Bulk Upload Modal -->
 <div id="invoiceBulkUploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
   <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
@@ -975,12 +966,12 @@ function formatDate($excel_date) {
         
         document.getElementById('invoiceUploadBtn').disabled = false;
         
-        // Refresh the page after successful upload
-        if (data.success && data.inserted > 0) {
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        }
+        // Temporarily disable auto-refresh for debugging
+        // if (data.success && data.inserted > 0) {
+        //   setTimeout(() => {
+        //     window.location.reload();
+        //   }, 2000);
+        // }
       }, 500);
     })
     .catch(error => {
@@ -1028,9 +1019,5 @@ function formatDate($excel_date) {
   }
 </script>
 
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 </body>
 </html>

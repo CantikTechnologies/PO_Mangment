@@ -58,6 +58,9 @@ if (!isset($auth)) {
     }
 }
 
-// Include formatting functions
-include_once __DIR__ . '/formatting.php';
+// Include shared formatting functions
+$formatting_path = __DIR__ . '/formatting.php';
+if (file_exists($formatting_path)) {
+    include_once $formatting_path;
+}
 ?>

@@ -6,12 +6,16 @@ ini_set('display_errors', 0);
 // Set content type to JSON first
 header('Content-Type: application/json');
 
+// Remove debug exit - continue with normal processing
+
 session_start();
 if (!isset($_SESSION['username'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'errors' => [['row' => 0, 'message' => 'Unauthorized access']]]);
     exit();
 }
+
+// Continue with normal processing
 
 try {
     include '../../../config/db.php';
@@ -171,6 +175,13 @@ function excelToDate($excelDate) {
 // Function to validate PO numbers in batch (for better performance)
 function validatePONumbers($allRows) {
     global $conn;
+    
+    // Test database connection
+    if (!$conn || $conn->connect_error) {
+        error_log("PO Validation Error: Database connection failed");
+        return [['row' => 0, 'message' => 'Database connection error during PO validation']];
+    }
+    
     $poNumbers = [];
     $rowPOMap = []; // Track which rows use which POs
     
@@ -354,6 +365,10 @@ try {
         $headers[] = $trim; // keep as-is; may be extra header
     }
     
+    // Debug: Log headers for troubleshooting
+    error_log("CSV Headers Found: " . implode(', ', $headersRaw));
+    error_log("Mapped Headers: " . implode(', ', $headers));
+    
     // No mandatory headers enforced server-side
     
     // Check for extra headers
@@ -389,27 +404,39 @@ try {
         $allRowsData[] = $rowData;
     }
     
+    // Debug: Check if we have any data to validate
+    $debugInfo = [];
+    foreach ($allRowsData as $rowIndex => $row) {
+        if (isset($row['customer_po']) && !isEmptyLike($row['customer_po'])) {
+            $debugInfo[] = "Row " . ($rowIndex + 2) . ": '" . trim($row['customer_po']) . "'";
+        }
+    }
+    
+    // Always add debug info about what we're trying to validate (as errors so they're visible)
+    $errors = []; // Initialize errors array
+    $errors[] = ['row' => 0, 'message' => 'DEBUG: bulk_upload.php script is running'];
+    
+    if (!empty($debugInfo)) {
+        $errors[] = ['row' => 0, 'message' => 'DEBUG: Found PO numbers to validate: ' . implode(', ', $debugInfo)];
+    } else {
+        $errors[] = ['row' => 0, 'message' => 'DEBUG: No PO numbers found in CSV data for validation'];
+    }
+    
     // Validate PO numbers in batch
     $poErrors = validatePONumbers($allRowsData);
     
-    // Debug: Add diagnostic information about PO validation
-    if (empty($poErrors)) {
-        // If no PO errors found, let's see what POs were checked
-        $debugPOs = [];
-        foreach ($allRowsData as $rowIndex => $row) {
-            if (isset($row['customer_po']) && !isEmptyLike($row['customer_po'])) {
-                $debugPOs[] = "'" . trim($row['customer_po']) . "'";
-            }
-        }
-        if (!empty($debugPOs)) {
-            $warnings[] = ['row' => 0, 'message' => 'DEBUG: PO validation passed for: ' . implode(', ', array_unique($debugPOs))];
-        }
+    // Debug: Show validation results (as errors so they're visible)
+    if (!empty($poErrors)) {
+        $errors[] = ['row' => 0, 'message' => 'DEBUG: PO validation found ' . count($poErrors) . ' errors'];
+    } else {
+        $errors[] = ['row' => 0, 'message' => 'DEBUG: PO validation passed - no errors found'];
     }
     
     $inserted = 0;
     $skipped = 0;
-    $errors = $poErrors; // Start with PO validation errors
-    // $warnings is already initialized above with debug info if needed
+    // Merge debug errors with PO validation errors
+    $errors = array_merge($errors, $poErrors);
+    $warnings = [];
     $rowNumber = 1; // Start from 1 since we already read the header
     
     // Begin transaction
@@ -482,6 +509,22 @@ try {
         if (empty($invoiceNumber) || $invoiceNumber === '0' || trim($invoiceNumber) === '') {
             $invoiceNumber = 'TEMP-INV-' . date('Ymd') . '-' . $rowNumber . '-' . substr(uniqid('', true), -8);
             $generatedTemp = true;
+        }
+        
+        // SIMPLE PO CHECK: Verify customer_po exists before inserting
+        if (!empty($customerPo)) {
+            $poCheckStmt = $conn->prepare("SELECT po_number FROM po_details WHERE po_number = ?");
+            $poCheckStmt->bind_param("s", $customerPo);
+            $poCheckStmt->execute();
+            $poResult = $poCheckStmt->get_result();
+            
+            if ($poResult->num_rows === 0) {
+                $skipped++;
+                $errors[] = ['row' => $rowNumber, 'message' => "Customer PO '$customerPo' does not exist. Please create this PO first."];
+                $poCheckStmt->close();
+                continue; // Skip this row
+            }
+            $poCheckStmt->close();
         }
         
         // Insert record - using only the fields that actually exist in the table
